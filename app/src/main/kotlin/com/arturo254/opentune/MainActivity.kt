@@ -932,8 +932,7 @@ class MainActivity : ComponentActivity() {
                             isPlayerExpanded && playerFullscreen -> {
                                 controller.systemBarsBehavior =
                                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                                controller.hide(WindowInsetsCompat.Type.statusBars())
-                                controller.show(WindowInsetsCompat.Type.navigationBars())
+                                controller.hide(WindowInsetsCompat.Type.systemBars())
                             }
 
                             isYearInMusicScreen -> {
@@ -1043,13 +1042,24 @@ class MainActivity : ComponentActivity() {
                         if (navBackStackEntry?.destination?.route?.startsWith("search/") == true) {
                             val searchQuery =
                                 withContext(Dispatchers.IO) {
-                                    Uri.decode(
-                                        navBackStackEntry
+                                    if (navBackStackEntry
                                             ?.arguments
                                             ?.getString(
                                                 "query",
                                             )!!
-                                    )
+                                            .contains(
+                                                "%",
+                                            )
+                                    ) {
+                                        navBackStackEntry?.arguments?.getString(
+                                            "query",
+                                        )!!
+                                    } else {
+                                        URLDecoder.decode(
+                                            navBackStackEntry?.arguments?.getString("query")!!,
+                                            "UTF-8"
+                                        )
+                                    }
                                 }
                             onQueryChange(
                                 TextFieldValue(

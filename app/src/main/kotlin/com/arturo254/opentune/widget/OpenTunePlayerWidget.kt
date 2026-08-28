@@ -267,25 +267,27 @@ private fun SolidBackground(color: ColorProvider) {
 @Composable
 private fun ProgressBar(progress: Float) {
     val clamped = progress.coerceIn(0f, 1f)
-    val widgetWidth = LocalSize.current.width
-    // Resta el padding horizontal de la Column contenedora (14.dp a cada lado).
-    val trackWidth = (widgetWidth - 28.dp).coerceAtLeast(0.dp)
-    val fillWidth = (trackWidth * clamped)
+    val widgetSize = LocalSize.current
+    val widgetWidth = widgetSize.width
+    val effectiveWidth = if (widgetWidth > 28.dp) (widgetWidth - 28.dp) else 220.dp
+    val fillWidth = (effectiveWidth * clamped)
 
     Box(
         modifier = GlanceModifier
-            .width(trackWidth)
+            .fillMaxWidth()
             .height(4.dp)
             .background(ColorProvider(Color.White.copy(alpha = 0.28f)))
             .cornerRadius(2.dp),
     ) {
-        Box(
-            modifier = GlanceModifier
-                .width(fillWidth)
-                .height(4.dp)
-                .background(ColorProvider(Color.White))
-                .cornerRadius(2.dp),
-        ) {}
+        if (fillWidth > 0.dp) {
+            Box(
+                modifier = GlanceModifier
+                    .width(fillWidth)
+                    .height(4.dp)
+                    .background(ColorProvider(Color.White))
+                    .cornerRadius(2.dp),
+            ) {}
+        }
     }
 }
 

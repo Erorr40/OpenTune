@@ -92,6 +92,9 @@ import coil3.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.widget.Toast
+import com.arturo254.opentune.LocalDatabase
+import com.arturo254.opentune.LocalDownloadUtil
 import com.arturo254.opentune.LocalPlayerAwareWindowInsets
 import com.arturo254.opentune.LocalPlayerConnection
 import com.arturo254.opentune.R
@@ -124,6 +127,8 @@ fun SpotifyPlaylistScreen(
     viewModel: SpotifyPlaylistViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+    val database = LocalDatabase.current
+    val downloadUtil = LocalDownloadUtil.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val playerConnection = LocalPlayerConnection.current
     val coroutineScope = rememberCoroutineScope()
@@ -175,7 +180,7 @@ fun SpotifyPlaylistScreen(
 
     val thumbnailUrl =
         remember(playlist) {
-            playlist?.let { SpotifyMapper.getPlaylistThumbnail(it)?.resize(544, 544,) }
+            playlist?.let { SpotifyMapper.getPlaylistThumbnail(it)?.resize(544, 544) }
         }
 
     LaunchedEffect(thumbnailUrl) {
@@ -609,7 +614,7 @@ fun SpotifyPlaylistScreen(
                                         Modifier
                                             .weight(1f)
                                             .height(48.dp),
-                                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+                                    shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
                                     colors =
                                         ToggleButtonDefaults.toggleButtonColors(
                                             containerColor = MaterialTheme.colorScheme.primary,
@@ -624,6 +629,66 @@ fun SpotifyPlaylistScreen(
                                         modifier = Modifier.size(24.dp),
                                     )
                                 }
+
+                                ToggleButton(
+                                    checked = state.isDownloading,
+                                    onCheckedChange = {
+                                        if (state.isDownloading) {
+                                            viewModel.cancelDownloads()
+                                            Toast.makeText(context, "Download cancelled", Toast.LENGTH_SHORT).show()
+                                        } else if (tracks.isNotEmpty()) {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.downloading),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            viewModel.downloadAllTracks(
+                                                context = context,
+                                                database = database,
+                                                onComplete = { success, failed ->
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Downloaded $success songs" + if (failed > 0) " ($failed failed)" else "",
+                                                        Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
+                                            )
+                                        }
+                                    },
+                                    enabled = tracks.isNotEmpty(),
+                                    modifier = Modifier.size(48.dp),
+                                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+                                    colors =
+                                        ToggleButtonDefaults.toggleButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            checkedContainerColor = MaterialTheme.colorScheme.primary,
+                                            checkedContentColor = MaterialTheme.colorScheme.onPrimary,
+                                        ),
+                                ) {
+                                    if (state.isDownloading) {
+                                        CircularWavyProgressIndicator(
+                                            modifier = Modifier.size(22.dp),
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                        )
+                                    } else {
+                                        Icon(
+                                            painter = painterResource(R.drawable.download),
+                                            contentDescription = stringResource(R.string.action_download),
+                                            modifier = Modifier.size(24.dp),
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (state.isDownloading && state.totalDownloadCount > 0) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Searching & Downloading: ${state.downloadedCount}/${state.totalDownloadCount}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
                             }
 
                             Row(
@@ -716,6 +781,25 @@ fun SpotifyPlaylistScreen(
                     trailingContent = {
                         if (trackIsResolving) {
                             CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
+                        } else {
+                            IconButton(
+                                onClick = {
+                                    Toast.makeText(context, context.getString(R.string.downloading), Toast.LENGTH_SHORT).show()
+                                    viewModel.downloadSingleTrack(context, database, track) { metadata ->
+                                        if (metadata == null) {
+                                            Toast.makeText(context, "Could not find song on YouTube", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                },
+                                onLongClick = {},
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.download),
+                                    contentDescription = stringResource(R.string.action_download),
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     },
                     modifier =

@@ -14,7 +14,6 @@ private const val PlayerArtworkHighResPx = 1080
 fun String.resize(
     width: Int? = null,
     height: Int? = null,
-    ytimgResizePolicy: YtimgResizePolicy = YtimgResizePolicy.AllowAnyAspect,
 ): String {
     if (width == null && height == null) return this
 
@@ -61,15 +60,9 @@ fun String.resize(
     return this
 }
 
-
-enum class YtimgResizePolicy {
-    PreserveOriginal,
-    MatchSourceAspect,
-    AllowAnyAspect,
-}
 /**
  * Returns a high-resolution (1080 px) version of the cover-art URL.
  * Falls back to the original URL unchanged for formats that don't support
  * the Google/YouTube resize parameter scheme.
  */
-fun String.highRes(): String = resize(PlayerArtworkHighResPx, PlayerArtworkHighResPx,)
+fun String.highRes(): String = resize(PlayerArtworkHighResPx, PlayerArtworkHighResPx)

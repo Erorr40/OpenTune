@@ -40,15 +40,16 @@ import com.arturo254.opentune.ui.player.CanvasArtworkPlaybackCache
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import android.content.Intent
-import com.arturo254.opentune.canvas.providers.GlobalLogTree
 import java.io.PrintWriter
 import java.io.StringWriter
 import kotlin.system.exitProcess
@@ -88,7 +89,7 @@ class App : Application(), SingletonImageLoader.Factory {
         PreferenceStore.start(this)
         Timber.plant(Timber.DebugTree())
         try {
-            Timber.plant(GlobalLogTree())
+            Timber.plant(com.arturo254.opentune.utils.GlobalLogTree())
         } catch (_: Exception) {}
 
         initializeCriticalSync()

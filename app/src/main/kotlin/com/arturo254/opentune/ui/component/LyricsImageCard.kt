@@ -8,7 +8,6 @@ package com.arturo254.opentune.ui.component
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
@@ -23,7 +22,6 @@ import com.arturo254.opentune.models.MediaMetadata
 // Utilidad compartida — package-internal, accesible desde LyricsCardLayouts.
 // Calcula el tamaño de fuente óptimo mediante búsqueda binaria para que
 // el texto quepa dentro de maxWidth × maxHeight sin desbordarse.
-// Sin cambios respecto al original: es agnóstica al estilo/proporción.
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -41,16 +39,16 @@ fun rememberAdjustedFontSize(
 
     var calculatedFontSize by remember(text, maxWidth, maxHeight, style, density) {
         val initialSize = when {
-            text.length < 50 -> initialFontSize
+            text.length < 50  -> initialFontSize
             text.length < 100 -> (initialFontSize.value * 0.8f).sp
             text.length < 200 -> (initialFontSize.value * 0.6f).sp
-            else -> (initialFontSize.value * 0.5f).sp
+            else              -> (initialFontSize.value * 0.5f).sp
         }
         mutableStateOf(initialSize)
     }
 
     LaunchedEffect(key1 = text, key2 = maxWidth, key3 = maxHeight) {
-        val targetWidthPx = with(density) { maxWidth.toPx() * 0.92f }
+        val targetWidthPx  = with(density) { maxWidth.toPx()  * 0.92f }
         val targetHeightPx = with(density) { maxHeight.toPx() * 0.92f }
 
         if (text.isBlank()) {
@@ -63,7 +61,7 @@ fun rememberAdjustedFontSize(
             text.length < 20 -> {
                 val largerSize = (initialFontSize.value * 1.1f).sp
                 val result = measurer.measure(
-                    text = AnnotatedString(text),
+                    text  = AnnotatedString(text),
                     style = style.copy(fontSize = largerSize),
                 )
                 if (result.size.width <= targetWidthPx && result.size.height <= targetHeightPx) {
@@ -74,7 +72,7 @@ fun rememberAdjustedFontSize(
             text.length < 30 -> {
                 val largerSize = (initialFontSize.value * 0.9f).sp
                 val result = measurer.measure(
-                    text = AnnotatedString(text),
+                    text  = AnnotatedString(text),
                     style = style.copy(fontSize = largerSize),
                 )
                 if (result.size.width <= targetWidthPx && result.size.height <= targetHeightPx) {
@@ -85,17 +83,17 @@ fun rememberAdjustedFontSize(
         }
 
         // Búsqueda binaria
-        var minSize = minFontSize.value
-        var maxSize = initialFontSize.value
-        var bestFit = minSize
+        var minSize  = minFontSize.value
+        var maxSize  = initialFontSize.value
+        var bestFit  = minSize
         var iterations = 0
 
         while (minSize <= maxSize && iterations < 20) {
             iterations++
-            val midSize = (minSize + maxSize) / 2
+            val midSize   = (minSize + maxSize) / 2
             val midSizeSp = midSize.sp
-            val result = measurer.measure(
-                text = AnnotatedString(text),
+            val result    = measurer.measure(
+                text  = AnnotatedString(text),
                 style = style.copy(fontSize = midSizeSp),
             )
             if (result.size.width <= targetWidthPx && result.size.height <= targetHeightPx) {
@@ -113,12 +111,12 @@ fun rememberAdjustedFontSize(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LyricsImageCard — punto de entrada simple para callers que no necesitan
-// el panel de personalización completo (LyricsShareCarouselSheet).
+// LyricsImageCard — thin wrapper (backward-compatible)
 //
-// Internamente delega a LyricsCardByLayout con un LyricsCardConfig derivado.
-// Para elegir estilo / proporción / accent explícitamente, usa
-// LyricsCardByLayout(config = ...) directamente.
+// Todos los callers existentes siguen funcionando sin cambios.
+// Internamente delega a GlassCardLayout con un LyricsCardConfig derivado.
+// Para usar el nuevo sistema con múltiples layouts, usa LyricsShareCarouselSheet
+// o LyricsCardByLayout directamente.
 // ─────────────────────────────────────────────────────────────────────────────
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -126,19 +124,23 @@ fun rememberAdjustedFontSize(
 fun LyricsImageCard(
     lyricText: String,
     mediaMetadata: MediaMetadata,
-    accent: LyricsAccent = LyricsAccents.Indigo,
-    style: LyricsCardStyle = LyricsCardStyle.Tonal,
-    aspectRatio: LyricsAspectRatio = LyricsAspectRatio.Square,
-    modifier: Modifier = Modifier,
+    glassStyle: LyricsGlassStyle = LyricsGlassStyle.FrostedDark,
+    darkBackground: Boolean = true,       // mantenido por compatibilidad; actualmente no usado por GlassCardLayout
+    backgroundColor: Color? = null,       // mantenido por compatibilidad
+    textColor: Color? = null,
+    secondaryTextColor: Color? = null,
 ) {
-    LyricsCardByLayout(
-        lyricText = lyricText,
+    // Si se proveen overrides de color, se aplican sobre una copia del estilo
+    val effectiveStyle = remember(glassStyle, textColor, secondaryTextColor) {
+        glassStyle.copy(
+            textColor          = textColor          ?: glassStyle.textColor,
+            secondaryTextColor = secondaryTextColor ?: glassStyle.secondaryTextColor,
+        )
+    }
+
+    GlassCardLayout(
+        lyricText     = lyricText,
         mediaMetadata = mediaMetadata,
-        config = LyricsCardConfig(
-            style = style,
-            accent = accent,
-            aspectRatio = aspectRatio,
-        ),
-        modifier = modifier,
+        config        = LyricsCardConfig(glassStyle = effectiveStyle),
     )
 }

@@ -4,9 +4,10 @@
  * Licensed Under GPL-3.0 | see git history for contributors
  */
 
+
+
 package com.arturo254.opentune.ui.screens.settings
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.text.format.DateFormat
 import android.util.Log
@@ -43,7 +44,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -95,14 +95,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import com.arturo254.opentune.LocalPlayerConnection
 import com.arturo254.opentune.R
-import com.arturo254.opentune.canvas.CanvasCacheManager
-import com.arturo254.opentune.canvas.providers.CustomCanvasProvider
 import com.arturo254.opentune.ui.component.IconButton
 import com.arturo254.opentune.ui.component.PreferenceGroupTitle
 import com.arturo254.opentune.ui.component.SwitchPreference
 import com.arturo254.opentune.ui.utils.backToMain
-import com.arturo254.opentune.canvas.providers.GlobalLog
-import com.arturo254.opentune.canvas.providers.LogEntry
+import com.arturo254.opentune.utils.GlobalLog
+import com.arturo254.opentune.utils.LogEntry
 import com.arturo254.opentune.utils.makeTimeString
 import com.arturo254.opentune.utils.rememberPreference
 import kotlin.math.roundToInt
@@ -124,11 +122,6 @@ fun DebugSettings(
 
     val (showCodecOnPlayer, onShowCodecOnPlayerChange) = rememberPreference(
         key = booleanPreferencesKey("show_codec_on_player"),
-        defaultValue = false
-    )
-
-    val (showCanvasDebug, onShowCanvasDebugChange) = rememberPreference(
-        key = booleanPreferencesKey("dev_show_canvas_debug"),
         defaultValue = false
     )
 
@@ -191,14 +184,6 @@ fun DebugSettings(
                 onCheckedChange = onShowCodecOnPlayerChange
             )
 
-            SwitchPreference(
-                title = { Text(stringResource(R.string.show_canvas_debug)) },
-                description = stringResource(R.string.description_show_canvas_debug),
-                icon = { Icon(painterResource(R.drawable.motion_photos_on), null) },
-                checked = showCanvasDebug,
-                onCheckedChange = onShowCanvasDebugChange
-            )
-
             AnimatedVisibility(
                 visible = showDevDebug,
                 enter = expandVertically() + fadeIn(),
@@ -224,20 +209,6 @@ fun DebugSettings(
                 ) {
                     Spacer(modifier = Modifier.height(8.dp))
                     NerdStatsSection(playerConnection = playerConnection)
-                }
-            }
-
-            AnimatedVisibility(
-                visible = showCanvasDebug,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    CanvasDebugSection()
                 }
             }
 
@@ -408,7 +379,6 @@ private fun DebugTimestampItem(
     }
 }
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LogViewerPanel() {
@@ -800,7 +770,7 @@ private fun LogEntryItem(
                         color = MaterialTheme.colorScheme.surfaceContainerHighest
                     ) {
                         Text(
-                            text = entry.tag!!,
+                            text = entry.tag,
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             maxLines = 1,
@@ -984,9 +954,9 @@ private fun NerdStatsSection(playerConnection: com.arturo254.opentune.playback.P
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            CircularProgressIndicator(
+                            LinearProgressIndicator(
                                 modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.dp
+                                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                             )
                             Text(
                                 text = stringResource(R.string.loading_format),
@@ -1235,611 +1205,5 @@ private fun NerdStatChip(
                 overflow = TextOverflow.Ellipsis
             )
         }
-    }
-}
-
-// ===================== CANVAS DEBUG SECTION =====================
-
-@Composable
-private fun CanvasDebugSection() {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    var cacheSize by remember { mutableStateOf(0L) }
-    var cacheCount by remember { mutableStateOf(0) }
-    var isRefreshing by remember { mutableStateOf(false) }
-    var showToast by remember { mutableStateOf<String?>(null) }
-
-    // ✅ DEFINIR LA FUNCIÓN AQUÍ (en el ámbito de la composición)
-    val refreshCacheStats: suspend () -> Unit = remember {
-        suspend {
-            isRefreshing = true
-            try {
-                cacheSize = CanvasCacheManager.getCacheSize()
-                cacheCount = CanvasCacheManager.getCacheCount()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            isRefreshing = false
-        }
-    }
-
-    // Cargar stats del cache al iniciar
-    LaunchedEffect(Unit) {
-        refreshCacheStats()
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(R.drawable.motion_photos_on),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
-                                tint = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
-                        }
-                    }
-                    Column {
-                        Text(
-                            text = "Canvas Artwork",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "Gestión de videos animados",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (CanvasCacheManager.isInitialized())
-                        Color(0xFF43B581).copy(alpha = 0.2f)
-                    else
-                        MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .background(
-                                    color = if (CanvasCacheManager.isInitialized())
-                                        Color(0xFF43B581)
-                                    else
-                                        MaterialTheme.colorScheme.error,
-                                    shape = CircleShape
-                                )
-                        )
-                        Text(
-                            text = if (CanvasCacheManager.isInitialized())
-                                "Activo"
-                            else
-                                "Inactivo",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (CanvasCacheManager.isInitialized())
-                                Color(0xFF43B581)
-                            else
-                                MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-            // Stats de caché
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                CanvasStatItem(
-                    icon = R.drawable.storage,
-                    label = "Caché",
-                    value = formatFileSize(cacheSize),
-                    isLoading = isRefreshing
-                )
-                CanvasStatItem(
-                    icon = R.drawable.motion_photos_on,
-                    label = "Videos",
-                    value = "$cacheCount archivos",
-                    isLoading = isRefreshing
-                )
-                CanvasStatItem(
-                    icon = R.drawable.animation,
-                    label = "Estado",
-                    value = if (CustomCanvasProvider.isCatalogLoaded()) "Catálogo OK" else "Sin catálogo",
-                    isLoading = false
-                )
-            }
-
-            // Botones de acción
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilledTonalButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            isRefreshing = true
-                            try {
-                                CustomCanvasProvider.forceRefreshCatalog()
-                                refreshCacheStats()  // ✅ AHORA ES ACCESIBLE
-                                showToast = "Catálogo recargado"
-                            } catch (e: Exception) {
-                                showToast = "Error: ${e.message}"
-                            }
-                            isRefreshing = false
-                        }
-                    },
-                    enabled = !isRefreshing,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.replay),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Recargar")
-                }
-
-                FilledTonalButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            isRefreshing = true
-                            try {
-                                CanvasCacheManager.clearCache()
-                                refreshCacheStats()  // ✅ AHORA ES ACCESIBLE
-                                showToast = "Caché limpiada"
-                            } catch (e: Exception) {
-                                showToast = "Error: ${e.message}"
-                            }
-                            isRefreshing = false
-                        }
-                    },
-                    enabled = cacheCount > 0 && !isRefreshing,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.clear_all),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Limpiar")
-                }
-            }
-
-            // Toast simple (se mostrará por 2 segundos)
-            showToast?.let { message ->
-                LaunchedEffect(message) {
-                    delay(2000)
-                    showToast = null
-                }
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = message,
-                        modifier = Modifier.padding(12.dp),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-        }
-    }
-
-    // Visor de logs de Canvas
-    CanvasLogViewer()
-}
-
-@Composable
-private fun CanvasStatItem(
-    icon: Int,
-    label: String,
-    value: String,
-    isLoading: Boolean
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.tertiaryContainer,
-            modifier = Modifier.size(36.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(icon),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onTertiaryContainer
-                    )
-                }
-            }
-        }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CanvasLogViewer() {
-    val allLogs by GlobalLog.logs.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val clipboard = LocalClipboardManager.current
-
-    var filterMode by remember { mutableStateOf(0) }
-    var selectedLevels by remember {
-        mutableStateOf(setOf(Log.INFO, Log.WARN, Log.ERROR))
-    }
-    var levelsMenuExpanded by remember { mutableStateOf(false) }
-
-    // Filtrar logs de Canvas
-    val filtered = remember(allLogs, filterMode, selectedLevels) {
-        allLogs.filter { entry ->
-            val isCanvasLog = entry.tag?.contains("Canvas", true) == true ||
-                    entry.tag?.contains("CustomCanvas", true) == true ||
-                    entry.message.contains("🎵") ||
-                    entry.message.contains("CanvasCache") ||
-                    entry.message.contains("CustomCanvas") ||
-                    entry.message.contains("canvas", true)
-
-            val tagMatch = when (filterMode) {
-                0 -> isCanvasLog  // Solo Canvas
-                1 -> true // Todos
-                else -> true
-            }
-            val levelMatch = selectedLevels.contains(entry.level)
-            tagMatch && levelMatch
-        }
-    }
-
-    val listState = rememberLazyListState()
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Header con contador
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.manage_search),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary
-                    )
-                    Text(
-                        text = "Logs de Canvas",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.tertiaryContainer
-                    ) {
-                        Text(
-                            text = "${filtered.size}",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                        )
-                    }
-                }
-
-                Box {
-                    FilledTonalIconButton(
-                        onClick = { levelsMenuExpanded = true }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.filter_alt),
-                            contentDescription = "Filtrar niveles"
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = levelsMenuExpanded,
-                        onDismissRequest = { levelsMenuExpanded = false }
-                    ) {
-                        LogLevelMenuItem(
-                            label = "Verbose",
-                            level = Log.VERBOSE,
-                            selectedLevels = selectedLevels,
-                            onToggle = { level ->
-                                selectedLevels = if (selectedLevels.contains(level))
-                                    selectedLevels - level
-                                else
-                                    selectedLevels + level
-                            }
-                        )
-                        LogLevelMenuItem(
-                            label = "Debug",
-                            level = Log.DEBUG,
-                            selectedLevels = selectedLevels,
-                            onToggle = { level ->
-                                selectedLevels = if (selectedLevels.contains(level))
-                                    selectedLevels - level
-                                else
-                                    selectedLevels + level
-                            }
-                        )
-                        LogLevelMenuItem(
-                            label = "Info",
-                            level = Log.INFO,
-                            selectedLevels = selectedLevels,
-                            onToggle = { level ->
-                                selectedLevels = if (selectedLevels.contains(level))
-                                    selectedLevels - level
-                                else
-                                    selectedLevels + level
-                            }
-                        )
-                        LogLevelMenuItem(
-                            label = "Warning",
-                            level = Log.WARN,
-                            selectedLevels = selectedLevels,
-                            onToggle = { level ->
-                                selectedLevels = if (selectedLevels.contains(level))
-                                    selectedLevels - level
-                                else
-                                    selectedLevels + level
-                            }
-                        )
-                        LogLevelMenuItem(
-                            label = "Error",
-                            level = Log.ERROR,
-                            selectedLevels = selectedLevels,
-                            onToggle = { level ->
-                                selectedLevels = if (selectedLevels.contains(level))
-                                    selectedLevels - level
-                                else
-                                    selectedLevels + level
-                            }
-                        )
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                        DropdownMenuItem(
-                            onClick = {
-                                selectedLevels = setOf(Log.INFO, Log.WARN, Log.ERROR)
-                                levelsMenuExpanded = false
-                            },
-                            text = {
-                                Text(
-                                    text = "Restaurar predeterminados",
-                                    color = MaterialTheme.colorScheme.tertiary
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.restore),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-
-            // Filtros
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                SegmentedButton(
-                    selected = filterMode == 0,
-                    onClick = { filterMode = 0 },
-                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                    icon = { }
-                ) {
-                    Text("Solo Canvas")
-                }
-                SegmentedButton(
-                    selected = filterMode == 1,
-                    onClick = { filterMode = 1 },
-                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                    icon = { }
-                ) {
-                    Text("Todos los logs")
-                }
-            }
-
-            // Lista de logs
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 150.dp, max = 300.dp)
-            ) {
-                if (filtered.isEmpty()) {
-                    EmptyCanvasLogPlaceholder()
-                } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .nestedScroll(rememberNestedScrollInteropConnection())
-                            .padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        itemsIndexed(filtered) { _, entry ->
-                            LogEntryItem(
-                                entry = entry,
-                                clipboard = clipboard,
-                                coroutineScope = coroutineScope
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Botones de acción
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilledTonalButton(
-                    onClick = { GlobalLog.clear() },
-                    enabled = filtered.isNotEmpty(),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.clear_all),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Limpiar")
-                }
-
-                FilledTonalButton(
-                    onClick = {
-                        if (filtered.isEmpty()) return@FilledTonalButton
-                        val sb = StringBuilder()
-                        filtered.forEach { sb.appendLine(GlobalLog.format(it)) }
-                        val send = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, sb.toString())
-                        }
-                        context.startActivity(Intent.createChooser(send, "Compartir logs de Canvas"))
-                    },
-                    enabled = filtered.isNotEmpty(),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.share),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Compartir")
-                }
-            }
-        }
-    }
-
-    // Auto-scroll a nuevos logs
-    LaunchedEffect(filtered.size) {
-        if (filtered.isNotEmpty()) listState.animateScrollToItem(filtered.size - 1)
-    }
-}
-
-@Composable
-private fun EmptyCanvasLogPlaceholder() {
-    var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { visible = true }
-
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn(animationSpec = tween(durationMillis = 400))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(R.drawable.anime_blank),
-                contentDescription = null,
-                modifier = Modifier.size(80.dp)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Sin logs de Canvas",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "Reproduce una canción con canvas para ver logs",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-private fun formatFileSize(bytes: Long): String {
-    return when {
-        bytes < 1024 -> "$bytes B"
-        bytes < 1024 * 1024 -> "${bytes / 1024} KB"
-        bytes < 1024 * 1024 * 1024 -> "${String.format("%.2f", bytes / (1024.0 * 1024.0))} MB"
-        else -> "${String.format("%.2f", bytes / (1024.0 * 1024.0 * 1024.0))} GB"
     }
 }

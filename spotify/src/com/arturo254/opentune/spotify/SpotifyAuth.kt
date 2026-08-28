@@ -217,7 +217,7 @@ object SpotifyAuth {
         urlString: String,
         extraHeaders: Map<String, String>,
     ): String {
-        val connection = URL(urlString).openConnection() as HttpURLConnection
+        val connection = java.net.URI.create(urlString).toURL().openConnection() as HttpURLConnection
         try {
             connection.requestMethod = "GET"
             connection.instanceFollowRedirects = true

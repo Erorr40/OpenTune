@@ -39,41 +39,51 @@ object SpotifyPlaybackResolver {
                 cache[track.id]?.let { return@withContext it }
             }
 
-            val searchResult =
+            var candidates =
                 YouTube
                     .search(
                         query = SpotifyMapper.buildSearchQuery(track),
                         filter = YouTube.SearchFilter.FILTER_SONG,
-                    ).getOrNull() ?: return@withContext null
+                    ).getOrNull()
+                    ?.items
+                    ?.filterIsInstance<SongItem>()
+                    ?.distinctBy { it.id }
+                    .orEmpty()
 
-            val candidates =
-                searchResult.items
-                    .filterIsInstance<SongItem>()
-                    .distinctBy { it.id }
+            if (candidates.isEmpty()) {
+                candidates =
+                    YouTube
+                        .searchSummary(
+                            query = SpotifyMapper.buildSearchQuery(track),
+                        ).getOrNull()
+                        ?.summaries
+                        ?.flatMap { it.items }
+                        ?.filterIsInstance<SongItem>()
+                        ?.distinctBy { it.id }
+                        .orEmpty()
+            }
+
             if (candidates.isEmpty()) return@withContext null
 
             val precomputed =
-                mutex.withLock {
-                    SpotifyMapper.precompute(
-                        title = track.name,
-                        artist = track.artists.joinToString(" ") { it.name },
-                        durationMs = track.durationMs,
-                    )
-                }
+                SpotifyMapper.precompute(
+                    title = track.name,
+                    artist = track.artists.joinToString(" ") { it.name },
+                    durationMs = track.durationMs,
+                )
 
             val (best, score) =
-                mutex.withLock {
-                    candidates
-                        .map { candidate ->
-                            candidate to
-                                    SpotifyMapper.matchScorePrecomputed(
-                                        precomputed = precomputed,
-                                        candidateTitle = candidate.title,
-                                        candidateArtist = candidate.artists.joinToString(" ") { it.name },
-                                        candidateDurationSec = candidate.duration,
-                                    )
-                        }.maxByOrNull { it.second }
-                } ?: return@withContext null
+                candidates
+                    .map { candidate ->
+                        candidate to
+                                SpotifyMapper.matchScorePrecomputed(
+                                    precomputed = precomputed,
+                                    candidateTitle = candidate.title,
+                                    candidateArtist = candidate.artists.joinToString(" ") { it.name },
+                                    candidateDurationSec = candidate.duration,
+                                )
+                    }.maxByOrNull { it.second } ?: return@withContext null
+
             if (score < MIN_MATCH_THRESHOLD) return@withContext null
 
             val bestMetadata = best.toMediaMetadata()

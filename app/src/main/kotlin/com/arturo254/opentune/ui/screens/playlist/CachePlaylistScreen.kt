@@ -4,6 +4,8 @@
  * Licensed Under GPL-3.0 | see git history for contributors
  */
 
+
+
 package com.arturo254.opentune.ui.screens.playlist
 
 import androidx.activity.compose.BackHandler
@@ -20,13 +22,11 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,11 +35,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -70,7 +69,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -110,7 +108,6 @@ import com.arturo254.opentune.ui.component.IconButton
 import com.arturo254.opentune.ui.component.LocalMenuState
 import com.arturo254.opentune.ui.component.SongListItem
 import com.arturo254.opentune.ui.component.SortHeader
-import com.arturo254.opentune.ui.component.MediaHero
 import com.arturo254.opentune.ui.menu.SelectionSongMenu
 import com.arturo254.opentune.ui.menu.SongMenu
 import com.arturo254.opentune.ui.theme.PlayerColorExtractor
@@ -405,52 +402,84 @@ fun CachePlaylistScreen(
                 }
             } else {
                 if (filteredSongs.isNotEmpty() && !isSearching) {
-
+                    // Hero Header Item
                     item(key = "header") {
-                        MediaHero(
-                            title = stringResource(R.string.cached_playlist),
-                            thumbnailUrl = filteredSongs.firstOrNull()?.item?.thumbnailUrl,
-                            fallbackIcon = R.drawable.music_note,
-                            systemBarsTopPadding = systemBarsTopPadding,
-                            isAdded = false,
-                            addContentDescription = R.string.add_to_library,
-                            removeContentDescription = R.string.remove_from_library,
-                            onShuffle = null,
-                            onPlay = null,
-                            onToggleAdd = null,
-                            subtitle = null,
-                            metadata = pluralStringResource(
-                                R.plurals.n_song,
-                                filteredSongs.size,
-                                filteredSongs.size
-                            ),
-                            description = null,
-                            customActions = { contentColor ->
-                                // Botón Shuffle - AHORA VISIBLE
-                                FilledTonalIconButton(
-                                    onClick = {
-                                        playerConnection.playQueue(
-                                            ListQueue(
-                                                title = "Cache Songs",
-                                                items = filteredSongs.shuffled().map { it.item.toMediaItem() },
-                                            )
-                                        )
-                                    },
-                                    shape = CircleShape,
-                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
-                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    ),
-                                    modifier = Modifier.size(52.dp)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = systemBarsTopPadding + 48.dp)
+                                .padding(horizontal = 24.dp)
+                                .padding(bottom = 16.dp)
+                        ) {
+                            // Large centered artwork with shadow
+                            Box(
+                                modifier = Modifier
+                                    .size(240.dp)
+                                    .shadow(
+                                        elevation = 24.dp,
+                                        shape = RoundedCornerShape(16.dp),
+                                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                    )
+                            ) {
+                                AsyncImage(
+                                    model = filteredSongs.firstOrNull()?.item?.thumbnailUrl,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(16.dp))
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // Playlist title
+                            Text(
+                                text = stringResource(R.string.cached_playlist),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Metadata chips row
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Song count chip
+                                Surface(
+                                    shape = RoundedCornerShape(16.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
                                 ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.shuffle),
-                                        contentDescription = stringResource(R.string.shuffle),
-                                        modifier = Modifier.size(22.dp),
+                                    Text(
+                                        text = pluralStringResource(
+                                            R.plurals.n_song,
+                                            filteredSongs.size,
+                                            filteredSongs.size
+                                        ),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                     )
                                 }
+                            }
 
-                                // Botón Play - AHORA VISIBLE
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            // Action buttons row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    ButtonGroupDefaults.ConnectedSpaceBetween,
+                                    Alignment.CenterHorizontally
+                                ),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Button(
                                     onClick = {
                                         playerConnection.playQueue(
@@ -460,48 +489,73 @@ fun CachePlaylistScreen(
                                             )
                                         )
                                     },
-                                    shape = RoundedCornerShape(percent = 50),
+                                    shape = ButtonGroupDefaults.connectedLeadingButtonShapes().shape,
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
                                     ),
-                                    modifier = Modifier.height(52.dp)
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp)
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.play),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = stringResource(R.string.play),
-                                        fontWeight = FontWeight.Bold,
+                                        contentDescription = stringResource(R.string.play),
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
-
-                                // Botón Queue - AHORA VISIBLE
-                                FilledTonalIconButton(
+                                Button(
+                                    onClick = {
+                                        playerConnection.playQueue(
+                                            ListQueue(
+                                                title = "Cache Songs",
+                                                items = filteredSongs.shuffled().map { it.item.toMediaItem() },
+                                            )
+                                        )
+                                    },
+                                    shape = ButtonGroupDefaults.connectedMiddleButtonShapes().shape,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.shuffle),
+                                        contentDescription = stringResource(R.string.shuffle),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                Surface(
                                     onClick = {
                                         playerConnection.addToQueue(
                                             items = filteredSongs.map { it.item.toMediaItem() },
                                         )
                                     },
-                                    shape = CircleShape,
-                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
-                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    ),
-                                    modifier = Modifier.size(52.dp)
+                                    shape = ButtonGroupDefaults.connectedTrailingButtonShapes().shape,
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp)
                                 ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.queue_music),
-                                        contentDescription = stringResource(R.string.add_to_queue),
-                                        modifier = Modifier.size(22.dp),
-                                    )
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.queue_music),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
                                 }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
                     }
                 }
 

@@ -15,6 +15,12 @@ import timber.log.Timber
 import java.io.ByteArrayOutputStream
 
 object PlayerWidgetUpdater {
+    @Volatile private var lastArtworkBitmap: Bitmap? = null
+    @Volatile private var lastArtworkBytes: ByteArray? = null
+
+    @Volatile private var lastBlurBitmap: Bitmap? = null
+    @Volatile private var lastBlurBytes: ByteArray? = null
+
     suspend fun update(
         context: Context,
         state: PlayerWidgetState,
@@ -22,7 +28,31 @@ object PlayerWidgetUpdater {
         runCatching {
             val manager = GlanceAppWidgetManager(context)
             val glanceIds = manager.getGlanceIds(OpenTunePlayerWidget::class.java)
+            if (glanceIds.isEmpty()) return
 
+            val artworkBytes = state.artworkBitmap?.let { bmp ->
+                if (bmp == lastArtworkBitmap && lastArtworkBytes != null) {
+                    lastArtworkBytes
+                } else {
+                    val bytes = bitmapToByteArray(bmp)
+                    lastArtworkBitmap = bmp
+                    lastArtworkBytes = bytes
+                    bytes
+                }
+            }
+
+            val blurBytes = state.backgroundBlurBitmap?.let { bmp ->
+                if (bmp == lastBlurBitmap && lastBlurBytes != null) {
+                    lastBlurBytes
+                } else {
+                    val bytes = bitmapToByteArray(bmp)
+                    lastBlurBitmap = bmp
+                    lastBlurBytes = bytes
+                    bytes
+                }
+            }
+
+            val widget = OpenTunePlayerWidget()
             glanceIds.forEach { glanceId ->
                 updateAppWidgetState(
                     context,
@@ -41,13 +71,12 @@ object PlayerWidgetUpdater {
                         this[PlayerWidgetStateKeys.DurationMs] = state.durationMs
                         this[PlayerWidgetStateKeys.PositionMs] = state.positionMs
 
-                        state.artworkBitmap?.let { bitmap ->
-                            this[PlayerWidgetStateKeys.ArtworkBytes] = bitmapToByteArray(bitmap)
+                        artworkBytes?.let {
+                            this[PlayerWidgetStateKeys.ArtworkBytes] = it
                         } ?: remove(PlayerWidgetStateKeys.ArtworkBytes)
 
-                        state.backgroundBlurBitmap?.let { bitmap ->
-                            this[PlayerWidgetStateKeys.BackgroundBlurBytes] =
-                                bitmapToByteArray(bitmap)
+                        blurBytes?.let {
+                            this[PlayerWidgetStateKeys.BackgroundBlurBytes] = it
                         } ?: remove(PlayerWidgetStateKeys.BackgroundBlurBytes)
 
                         state.dominantColor?.let {
@@ -55,7 +84,7 @@ object PlayerWidgetUpdater {
                         } ?: remove(PlayerWidgetStateKeys.DominantColor)
                     }
                 }
-                OpenTunePlayerWidget().update(context, glanceId)
+                widget.update(context, glanceId)
             }
         }.onFailure {
             Timber.tag("PlayerWidgetUpdater").w(it, "Unable to update OpenTune player widget")

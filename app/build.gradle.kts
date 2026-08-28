@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 import java.util.regex.Pattern
 
@@ -34,7 +35,7 @@ fun fetchGitCommitHash(): String {
     // Fallback: Obtener del repositorio remoto de GitHub sin dependencias externas
     return try {
         println("Fetching latest commit from GitHub API...")
-        val url = URL("https://api.github.com/repos/Arturo254/OpenTune/commits/master")
+        val url = URI.create("https://api.github.com/repos/Arturo254/OpenTune/commits/master").toURL()
         val connection = url.openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.setRequestProperty("Accept", "application/vnd.github.v3+json")
@@ -84,8 +85,8 @@ android {
         applicationId = "com.Arturo254.opentune"
         minSdk = 26
         targetSdk = 36
-        versionCode = 133
-        versionName = "3.0.6"
+        versionCode = 134
+        versionName = "3.0.7"
 //        versionName = "3.0.2-$gitCommit"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -144,10 +145,19 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("keystore/release.keystore")
-            storePassword = System.getenv("STORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
+            val ksFile = file("keystore/release.keystore")
+            if (ksFile.exists() && System.getenv("STORE_PASSWORD") != null) {
+                storeFile = ksFile
+                storePassword = System.getenv("STORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            } else {
+                val debugConfig = getByName("debug")
+                storeFile = debugConfig.storeFile
+                storePassword = debugConfig.storePassword
+                keyAlias = debugConfig.keyAlias
+                keyPassword = debugConfig.keyPassword
+            }
         }
     }
 
@@ -155,14 +165,13 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
         debug {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = ".$gitCommit-debug"
             isDebuggable = true
         }
     }

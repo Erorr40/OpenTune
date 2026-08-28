@@ -10,9 +10,9 @@ package com.arturo254.opentune.utils
 
 import android.content.Context
 import com.arturo254.opentune.R
-import com.arturo254.opentune.canvas.providers.GlobalLog
 import com.arturo254.opentune.db.entities.Song
 import com.arturo254.opentune.constants.*
+import com.arturo254.opentune.utils.dataStore
 import com.my.kizzy.rpc.KizzyRPC
 import com.my.kizzy.rpc.RpcImage
 import timber.log.Timber
@@ -419,7 +419,7 @@ class DiscordRPC(
         } catch (ex: Exception) {
             val msg = ex.message ?: ex.toString()
             Timber.tag("DiscordRPC").e("refreshActivity updateSong failed: %s", msg)
-            GlobalLog.append(
+            com.arturo254.opentune.utils.GlobalLog.append(
                 android.util.Log.ERROR,
                 "DiscordRPC",
                 "refreshActivity updateSong failed: $msg\n${ex.stackTraceToString()}"
