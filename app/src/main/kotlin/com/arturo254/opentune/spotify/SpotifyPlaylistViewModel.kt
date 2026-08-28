@@ -143,7 +143,9 @@ constructor(
                 _uiState.update {
                     it.copy(downloadedCount = currentProcessed)
                 }
-                onProgress?.invoke(currentProcessed, currentTracks.size)
+                withContext(Dispatchers.Main) {
+                    onProgress?.invoke(currentProcessed, currentTracks.size)
+                }
             }
 
             _uiState.update {
@@ -152,7 +154,9 @@ constructor(
                     downloadedCount = successCount,
                 )
             }
-            onComplete?.invoke(successCount, failedCount)
+            withContext(Dispatchers.Main) {
+                onComplete?.invoke(successCount, failedCount)
+            }
         }
     }
 
@@ -163,16 +167,16 @@ constructor(
         onComplete: ((MediaMetadata?) -> Unit)? = null,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val metadata = SpotifyPlaybackResolver.resolveToMetadata(track)
-                if (metadata != null) {
+            val metadata = runCatching {
+                val resolved = SpotifyPlaybackResolver.resolveToMetadata(track)
+                if (resolved != null) {
                     database.transaction {
-                        insert(metadata)
+                        insert(resolved)
                     }
                     val downloadRequest =
-                        DownloadRequest.Builder(metadata.id, metadata.id.toUri())
-                            .setCustomCacheKey(metadata.id)
-                            .setData(metadata.title.toByteArray())
+                        DownloadRequest.Builder(resolved.id, resolved.id.toUri())
+                            .setCustomCacheKey(resolved.id)
+                            .setData(resolved.title.toByteArray())
                             .build()
 
                     DownloadService.sendAddDownload(
@@ -182,10 +186,11 @@ constructor(
                         false,
                     )
                 }
+                resolved
+            }.getOrNull()
+
+            withContext(Dispatchers.Main) {
                 onComplete?.invoke(metadata)
-            } catch (e: Exception) {
-                reportException(e)
-                onComplete?.invoke(null)
             }
         }
     }
