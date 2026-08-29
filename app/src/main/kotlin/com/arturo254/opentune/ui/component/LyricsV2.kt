@@ -206,13 +206,12 @@ fun LyricsV2(
     var shareDialogData by remember {
         mutableStateOf<Triple<String, String, String>?>(null)
     }
-
-    // ── NUEVO: Estado para el carrusel de estilos ──
-    var selectedConfig by remember { mutableStateOf(LyricsCardConfig()) }
     var showColorPickerDialog by remember { mutableStateOf(false) }
-    var paletteAccent by remember { mutableStateOf<LyricsAccent?>(null) }
-    var showShareDialog by remember { mutableStateOf(false) }
+    var selectedGlassStyle by remember { mutableStateOf(LyricsGlassStyle.FrostedDark) }
+    var paletteGlassStyle by remember { mutableStateOf<LyricsGlassStyle?>(null) }
 
+
+    var showShareDialog by remember { mutableStateOf(false) }
     // ── Lyrics data ──
     val currentLyrics by playerConnection.currentLyrics.collectAsState(initial = null)
     val lyrics = currentLyrics?.lyrics
@@ -754,6 +753,7 @@ fun LyricsV2(
         }
 
 
+        // ── Carrusel de estilos para compartir letras ──────────────────────────────
         if (showShareCarouselSheet) {
             shareDialogData?.let { (lyricText, title, artist) ->
 
@@ -762,7 +762,7 @@ fun LyricsV2(
                     LyricsShareCarouselSheet(
                         lyricText = lyricText,
                         mediaMetadata = metadata,
-                        initialConfig = selectedConfig,
+                        initialConfig = LyricsCardConfig(),
                         onDismiss = {
                             showShareCarouselSheet = false
                             shareDialogData = null
@@ -774,15 +774,17 @@ fun LyricsV2(
 
                             scope.launch {
                                 runCatching {
-                                    val bitmap = ComposeToImage.createLyricsImage(
-                                        context = context,
-                                        coverArtUrl = metadata.thumbnailUrl,
-                                        songTitle = title,
-                                        artistName = artist,
-                                        lyrics = lyricText,
-                                        config = config,
-                                        outputSize = 1080,
-                                    )
+
+                                    val bitmap =
+                                        ComposeToImage.createLyricsImageWithConfig(
+                                            context = context,
+                                            coverArtUrl = metadata.thumbnailUrl,
+                                            songTitle = title,
+                                            artistName = artist,
+                                            lyrics = lyricText,
+                                            config = config,
+                                            outputSize = 1080,
+                                        )
 
                                     val uri = ComposeToImage.saveBitmapAsFile(
                                         context = context,
@@ -803,18 +805,20 @@ fun LyricsV2(
                             }
                         },
                         onSave = { config ->
+
                             scope.launch {
                                 runCatching {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                        val bitmap = ComposeToImage.createLyricsImage(
-                                            context = context,
-                                            coverArtUrl = metadata.thumbnailUrl,
-                                            songTitle = title,
-                                            artistName = artist,
-                                            lyrics = lyricText,
-                                            config = config,
-                                            outputSize = 1080,
-                                        )
+                                        val bitmap =
+                                            ComposeToImage.createLyricsImageWithConfig(
+                                                context = context,
+                                                coverArtUrl = metadata.thumbnailUrl,
+                                                songTitle = title,
+                                                artistName = artist,
+                                                lyrics = lyricText,
+                                                config = config,
+                                                outputSize = 1080,
+                                            )
 
                                         ComposeToImage.saveBitmapAsFile(
                                             context = context,
@@ -851,7 +855,6 @@ fun LyricsV2(
         }
     }
 
-    // ── Diálogo para compartir como texto ──
     if (showShareDialog && shareDialogData != null) {
         val (lyricsText, songTitle, artists) = shareDialogData!!
         BasicAlertDialog(onDismissRequest = { showShareDialog = false }) {
@@ -907,9 +910,8 @@ fun LyricsV2(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                // Reusamos el carrusel para imagen
                                 shareDialogData = Triple(lyricsText, songTitle, artists)
-                                showShareCarouselSheet = true
+                                showColorPickerDialog = true
                                 showShareDialog = false
                             }
                             .padding(vertical = 12.dp),
@@ -949,12 +951,10 @@ fun LyricsV2(
         }
     }
 
-    // ── Diálogo de selector de acento (reemplaza el antiguo color picker) ──
     if (showColorPickerDialog && shareDialogData != null) {
         val (lyricsText, songTitle, artists) = shareDialogData!!
         val coverUrl = mediaMetadata?.thumbnailUrl
 
-        // Cargar acento desde la carátula
         LaunchedEffect(coverUrl) {
             if (coverUrl != null) {
                 withContext(Dispatchers.IO) {
@@ -965,22 +965,18 @@ fun LyricsV2(
                         val bmp = result.image?.toBitmap()
                         if (bmp != null) {
                             val palette = Palette.from(bmp).generate()
-                            paletteAccent = LyricsAccents.fromPalette(palette)
+                            paletteGlassStyle = LyricsGlassStyle.fromPalette(palette)
                         }
                     } catch (_: Exception) {}
                 }
             }
         }
 
-        val availableAccents = remember(paletteAccent) {
-            val base = LyricsAccents.all.toMutableList()
-            paletteAccent?.let {
-                if (it !in base) base.add(0, it)
-            }
+        val availableStyles = remember(paletteGlassStyle) {
+            val base = LyricsGlassStyle.allPresets.toMutableList()
+            paletteGlassStyle?.let { base.add(0, it) }
             base
         }
-
-        var tempConfig by remember { mutableStateOf(LyricsCardConfig()) }
 
         BasicAlertDialog(onDismissRequest = { showColorPickerDialog = false }) {
             Card(
@@ -1000,7 +996,7 @@ fun LyricsV2(
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                 ) {
                     Text(
-                        text = "Elegir acento",
+                        text = stringResource(id = R.string.customize_colors),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = (-0.02).em
@@ -1009,25 +1005,21 @@ fun LyricsV2(
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    // Preview de la tarjeta con la configuración temporal
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(300.dp)
+                            .height(340.dp)
                             .clip(RoundedCornerShape(20.dp))
                     ) {
-                        LyricsCardByLayout(
+                        LyricsImageCard(
                             lyricText = lyricsText,
                             mediaMetadata = mediaMetadata ?: return@Box,
-                            config = tempConfig,
-                            modifier = Modifier.fillMaxSize(),
+                            glassStyle = selectedGlassStyle,
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
-
                     Text(
-                        text = "Acento",
+                        text = stringResource(id = R.string.customize_colors),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1036,16 +1028,14 @@ fun LyricsV2(
                             .fillMaxWidth()
                             .padding(bottom = 10.dp)
                     )
-
-                    // Selector de acentos
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState())
                     ) {
-                        availableAccents.forEach { accent ->
-                            val isSelected = tempConfig.accent == accent
+                        availableStyles.forEach { style ->
+                            val isSelected = selectedGlassStyle == style
                             Box(
                                 modifier = Modifier
                                     .size(width = 72.dp, height = 72.dp)
@@ -1057,128 +1047,36 @@ fun LyricsV2(
                                             Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
                                         }
                                     )
-                                    .clickable { tempConfig = tempConfig.copy(accent = accent) },
+                                    .clickable { selectedGlassStyle = style },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .background(accent.seed.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colors = listOf(
+                                                    style.surfaceTint.copy(alpha = 0.6f),
+                                                    style.overlayColor.copy(alpha = 0.4f),
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
                                 )
                                 Box(
                                     modifier = Modifier
                                         .padding(6.dp)
                                         .fillMaxSize()
-                                        .background(accent.seed, RoundedCornerShape(10.dp))
+                                        .background(style.surfaceTint.copy(alpha = style.surfaceAlpha), RoundedCornerShape(10.dp))
                                         .border(0.5.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(text = "Aa", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                    Text(text = "Aa", color = style.textColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
                     }
-
                     Spacer(modifier = Modifier.height(20.dp))
-
-                    // Selector de estilo
-                    Text(
-                        text = "Estilo",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp)
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                    ) {
-                        LyricsCardStyle.entries.forEach { style ->
-                            val isSelected = tempConfig.style == style
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .border(
-                                        width = if (isSelected) 2.dp else 1.dp,
-                                        color = if (isSelected) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    .background(
-                                        if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                                        else Color.Transparent
-                                    )
-                                    .clickable { tempConfig = tempConfig.copy(style = style) }
-                                    .padding(horizontal = 14.dp, vertical = 10.dp)
-                            ) {
-                                Text(
-                                    text = style.displayName,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                    fontSize = 13.sp
-                                )
-                            }
-                        }
-                    }
-
-                    // Selector de intensidad de vidrio (solo para Glass)
-                    if (tempConfig.style == LyricsCardStyle.Glass) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Intensidad de vidrio",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 10.dp)
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            LyricsGlassIntensity.entries.forEach { intensity ->
-                                val isSelected = tempConfig.glassIntensity == intensity
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .border(
-                                            width = if (isSelected) 2.dp else 1.dp,
-                                            color = if (isSelected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                                            shape = RoundedCornerShape(10.dp)
-                                        )
-                                        .background(
-                                            if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                                            else Color.Transparent
-                                        )
-                                        .clickable { tempConfig = tempConfig.copy(glassIntensity = intensity) }
-                                        .padding(vertical = 10.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = intensity.displayName,
-                                        color = if (isSelected) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                        fontSize = 12.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
                     Button(
                         onClick = {
                             showColorPickerDialog = false
@@ -1192,8 +1090,9 @@ fun LyricsV2(
                                         songTitle = songTitle,
                                         artistName = artists,
                                         lyrics = lyricsText,
-                                        config = tempConfig,
-                                        outputSize = exportSize,
+                                        width = exportSize,
+                                        height = exportSize,
+                                        glassStyle = selectedGlassStyle,
                                     )
                                     val timestamp = System.currentTimeMillis()
                                     val filename = "lyrics_$timestamp"
@@ -1369,7 +1268,7 @@ private fun AnimatedWordV2(
     val wordScale = 1f + (0.015f * sinProgress)
 
     // Float is only applied when the word is actively sung, making it pop from the line.
-    // We use animateFloatAsState so that when it finishes (and drops to 0f),
+    // We use animateFloatAsState so that when it finishes (and drops to 0f), 
     // it smoothly decays back into place rather than a harsh mathematical snap.
     val targetFloat = if (isWordActive) -4f * sinProgress else 0f
     val floatOffset by androidx.compose.animation.core.animateFloatAsState(
@@ -1394,7 +1293,7 @@ private fun AnimatedWordV2(
     Box(
         modifier = Modifier
             .graphicsLayer {
-                translationY = floatOffset
+                translationY = floatOffset * density
                 scaleX = wordScale
                 scaleY = wordScale
             }

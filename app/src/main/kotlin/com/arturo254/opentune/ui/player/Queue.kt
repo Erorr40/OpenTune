@@ -666,36 +666,23 @@ fun Queue(
                                             )
                                 ) {
                                     processedDismiss = true
-
-                                    val removedMediaItem = currentItem.mediaItem
-                                    val removedIndex = currentItem.firstPeriodIndex
-                                    val songId = removedMediaItem.metadata?.id ?: removedMediaItem.mediaId
-
-                                    if (songId != null) {
-                                        playerConnection.removeSongFromQueue(songId)
-                                    } else {
-                                        // Fallback
-                                        playerConnection.player.removeMediaItem(removedIndex)
-                                    }
-
+                                    playerConnection.player.removeMediaItem(currentItem.firstPeriodIndex)
                                     dismissJob?.cancel()
                                     dismissJob = coroutineScope.launch {
                                         val snackbarResult = snackbarHostState.showSnackbar(
                                             message = context.getString(
                                                 R.string.removed_song_from_playlist,
-                                                removedMediaItem.metadata?.title,
+                                                currentItem.mediaItem.metadata?.title,
                                             ),
                                             actionLabel = context.getString(R.string.undo),
                                             duration = SnackbarDuration.Short,
                                         )
                                         if (snackbarResult == SnackbarResult.ActionPerformed) {
-                                            playerConnection.player.addMediaItem(removedMediaItem)
+                                            playerConnection.player.addMediaItem(currentItem.mediaItem)
                                             playerConnection.player.moveMediaItem(
-                                                playerConnection.player.mediaItemCount - 1,
-                                                removedIndex,
+                                                mutableQueueWindows.size,
+                                                currentItem.firstPeriodIndex,
                                             )
-
-                                            playerConnection.service.saveQueueToDisk()
                                         }
                                     }
                                 }

@@ -1050,45 +1050,49 @@ class MusicService :
             }
 
         scope.launch(Dispatchers.IO) {
-            if (dataStore.get(PersistentQueueKey, true)) {
-                readPersistentObject<PersistQueue>(PERSISTENT_QUEUE_FILE)
-                    ?.let { persistedQueue ->
-                    restorePersistentQueue(persistedQueue)
-                }
-                readPersistentObject<PersistQueue>(PERSISTENT_AUTOMIX_FILE)
-                    ?.let { persistedAutomix ->
-                    val items = persistedAutomix.items.map { it.toMediaItem() }
-                    withContext(Dispatchers.Main) {
-                        automixItems.value = items
-                        automixSeedMediaId = player.currentMetadata?.id?.trim()?.takeIf { it.isNotBlank() }
-                    }
-                }
-                
-                readPersistentObject<PersistPlayerState>(PERSISTENT_PLAYER_STATE_FILE)
-                    ?.let { playerState ->
-                    delay(1000)
-                    withContext(Dispatchers.Main) {
-                        player.repeatMode = playerState.repeatMode
-                        player.shuffleModeEnabled = playerState.shuffleModeEnabled
-                        playerVolume.value = playerState.volume
-                        
-                        if (player.mediaItemCount > 0) {
-                            val index =
-                                if (playerState.currentMediaItemIndex in 0 until player.mediaItemCount) {
-                                    playerState.currentMediaItemIndex
-                                } else {
-                                    player.currentMediaItemIndex.coerceIn(0, player.mediaItemCount - 1)
-                                }
-                            player.seekTo(index, playerState.currentPosition)
+            try {
+                if (dataStore.get(PersistentQueueKey, true)) {
+                    readPersistentObject<PersistQueue>(PERSISTENT_QUEUE_FILE)
+                        ?.let { persistedQueue ->
+                            restorePersistentQueue(persistedQueue)
                         }
-                        
-                        currentMediaMetadata.value = player.currentMetadata
-                        updateNotification()
-                    }
+                    readPersistentObject<PersistQueue>(PERSISTENT_AUTOMIX_FILE)
+                        ?.let { persistedAutomix ->
+                            val items = persistedAutomix.items.map { it.toMediaItem() }
+                            withContext(Dispatchers.Main) {
+                                automixItems.value = items
+                                automixSeedMediaId = player.currentMetadata?.id?.trim()?.takeIf { it.isNotBlank() }
+                            }
+                        }
+
+                    readPersistentObject<PersistPlayerState>(PERSISTENT_PLAYER_STATE_FILE)
+                        ?.let { playerState ->
+                            withContext(Dispatchers.Main) {
+                                player.repeatMode = playerState.repeatMode
+                                player.shuffleModeEnabled = playerState.shuffleModeEnabled
+                                playerVolume.value = playerState.volume
+
+                                if (player.mediaItemCount > 0) {
+                                    val index =
+                                        if (playerState.currentMediaItemIndex in 0 until player.mediaItemCount) {
+                                            playerState.currentMediaItemIndex
+                                        } else {
+                                            player.currentMediaItemIndex.coerceIn(0, player.mediaItemCount - 1)
+                                        }
+                                    player.seekTo(index, playerState.currentPosition)
+                                }
+
+                                currentMediaMetadata.value = player.currentMetadata
+                                updateNotification()
+                            }
+                        }
                 }
-            }
-            withContext(Dispatchers.Main) {
-                queueRestoreCompleted.value = true
+            } catch (e: Exception) {
+                reportException(e)
+            } finally {
+                withContext(Dispatchers.Main) {
+                    queueRestoreCompleted.value = true
+                }
             }
         }
 
@@ -3336,7 +3340,7 @@ class MusicService :
                  syncUtils.likeSong(song)
 
                  // Check if auto-download on like is enabled and the song is now liked
-                 if (dataStore.get(AutoDownloadOnLikeKey, false) && song.liked) {
+                 if (dataStore.get(AutoDownloadOnLikeKey, true) && song.liked) {
                      // Trigger download for the liked song
                      val downloadRequest = androidx.media3.exoplayer.offline.DownloadRequest
                          .Builder(song.id, song.id.toUri())
@@ -4830,10 +4834,7 @@ class MusicService :
         }
     }
 
-    private fun writePersistentObject(
-        fileName: String,
-        payload: Serializable,
-    ) {
+    private fun writePersistentObject(fileName: String, payload: Serializable) {
         val persistentFile = filesDir.resolve(fileName)
         val tempFile = filesDir.resolve("$fileName.tmp")
 
@@ -4844,15 +4845,14 @@ class MusicService :
                         output.writeObject(payload)
                         output.flush()
                     }
+                    fos.fd.sync()
                 }
 
+                if (persistentFile.exists() && !persistentFile.delete()) {
+                    error("Could not replace $fileName")
+                }
                 if (!tempFile.renameTo(persistentFile)) {
-                    if (persistentFile.exists() && !persistentFile.delete()) {
-                        error("Could not replace $fileName")
-                    }
-                    if (!tempFile.renameTo(persistentFile)) {
-                        error("Could not atomically move $fileName")
-                    }
+                    error("Could not atomically move $fileName")
                 }
             }.onFailure {
                 runCatching { tempFile.delete() }
@@ -4902,7 +4902,7 @@ class MusicService :
         )
     }
 
-    suspend fun saveQueueToDisk() {
+    private suspend fun saveQueueToDisk() {
         val mediaItemsSnapshot = player.mediaItems.mapNotNull { it.toPersistableMetadata() }
         if (mediaItemsSnapshot.isEmpty()) return
 
@@ -4916,13 +4916,14 @@ class MusicService :
         val playbackState = player.playbackState
 
         withContext(Dispatchers.IO) {
+            // Save current queue with proper type information
             val persistQueue = currentQueue.toPersistQueue(
                 title = queueTitle,
                 items = mediaItemsSnapshot,
                 mediaItemIndex = currentMediaItemIndex,
                 position = currentPosition
             )
-
+            
             val persistAutomix =
                 PersistQueue(
                     title = "automix",
@@ -4930,73 +4931,22 @@ class MusicService :
                     mediaItemIndex = 0,
                     position = 0,
                 )
-
+                
+            // Save player state
             val persistPlayerState = PersistPlayerState(
                 playWhenReady = playWhenReady,
                 repeatMode = repeatMode,
                 shuffleModeEnabled = shuffleModeEnabled,
                 volume = volume,
                 currentPosition = currentPosition,
-                currentMediaItemIndex = currentMediaItemIndex,
+                currentMediaItemIndex = currentMediaItemIndex, // Redundant but part of data class
                 playbackState = playbackState
             )
-
+            
             writePersistentObject(PERSISTENT_QUEUE_FILE, persistQueue)
             writePersistentObject(PERSISTENT_AUTOMIX_FILE, persistAutomix)
             writePersistentObject(PERSISTENT_PLAYER_STATE_FILE, persistPlayerState)
         }
-    }
-
-
-    fun removeSongFromQueue(songId: String): Boolean {
-        val currentIndex = player.currentMediaItemIndex
-        var removed = false
-
-
-        for (i in 0 until player.mediaItemCount) {
-            val item = player.getMediaItemAt(i)
-            val metadata = item.metadata
-            if (metadata != null && metadata.id == songId) {
-                player.removeMediaItem(i)
-                removed = true
-                break
-            }
-        }
-
-        if (removed) {
-            scope.launch(SilentHandler) {
-                saveQueueToDisk()
-            }
-        }
-
-        return removed
-    }
-
-    fun removeSongFromQueueByIndex(index: Int): Boolean {
-        if (index < 0 || index >= player.mediaItemCount) return false
-
-
-        player.removeMediaItem(index)
-
-        scope.launch(SilentHandler) {
-            saveQueueToDisk()
-        }
-
-        return true
-    }
-
-    fun clearQueue(): Boolean {
-        if (player.mediaItemCount == 0) return false
-
-        player.clearMediaItems()
-        currentQueue = EmptyQueue
-        queueTitle = null
-
-        scope.launch(SilentHandler) {
-            saveQueueToDisk()
-        }
-
-        return true
     }
 
 
@@ -5209,12 +5159,31 @@ class MusicService :
         }
     }
 
+    private var widgetTickerJob: Job? = null
+
     private fun updatePlayerWidgets() {
         if (!::player.isInitialized) return
 
         scope.launch(SilentHandler) {
             val state = PlayerWidgetState.fromPlayer(player, this@MusicService)
             PlayerWidgetUpdater.update(this@MusicService, state)
+        }
+
+        if (player.isPlaying) {
+            if (widgetTickerJob == null || widgetTickerJob?.isActive != true) {
+                widgetTickerJob = scope.launch(SilentHandler) {
+                    while (isActive && ::player.isInitialized && player.isPlaying) {
+                        delay(2000L)
+                        if (isActive && ::player.isInitialized && player.isPlaying) {
+                            val state = PlayerWidgetState.fromPlayer(player, this@MusicService)
+                            PlayerWidgetUpdater.update(this@MusicService, state)
+                        }
+                    }
+                }
+            }
+        } else {
+            widgetTickerJob?.cancel()
+            widgetTickerJob = null
         }
     }
 

@@ -33,29 +33,33 @@ object SpotifyMapper {
      * on the same Spotify title/artist across multiple candidate comparisons.
      * Bounded to [NORM_CACHE_MAX_SIZE] entries to limit memory usage.
      */
-    private val normalizeCache =
-        object : LinkedHashMap<String, String>(
-            NORM_CACHE_MAX_SIZE,
-            0.75f,
-            true,
-        ) {
-            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>?): Boolean =
-                size > NORM_CACHE_MAX_SIZE
-        }
+    private val normalizeCache: MutableMap<String, String> =
+        java.util.Collections.synchronizedMap(
+            object : LinkedHashMap<String, String>(
+                NORM_CACHE_MAX_SIZE,
+                0.75f,
+                true,
+            ) {
+                override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>?): Boolean =
+                    size > NORM_CACHE_MAX_SIZE
+            }
+        )
 
     /**
      * LRU cache for pre-computed bigram sets. Avoids re-creating Set<String>
      * on every stringSimilarity call for the same normalized string.
      */
-    private val bigramCache =
-        object : LinkedHashMap<String, Set<String>>(
-            NORM_CACHE_MAX_SIZE,
-            0.75f,
-            true,
-        ) {
-            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Set<String>>?): Boolean =
-                size > NORM_CACHE_MAX_SIZE
-        }
+    private val bigramCache: MutableMap<String, Set<String>> =
+        java.util.Collections.synchronizedMap(
+            object : LinkedHashMap<String, Set<String>>(
+                NORM_CACHE_MAX_SIZE,
+                0.75f,
+                true,
+            ) {
+                override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Set<String>>?): Boolean =
+                    size > NORM_CACHE_MAX_SIZE
+            }
+        )
 
     /**
      * Pre-computed data for one side of a match comparison.

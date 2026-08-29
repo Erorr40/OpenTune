@@ -731,10 +731,92 @@ object ThemePalettes {
         tertiary = Color(0xFFFF0000),
         neutral = Color(0xFFFF0000)
     )
+
+    // ===== Modern & Aesthetic Palettes =====
+    val TokyoNight = ThemePalette(
+        id = "tokyo_night",
+        nameResId = R.string.palette_tokyo_night,
+        primary = Color(0xFF7AA2F7),
+        secondary = Color(0xFFBB9AF7),
+        tertiary = Color(0xFF7DCFFF),
+        neutral = Color(0xFF1A1B26)
+    )
+
+    val Dracula = ThemePalette(
+        id = "dracula",
+        nameResId = R.string.palette_dracula,
+        primary = Color(0xFFBD93F9),
+        secondary = Color(0xFFFF79C6),
+        tertiary = Color(0xFF8BE9FD),
+        neutral = Color(0xFF282A36)
+    )
+
+    val NordicFrost = ThemePalette(
+        id = "nordic_frost",
+        nameResId = R.string.palette_nordic_frost,
+        primary = Color(0xFF88C0D0),
+        secondary = Color(0xFF81A1C1),
+        tertiary = Color(0xFF5E81AC),
+        neutral = Color(0xFF2E3440)
+    )
+
+    val MatchaLatte = ThemePalette(
+        id = "matcha_latte",
+        nameResId = R.string.palette_matcha_latte,
+        primary = Color(0xFF8FBC8F),
+        secondary = Color(0xFFA9DFBF),
+        tertiary = Color(0xFFD4EFDF),
+        neutral = Color(0xFF2C3E2C)
+    )
+
+    val CaramelGold = ThemePalette(
+        id = "caramel_gold",
+        nameResId = R.string.palette_caramel_gold,
+        primary = Color(0xFFD4AF37),
+        secondary = Color(0xFFC68B59),
+        tertiary = Color(0xFFE5C158),
+        neutral = Color(0xFF3D2E1E)
+    )
+
+    val AmoledCrimson = ThemePalette(
+        id = "amoled_crimson",
+        nameResId = R.string.palette_amoled_crimson,
+        primary = Color(0xFFE50914),
+        secondary = Color(0xFFFF3344),
+        tertiary = Color(0xFFFF6B7A),
+        neutral = Color(0xFF111111)
+    )
+
+    val DeepSpace = ThemePalette(
+        id = "deep_space",
+        nameResId = R.string.palette_deep_space,
+        primary = Color(0xFF6366F1),
+        secondary = Color(0xFF8B5CF6),
+        tertiary = Color(0xFFA855F7),
+        neutral = Color(0xFF0F172A)
+    )
+
+    val RetroSynth80s = ThemePalette(
+        id = "retro_synth",
+        nameResId = R.string.palette_retro_synth,
+        primary = Color(0xFFFF007F),
+        secondary = Color(0xFF00F0FF),
+        tertiary = Color(0xFFFFE600),
+        neutral = Color(0xFF18002E)
+    )
     
     val allPalettes: List<ThemePalette> = listOf(
         // Classic
         Default,
+        // Modern & Aesthetic
+        TokyoNight,
+        Dracula,
+        NordicFrost,
+        MatchaLatte,
+        CaramelGold,
+        AmoledCrimson,
+        DeepSpace,
+        RetroSynth80s,
         // Blues
         OceanBlue,
         ArcticBlue,

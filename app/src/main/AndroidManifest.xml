@@ -210,6 +210,45 @@
                 android:resource="@xml/opentune_player_widget" />
         </receiver>
 
+        <receiver
+            android:name=".widget.OpenTuneCompactWidgetReceiver"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/opentune_compact_widget" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.OpenTuneVinylWidgetReceiver"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/opentune_vinyl_widget" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.OpenTuneLargeWidgetReceiver"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/opentune_large_widget" />
+        </receiver>
+
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />

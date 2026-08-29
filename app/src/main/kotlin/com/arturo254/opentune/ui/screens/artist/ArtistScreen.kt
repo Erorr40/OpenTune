@@ -541,7 +541,7 @@ fun ArtistScreen(
                         ) {
                             if (thumbnail != null) {
                                 AsyncImage(
-                                    model = thumbnail.resize(600, 600,),
+                                    model = thumbnail.resize(600, 600),
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier

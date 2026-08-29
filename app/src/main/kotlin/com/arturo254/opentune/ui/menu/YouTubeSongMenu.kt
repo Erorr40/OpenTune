@@ -103,7 +103,8 @@ fun YouTubeSongMenu(
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val librarySong by database.song(song.id).collectAsState(initial = null)
-    val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
+    val downloadUtil = LocalDownloadUtil.current
+    val download by downloadUtil.getDownload(song.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
     val syncUtils = LocalSyncUtils.current
     val artists = remember {
@@ -477,6 +478,8 @@ fun YouTubeSongMenu(
                                 downloadRequest,
                                 false,
                             )
+                            downloadUtil.syncOfflineAssets(song.id)
+                            Toast.makeText(context, context.getString(R.string.downloading), Toast.LENGTH_SHORT).show()
                         }
                     )
                 }

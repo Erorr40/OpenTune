@@ -15,6 +15,8 @@ import androidx.glance.appwidget.action.ActionCallback
 import com.arturo254.opentune.MainActivity
 import com.arturo254.opentune.playback.MusicService
 
+import timber.log.Timber
+
 object PlayerWidgetActions {
     const val ACTION_PLAY_PAUSE = "com.arturo254.opentune.widget.action.PLAY_PAUSE"
     const val ACTION_NEXT = "com.arturo254.opentune.widget.action.NEXT"
@@ -31,7 +33,16 @@ object PlayerWidgetActions {
             .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
     fun sendServiceAction(context: Context, action: String) {
-        ContextCompat.startForegroundService(context, serviceIntent(context, action))
+        val intent = serviceIntent(context, action)
+        try {
+            context.startService(intent)
+        } catch (_: Exception) {
+            try {
+                ContextCompat.startForegroundService(context, intent)
+            } catch (e: Exception) {
+                Timber.tag("PlayerWidgetActions").w(e, "Failed to send widget action: $action")
+            }
+        }
     }
 }
 

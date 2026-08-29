@@ -559,12 +559,4 @@
     <string name="update_downloading">Downloading update…</string>
     <string name="update_restart_notice">The app will restart once the download finishes.</string>
     <string name="update_error_prefix">Error: %1$s</string>
-
-
-    <string name="show_canvas_debug">Show Canvas debug</string>
-    <string name="description_show_canvas_debug">Show logs and statistics for the Canvas Artwork system</string>
-    <string name="canvas_debug_section">Canvas Artwork</string>
-    <string name="canvas_cache_stats">Canvas cache</string>
-    <string name="canvas_logs">Canvas logs</string>
-    <string name="refresh_catalog">Reload catalog</string>
 </resources>

@@ -38,12 +38,22 @@ import com.arturo254.opentune.utils.enumPreference
 import com.arturo254.opentune.constants.NetworkMeteredKey
 import com.arturo254.opentune.utils.dataStore
 import com.arturo254.opentune.utils.get
+import com.arturo254.opentune.models.toMediaMetadata
+import com.arturo254.opentune.constants.AutoDownloadArtworkKey
+import com.arturo254.opentune.constants.AutoDownloadLyricsKey
+import com.arturo254.opentune.db.entities.LyricsEntity
+import com.arturo254.opentune.lyrics.LyricsHelper
+import com.arturo254.opentune.utils.reportException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import okhttp3.ConnectionPool
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -51,23 +61,35 @@ import javax.inject.Singleton
 class DownloadUtil
 @Inject
 constructor(
-    @ApplicationContext context: Context,
+    @ApplicationContext val context: Context,
     val database: MusicDatabase,
     val databaseProvider: DatabaseProvider,
     @DownloadCache val downloadCache: Cache,
     @PlayerCache val playerCache: Cache,
+    val lyricsHelper: LyricsHelper,
 ) {
     private val connectivityManager = context.getSystemService<ConnectivityManager>()!!
     private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
     private val preferredStreamClient by enumPreference(context, PlayerStreamClientKey, PlayerStreamClient.ANDROID_VR)
-    private val songUrlCache = HashMap<String, Pair<String, Long>>()
+    private val songUrlCache = ConcurrentHashMap<String, Pair<String, Long>>()
     private val avoidStreamCodecs: Set<String> by lazy {
         if (deviceSupportsMimeType("audio/opus")) emptySet() else setOf("opus")
     }
     private val mediaOkHttpClient: OkHttpClient by lazy {
+        val dispatcher = Dispatcher().apply {
+            maxRequests = 64
+            maxRequestsPerHost = 24
+        }
+        val pool = ConnectionPool(16, 5, TimeUnit.MINUTES)
+
         OkHttpClient
             .Builder()
             .proxy(YouTube.streamProxy)
+            .dispatcher(dispatcher)
+            .connectionPool(pool)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
             .followRedirects(true)
             .followSslRedirects(true)
             .addInterceptor { chain ->
@@ -110,13 +132,6 @@ constructor(
         ) { dataSpec ->
             val mediaId = dataSpec.key ?: error("No media id")
             val length = if (dataSpec.length >= 0) dataSpec.length else 1
-            if (playerCache.cacheSpace > 500 * 1024 * 1024L) {
-                kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
-                    playerCache.keys.shuffled().take(10).forEach { key ->
-                        playerCache.getCachedSpans(key).sumOf { it.length }
-                    }
-                }
-            }
             if (playerCache.isCached(mediaId, dataSpec.position, length)) {
                 return@Factory dataSpec
             }
@@ -187,7 +202,7 @@ constructor(
             dataSourceFactory,
             Executor(Runnable::run)
         ).apply {
-            maxParallelDownloads = 3
+            maxParallelDownloads = 6
             addListener(
                 object : DownloadManager.Listener {
                     override fun onDownloadChanged(
@@ -199,6 +214,9 @@ constructor(
                             map.toMutableMap().apply {
                                 set(download.request.id, download)
                             }
+                        }
+                        if (download.state == Download.STATE_COMPLETED || download.state == Download.STATE_DOWNLOADING) {
+                            syncOfflineAssets(download.request.id)
                         }
                     }
                 }
@@ -217,6 +235,76 @@ constructor(
     }
 
     fun getDownload(songId: String): Flow<Download?> = downloads.map { it[songId] }
+
+    fun syncOfflineAssets(songId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val song = database.song(songId).firstOrNull()
+                if (song != null) {
+                    val autoLyrics = context.dataStore.data.map { it[AutoDownloadLyricsKey] ?: true }.first()
+                    if (autoLyrics) {
+                        val existingLyrics = database.lyrics(songId).firstOrNull()
+                        if (existingLyrics == null) {
+                            try {
+                                val mediaMetadata = song.toMediaMetadata()
+                                val lyrics = lyricsHelper.getLyrics(mediaMetadata)
+                                if (lyrics.isNotBlank() && lyrics != LyricsEntity.LYRICS_NOT_FOUND) {
+                                    database.query {
+                                        upsert(LyricsEntity(id = songId, lyrics = lyrics))
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                reportException(e)
+                            }
+                        }
+                    }
+
+                    val autoArtwork = context.dataStore.data.map { it[AutoDownloadArtworkKey] ?: true }.first()
+                    if (autoArtwork) {
+                        song.song.thumbnailUrl?.let { url ->
+                            try {
+                                val request = coil3.request.ImageRequest.Builder(context)
+                                    .data(url)
+                                    .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
+                                    .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
+                                    .build()
+                                coil3.SingletonImageLoader.get(context).enqueue(request)
+                            } catch (_: Exception) {}
+                        }
+                        song.artists.forEach { artist ->
+                            artist.thumbnailUrl?.let { url ->
+                                try {
+                                    val request = coil3.request.ImageRequest.Builder(context)
+                                        .data(url)
+                                        .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
+                                        .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
+                                        .build()
+                                    coil3.SingletonImageLoader.get(context).enqueue(request)
+                                } catch (_: Exception) {}
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                reportException(e)
+            }
+        }
+    }
+
+    fun autoDownloadSong(songId: String, title: String) {
+        val downloadRequest =
+            androidx.media3.exoplayer.offline.DownloadRequest.Builder(songId, songId.toUri())
+                .setCustomCacheKey(songId)
+                .setData(title.toByteArray())
+                .build()
+        androidx.media3.exoplayer.offline.DownloadService.sendAddDownload(
+            context,
+            ExoDownloadService::class.java,
+            downloadRequest,
+            false,
+        )
+        syncOfflineAssets(songId)
+    }
 
     private fun deviceSupportsMimeType(mimeType: String): Boolean {
         return runCatching {

@@ -58,12 +58,20 @@ import com.arturo254.opentune.widget.PlayerWidgetActions.openAppIntent
 import kotlinx.coroutines.flow.first
 
 /** Snapshot inmutable de las preferencias visuales configurables desde WidgetSettings. */
-private data class WidgetUiPrefs(
+internal data class WidgetUiPrefs(
     val backgroundMode: WidgetBackgroundMode,
     val scrimOpacity: Float,
     val cornerRadius: Dp,
     val showProgressBar: Boolean,
 )
+
+internal suspend fun readWidgetUiPrefs(context: Context): WidgetUiPrefs =
+    WidgetUiPrefs(
+        backgroundMode = WidgetPreferences.backgroundModeFlow(context).first(),
+        scrimOpacity = WidgetPreferences.scrimOpacityFlow(context).first(),
+        cornerRadius = WidgetPreferences.cornerRadiusFlow(context).first().dp,
+        showProgressBar = WidgetPreferences.showProgressBarFlow(context).first(),
+    )
 
 class OpenTunePlayerWidget : GlanceAppWidget() {
     override val stateDefinition = PreferencesGlanceStateDefinition
@@ -73,16 +81,7 @@ class OpenTunePlayerWidget : GlanceAppWidget() {
         context: Context,
         id: GlanceId,
     ) {
-        // Se leen UNA VEZ por composición (provideGlance ya es suspend). El widget
-        // se vuelve a recomponer cada vez que WidgetPreferencesSync.notifyChanged()
-        // llama a update() tras un cambio en WidgetSettings, así que no hace falta
-        // observar el Flow en vivo dentro del propio Composable de Glance.
-        val uiPrefs = WidgetUiPrefs(
-            backgroundMode = WidgetPreferences.backgroundModeFlow(context).first(),
-            scrimOpacity = WidgetPreferences.scrimOpacityFlow(context).first(),
-            cornerRadius = WidgetPreferences.cornerRadiusFlow(context).first().dp,
-            showProgressBar = WidgetPreferences.showProgressBarFlow(context).first(),
-        )
+        val uiPrefs = readWidgetUiPrefs(context)
 
         provideContent {
             val state = PlayerWidgetState.fromPreferences(currentState<Preferences>())
@@ -93,7 +92,7 @@ class OpenTunePlayerWidget : GlanceAppWidget() {
     }
 }
 
-private val OpenTuneWidgetColors =
+internal val OpenTuneWidgetColors =
     ColorProviders(
         light =
             lightColorScheme(
@@ -213,7 +212,7 @@ private fun PlayerWidgetContent(state: PlayerWidgetState, uiPrefs: WidgetUiPrefs
  */
 @SuppressLint("RestrictedApi")
 @Composable
-private fun WidgetBackground(state: PlayerWidgetState, mode: WidgetBackgroundMode) {
+internal fun WidgetBackground(state: PlayerWidgetState, mode: WidgetBackgroundMode) {
     val blur = state.backgroundBlurBitmap
     val dominant = state.dominantColor
 
@@ -249,7 +248,7 @@ private fun WidgetBackground(state: PlayerWidgetState, mode: WidgetBackgroundMod
 }
 
 @Composable
-private fun SolidBackground(color: ColorProvider) {
+internal fun SolidBackground(color: ColorProvider) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -265,34 +264,36 @@ private fun SolidBackground(color: ColorProvider) {
  */
 @SuppressLint("RestrictedApi")
 @Composable
-private fun ProgressBar(progress: Float) {
+internal fun ProgressBar(progress: Float) {
     val clamped = progress.coerceIn(0f, 1f)
-    val widgetWidth = LocalSize.current.width
-    // Resta el padding horizontal de la Column contenedora (14.dp a cada lado).
-    val trackWidth = (widgetWidth - 28.dp).coerceAtLeast(0.dp)
-    val fillWidth = (trackWidth * clamped)
+    val widgetSize = LocalSize.current
+    val widgetWidth = widgetSize.width
+    val effectiveWidth = if (widgetWidth > 28.dp) (widgetWidth - 28.dp) else 220.dp
+    val fillWidth = (effectiveWidth * clamped)
 
     Box(
         modifier = GlanceModifier
-            .width(trackWidth)
+            .fillMaxWidth()
             .height(4.dp)
             .background(ColorProvider(Color.White.copy(alpha = 0.28f)))
             .cornerRadius(2.dp),
     ) {
-        Box(
-            modifier = GlanceModifier
-                .width(fillWidth)
-                .height(4.dp)
-                .background(ColorProvider(Color.White))
-                .cornerRadius(2.dp),
-        ) {}
+        if (fillWidth > 0.dp) {
+            Box(
+                modifier = GlanceModifier
+                    .width(fillWidth)
+                    .height(4.dp)
+                    .background(ColorProvider(Color.White))
+                    .cornerRadius(2.dp),
+            ) {}
+        }
     }
 }
 
 
 @SuppressLint("RestrictedApi")
 @Composable
-private fun ArtworkBox(bitmap: Bitmap?) {
+internal fun ArtworkBox(bitmap: Bitmap?) {
     Box(
         modifier = GlanceModifier
             .size(64.dp)
@@ -320,7 +321,7 @@ private fun ArtworkBox(bitmap: Bitmap?) {
 
 @SuppressLint("RestrictedApi")
 @Composable
-private fun PlayPauseButton(isPlaying: Boolean) {
+internal fun PlayPauseButton(isPlaying: Boolean) {
     Box(
         modifier =
             GlanceModifier
@@ -341,7 +342,7 @@ private fun PlayPauseButton(isPlaying: Boolean) {
 
 @SuppressLint("RestrictedApi")
 @Composable
-private fun ControlButton(
+internal fun ControlButton(
     icon: Int,
     contentDescription: String,
     enabled: Boolean,

@@ -87,36 +87,7 @@ object UpdateNotificationManager {
     fun checkForUpdates(context: Context) {
         scope.launch {
             try {
-                val dataStore = context.dataStore
-
-                val isEnabled = dataStore.data.map { it[EnableUpdateNotificationKey] ?: false }.first()
-                if (!isEnabled) {
-                    cancelPeriodicUpdateCheck(context)
-                    return@launch
-                }
-
-                schedulePeriodicUpdateCheck(context)
-
-                val updateChannel = dataStore.data.map { 
-                    it[UpdateChannelKey]?.let { value -> 
-                        try { UpdateChannel.valueOf(value) } catch (e: Exception) { UpdateChannel.STABLE }
-                    } ?: UpdateChannel.STABLE
-                }.first()
-
-                if (updateChannel == UpdateChannel.NIGHTLY) return@launch
-
-                val lastCheck = dataStore.data.map { it[LastUpdateCheckKey] ?: 0L }.first()
-                val now = System.currentTimeMillis()
-
-                if (now - lastCheck < CHECK_INTERVAL_MS) return@launch
-
-                dataStore.edit { it[LastUpdateCheckKey] = now }
-
-                Updater.getLatestVersionName().onSuccess { latestVersion ->
-                    if (!Updater.isSameVersion(latestVersion, BuildConfig.VERSION_NAME)) {
-                        notifyIfNewVersion(context, latestVersion)
-                    }
-                }
+                cancelPeriodicUpdateCheck(context)
             } catch (e: Exception) {
                 // Silently fail
             }

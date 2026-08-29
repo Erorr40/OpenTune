@@ -180,15 +180,25 @@ class BackupRestoreViewModel @Inject constructor(
             val title = context.getString(R.string.backup_in_progress)
             try {
                 val dbFile = context.getDatabasePath(InternalDatabase.DB_NAME)
+                val exoDbFile = context.getDatabasePath("exoplayer_internal.db")
                 val dbFiles =
                     listOf(
                         dbFile,
                         dbFile.resolveSibling("${InternalDatabase.DB_NAME}-wal"),
                         dbFile.resolveSibling("${InternalDatabase.DB_NAME}-shm"),
                         dbFile.resolveSibling("${InternalDatabase.DB_NAME}-journal"),
+                        exoDbFile,
+                        exoDbFile.resolveSibling("exoplayer_internal.db-wal"),
+                        exoDbFile.resolveSibling("exoplayer_internal.db-shm"),
+                        exoDbFile.resolveSibling("exoplayer_internal.db-journal"),
                     ).filter { it.exists() }
 
-                val totalUnits = 2 + dbFiles.size
+                val downloadDir = context.filesDir.resolve("download")
+                val downloadFiles = if (downloadDir.exists() && downloadDir.isDirectory) {
+                    downloadDir.walkTopDown().filter { it.isFile }.toList()
+                } else emptyList()
+
+                val totalUnits = 2 + dbFiles.size + downloadFiles.size
                 val unitSpan = 100f / totalUnits.coerceAtLeast(1)
                 var completedUnits = 0
                 var lastPercent = -1
@@ -250,6 +260,21 @@ class BackupRestoreViewModel @Inject constructor(
                             zipStream.closeEntry()
                             completedUnits++
                         }
+
+                        downloadFiles.forEach { file ->
+                            val relPath = "download/" + file.relativeTo(downloadDir).path.replace('\\', '/')
+                            emit(
+                                context.getString(R.string.backup_step_copying_file, file.name),
+                                unitFraction = 0f,
+                                indeterminate = false,
+                            )
+                            zipStream.putNextEntry(ZipEntry(relPath))
+                            FileInputStream(file).use { input ->
+                                input.copyTo(zipStream)
+                            }
+                            zipStream.closeEntry()
+                            completedUnits++
+                        }
                     }
                 } ?: throw IllegalStateException("Failed to open output stream")
 
@@ -307,7 +332,10 @@ class BackupRestoreViewModel @Inject constructor(
                                 name == InternalDatabase.DB_NAME ||
                                 name == "${InternalDatabase.DB_NAME}-wal" ||
                                 name == "${InternalDatabase.DB_NAME}-shm" ||
-                                name == "${InternalDatabase.DB_NAME}-journal"
+                                name == "${InternalDatabase.DB_NAME}-journal" ||
+                                name == "exoplayer_internal.db" ||
+                                name.startsWith("exoplayer_internal.db-") ||
+                                name.startsWith("download/")
                     }
 
                 val totalUnits = 1 + 1 + restoreEntries.size
@@ -336,30 +364,43 @@ class BackupRestoreViewModel @Inject constructor(
                                 entry = zip.nextEntry
                                 continue
                             }
-                            when (name) {
-                                SETTINGS_XML_FILENAME -> {
-                                    emit(context.getString(R.string.restore_step_restoring_settings), indeterminate = true)
-                                    restoreSettingsFromXml(context, zip)
+                            if (name.startsWith("download/")) {
+                                val subPath = name.removePrefix("download/")
+                                val destFile = context.filesDir.resolve("download").resolve(subPath)
+                                destFile.parentFile?.mkdirs()
+                                FileOutputStream(destFile).use { out ->
+                                    zip.copyTo(out)
                                 }
-                                SETTINGS_FILENAME -> {
-                                    emit(context.getString(R.string.restore_step_restoring_settings), indeterminate = true)
-                                    val settingsDir = context.filesDir / "datastore"
-                                    if (!settingsDir.exists()) settingsDir.mkdirs()
-                                    (settingsDir / SETTINGS_FILENAME).outputStream().use { out ->
-                                        zip.copyTo(out)
+                            } else {
+                                when (name) {
+                                    SETTINGS_XML_FILENAME -> {
+                                        emit(context.getString(R.string.restore_step_restoring_settings), indeterminate = true)
+                                        restoreSettingsFromXml(context, zip)
                                     }
-                                }
-                                InternalDatabase.DB_NAME,
-                                "${InternalDatabase.DB_NAME}-wal",
-                                "${InternalDatabase.DB_NAME}-shm",
-                                "${InternalDatabase.DB_NAME}-journal" -> {
-                                    emit(context.getString(R.string.restore_step_restoring_file, name), indeterminate = true)
-                                    val dbFile = context.getDatabasePath(name)
-                                    if (dbFile.exists()) {
-                                        dbFile.delete()
+                                    SETTINGS_FILENAME -> {
+                                        emit(context.getString(R.string.restore_step_restoring_settings), indeterminate = true)
+                                        val settingsDir = context.filesDir / "datastore"
+                                        if (!settingsDir.exists()) settingsDir.mkdirs()
+                                        (settingsDir / SETTINGS_FILENAME).outputStream().use { out ->
+                                            zip.copyTo(out)
+                                        }
                                     }
-                                    FileOutputStream(dbFile).use { out ->
-                                        zip.copyTo(out)
+                                    InternalDatabase.DB_NAME,
+                                    "${InternalDatabase.DB_NAME}-wal",
+                                    "${InternalDatabase.DB_NAME}-shm",
+                                    "${InternalDatabase.DB_NAME}-journal",
+                                    "exoplayer_internal.db",
+                                    "exoplayer_internal.db-wal",
+                                    "exoplayer_internal.db-shm",
+                                    "exoplayer_internal.db-journal" -> {
+                                        emit(context.getString(R.string.restore_step_restoring_file, name), indeterminate = true)
+                                        val dbFile = context.getDatabasePath(name)
+                                        if (dbFile.exists()) {
+                                            dbFile.delete()
+                                        }
+                                        FileOutputStream(dbFile).use { out ->
+                                            zip.copyTo(out)
+                                        }
                                     }
                                 }
                             }

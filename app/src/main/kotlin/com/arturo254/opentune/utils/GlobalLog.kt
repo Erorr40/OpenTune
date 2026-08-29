@@ -8,8 +8,6 @@
 
 package com.arturo254.opentune.utils
 
-import com.arturo254.opentune.canvas.providers.GlobalLog
-import com.arturo254.opentune.canvas.providers.LogEntry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import timber.log.Timber

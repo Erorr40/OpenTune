@@ -77,6 +77,7 @@ import com.arturo254.opentune.LocalPlayerConnection
 import com.arturo254.opentune.LocalSyncUtils
 import com.arturo254.opentune.R
 import com.arturo254.opentune.constants.ArtistSeparatorsKey
+import com.arturo254.opentune.constants.AutoDownloadOnLikeKey
 import com.arturo254.opentune.constants.ExternalDownloaderEnabledKey
 import com.arturo254.opentune.constants.ExternalDownloaderPackageKey
 import com.arturo254.opentune.constants.ListThumbnailSize
@@ -117,10 +118,11 @@ fun SongMenu(
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
+    val downloadUtil = LocalDownloadUtil.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val songState = database.song(originalSong.id).collectAsState(initial = originalSong)
     val song = songState.value ?: originalSong
-    val download by LocalDownloadUtil.current.getDownload(originalSong.id)
+    val download by downloadUtil.getDownload(originalSong.id)
         .collectAsState(initial = null)
     val downloadState = metadata?.downloadState ?: download?.state
     val coroutineScope = rememberCoroutineScope()
@@ -137,6 +139,7 @@ fun SongMenu(
 
     // Artist separators for splitting artist names
     val (artistSeparators) = rememberPreference(ArtistSeparatorsKey, defaultValue = ",;/&")
+    val (autoDownloadOnLike) = rememberPreference(AutoDownloadOnLikeKey, defaultValue = true)
     val (externalDownloaderEnabled) = rememberPreference(ExternalDownloaderEnabledKey, defaultValue = false)
     val (externalDownloaderPackage) = rememberPreference(ExternalDownloaderPackageKey, defaultValue = "")
     val (speedDialSongIds, onSpeedDialSongIdsChange) = rememberPreference(SpeedDialSongIdsKey, "")
@@ -359,6 +362,9 @@ fun SongMenu(
                             update(s)
                         }
                         syncUtils.likeSong(s)
+                        if (s.liked && autoDownloadOnLike) {
+                            downloadUtil.autoDownloadSong(s.id, s.title)
+                        }
                     },
                 ) {
                     Icon(
@@ -786,6 +792,8 @@ fun SongMenu(
                                                 downloadRequest,
                                                 false,
                                             )
+                                            downloadUtil.syncOfflineAssets(song.id)
+                                            Toast.makeText(context, context.getString(R.string.downloading), Toast.LENGTH_SHORT).show()
                                         },
                                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                                 )

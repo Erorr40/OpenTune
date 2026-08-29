@@ -19,6 +19,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.content.Context
+import androidx.core.net.toUri
+import androidx.media3.exoplayer.offline.DownloadRequest
+import androidx.media3.exoplayer.offline.DownloadService
+import com.arturo254.opentune.db.MusicDatabase
+import com.arturo254.opentune.models.MediaMetadata
+import com.arturo254.opentune.playback.ExoDownloadService
 import com.arturo254.opentune.spotify.models.SpotifyPlaylist
 import com.arturo254.opentune.spotify.models.SpotifyTrack
 import com.arturo254.opentune.utils.reportException
@@ -30,14 +38,29 @@ class SpotifyPlaylistViewModel
 constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: SpotifyLibraryRepository,
+    private val downloadManager: SpotifyDownloadManager,
 ) : ViewModel() {
-    private val playlistId: String = savedStateHandle.get<String>("playlistId").orEmpty()
+    val playlistId: String = savedStateHandle.get<String>("playlistId").orEmpty()
 
     private val _uiState = MutableStateFlow(SpotifyPlaylistUiState(isLoading = true))
     val uiState: StateFlow<SpotifyPlaylistUiState> = _uiState.asStateFlow()
 
     init {
         reload()
+        viewModelScope.launch {
+            downloadManager.downloadStates.collect { states ->
+                val progress = states[playlistId]
+                if (progress != null) {
+                    _uiState.update {
+                        it.copy(
+                            isDownloading = progress.isDownloading,
+                            downloadedCount = progress.processedCount,
+                            totalDownloadCount = progress.totalCount,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun reload() {
@@ -45,16 +68,17 @@ constructor(
             _uiState.value = SpotifyPlaylistUiState(errorMessage = "Missing Spotify playlist")
             return
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        viewModelScope.launch {
+            _uiState.value = SpotifyPlaylistUiState(isLoading = true)
             try {
                 val playlist = repository.playlist(playlistId)
                 val tracks = repository.playlistTracks(playlistId)
                 _uiState.value =
                     SpotifyPlaylistUiState(
+                        isLoading = false,
                         playlist = playlist,
                         tracks = tracks,
-                        isLoading = false,
                     )
             } catch (error: CancellationException) {
                 throw error
@@ -69,6 +93,23 @@ constructor(
             }
         }
     }
+
+    fun downloadAllTracks() {
+        val currentTracks = _uiState.value.tracks
+        if (currentTracks.isEmpty()) return
+        downloadManager.downloadAllTracks(playlistId, currentTracks)
+    }
+
+    fun downloadSingleTrack(
+        track: SpotifyTrack,
+        onComplete: ((MediaMetadata?) -> Unit)? = null,
+    ) {
+        downloadManager.downloadSingleTrack(track, onComplete)
+    }
+
+    fun cancelDownloads() {
+        downloadManager.cancelDownloads(playlistId)
+    }
 }
 
 @Immutable
@@ -76,5 +117,8 @@ data class SpotifyPlaylistUiState(
     val playlist: SpotifyPlaylist? = null,
     val tracks: List<SpotifyTrack> = emptyList(),
     val isLoading: Boolean = false,
+    val isDownloading: Boolean = false,
+    val downloadedCount: Int = 0,
+    val totalDownloadCount: Int = 0,
     val errorMessage: String? = null,
 )

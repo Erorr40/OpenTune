@@ -598,12 +598,7 @@ object YTPlayerUtils {
             val resolvedUserAgent = StreamClientUtils.resolveUserAgent(clientParam).ifEmpty { userAgent }
             val originReferer = StreamClientUtils.resolveOriginReferer(clientParam)
 
-            val probeRanges =
-                if (StreamClientUtils.isWebClient(clientParam)) {
-                    listOf("bytes=0-0", "bytes=262144-262145", "bytes=1048576-1048577")
-                } else {
-                    listOf("bytes=0-0")
-                }
+            val probeRanges = listOf("bytes=0-0")
 
             for (range in probeRanges) {
                 val rangeRequest =
@@ -624,8 +619,7 @@ object YTPlayerUtils {
 
             return true
         } catch (e: Exception) {
-            Timber.tag(logTag).e(e, "Stream URL validation failed with exception")
-            reportException(e)
+            Timber.tag(logTag).w("Stream URL validation failed with exception: ${e.message}")
         }
         return false
     }

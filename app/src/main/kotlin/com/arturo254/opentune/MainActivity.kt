@@ -528,13 +528,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
-
-                if (System.currentTimeMillis() - Updater.lastCheckTime > 1.days.inWholeMilliseconds) {
-                    Updater.getLatestVersionName().onSuccess {
-                        latestVersionName = it
-                    }
-                }
-                UpdateNotificationManager.checkForUpdates(this@MainActivity)
             }
 
             // Use remembered instances so the same state object is used everywhere
@@ -603,18 +596,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            // fetch release notes and show sheet when a new version is detected
-            LaunchedEffect(latestVersionName) {
-                if (!Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)) {
-                    Updater.getLatestReleaseNotes().onSuccess {
-                        releaseNotesState.value = it
-                    }.onFailure {
-                        releaseNotesState.value = null
-                    }
 
-                    bottomSheetPageState.show(updateSheetContent)
-                }
-            }
 
             val enableDynamicTheme by rememberPreference(DynamicThemeKey, defaultValue = true)
             val customThemeColorValue by rememberPreference(CustomThemeColorKey, defaultValue = "default")
@@ -932,8 +914,7 @@ class MainActivity : ComponentActivity() {
                             isPlayerExpanded && playerFullscreen -> {
                                 controller.systemBarsBehavior =
                                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                                controller.hide(WindowInsetsCompat.Type.statusBars())
-                                controller.show(WindowInsetsCompat.Type.navigationBars())
+                                controller.hide(WindowInsetsCompat.Type.systemBars())
                             }
 
                             isYearInMusicScreen -> {
@@ -1043,13 +1024,24 @@ class MainActivity : ComponentActivity() {
                         if (navBackStackEntry?.destination?.route?.startsWith("search/") == true) {
                             val searchQuery =
                                 withContext(Dispatchers.IO) {
-                                    Uri.decode(
-                                        navBackStackEntry
+                                    if (navBackStackEntry
                                             ?.arguments
                                             ?.getString(
                                                 "query",
                                             )!!
-                                    )
+                                            .contains(
+                                                "%",
+                                            )
+                                    ) {
+                                        navBackStackEntry?.arguments?.getString(
+                                            "query",
+                                        )!!
+                                    } else {
+                                        URLDecoder.decode(
+                                            navBackStackEntry?.arguments?.getString("query")!!,
+                                            "UTF-8"
+                                        )
+                                    }
                                 }
                             onQueryChange(
                                 TextFieldValue(

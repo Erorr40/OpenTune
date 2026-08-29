@@ -14,7 +14,7 @@ import com.arturo254.opentune.constants.EnableBetterLyricsKey
 import com.arturo254.opentune.utils.dataStore
 import com.arturo254.opentune.utils.get
 
-import com.arturo254.opentune.canvas.providers.GlobalLog
+import com.arturo254.opentune.utils.GlobalLog
 import android.util.Log
 
 object BetterLyricsProvider : LyricsProvider {

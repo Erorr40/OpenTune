@@ -15,47 +15,84 @@ import timber.log.Timber
 import java.io.ByteArrayOutputStream
 
 object PlayerWidgetUpdater {
+    @Volatile private var lastArtworkBitmap: Bitmap? = null
+    @Volatile private var lastArtworkBytes: ByteArray? = null
+
+    @Volatile private var lastBlurBitmap: Bitmap? = null
+    @Volatile private var lastBlurBytes: ByteArray? = null
+
     suspend fun update(
         context: Context,
         state: PlayerWidgetState,
     ) {
         runCatching {
             val manager = GlanceAppWidgetManager(context)
-            val glanceIds = manager.getGlanceIds(OpenTunePlayerWidget::class.java)
-
-            glanceIds.forEach { glanceId ->
-                updateAppWidgetState(
-                    context,
-                    PreferencesGlanceStateDefinition,
-                    glanceId
-                ) { preferences ->
-                    preferences.toMutablePreferences().apply {
-                        this[PlayerWidgetStateKeys.Title] = state.title
-                        this[PlayerWidgetStateKeys.Artist] = state.artist
-                        state.thumbnailUrl?.let {
-                            this[PlayerWidgetStateKeys.ThumbnailUrl] = it
-                        } ?: remove(PlayerWidgetStateKeys.ThumbnailUrl)
-                        this[PlayerWidgetStateKeys.IsPlaying] = state.isPlaying
-                        this[PlayerWidgetStateKeys.HasPrevious] = state.hasPrevious
-                        this[PlayerWidgetStateKeys.HasNext] = state.hasNext
-                        this[PlayerWidgetStateKeys.DurationMs] = state.durationMs
-                        this[PlayerWidgetStateKeys.PositionMs] = state.positionMs
-
-                        state.artworkBitmap?.let { bitmap ->
-                            this[PlayerWidgetStateKeys.ArtworkBytes] = bitmapToByteArray(bitmap)
-                        } ?: remove(PlayerWidgetStateKeys.ArtworkBytes)
-
-                        state.backgroundBlurBitmap?.let { bitmap ->
-                            this[PlayerWidgetStateKeys.BackgroundBlurBytes] =
-                                bitmapToByteArray(bitmap)
-                        } ?: remove(PlayerWidgetStateKeys.BackgroundBlurBytes)
-
-                        state.dominantColor?.let {
-                            this[PlayerWidgetStateKeys.DominantColor] = it
-                        } ?: remove(PlayerWidgetStateKeys.DominantColor)
-                    }
+            val artworkBytes = state.artworkBitmap?.let { bmp ->
+                if (bmp == lastArtworkBitmap && lastArtworkBytes != null) {
+                    lastArtworkBytes
+                } else {
+                    val bytes = bitmapToByteArray(bmp)
+                    lastArtworkBitmap = bmp
+                    lastArtworkBytes = bytes
+                    bytes
                 }
-                OpenTunePlayerWidget().update(context, glanceId)
+            }
+
+            val blurBytes = state.backgroundBlurBitmap?.let { bmp ->
+                if (bmp == lastBlurBitmap && lastBlurBytes != null) {
+                    lastBlurBytes
+                } else {
+                    val bytes = bitmapToByteArray(bmp)
+                    lastBlurBitmap = bmp
+                    lastBlurBytes = bytes
+                    bytes
+                }
+            }
+
+            val widgetClasses = listOf(
+                OpenTunePlayerWidget::class.java to OpenTunePlayerWidget(),
+                OpenTuneCompactWidget::class.java to OpenTuneCompactWidget(),
+                OpenTuneVinylWidget::class.java to OpenTuneVinylWidget(),
+                OpenTuneLargeWidget::class.java to OpenTuneLargeWidget(),
+            )
+
+            widgetClasses.forEach { (clazz, widget) ->
+                val glanceIds = manager.getGlanceIds(clazz)
+                if (glanceIds.isEmpty()) return@forEach
+
+                glanceIds.forEach { glanceId ->
+                    updateAppWidgetState(
+                        context,
+                        PreferencesGlanceStateDefinition,
+                        glanceId
+                    ) { preferences ->
+                        preferences.toMutablePreferences().apply {
+                            this[PlayerWidgetStateKeys.Title] = state.title
+                            this[PlayerWidgetStateKeys.Artist] = state.artist
+                            state.thumbnailUrl?.let {
+                                this[PlayerWidgetStateKeys.ThumbnailUrl] = it
+                            } ?: remove(PlayerWidgetStateKeys.ThumbnailUrl)
+                            this[PlayerWidgetStateKeys.IsPlaying] = state.isPlaying
+                            this[PlayerWidgetStateKeys.HasPrevious] = state.hasPrevious
+                            this[PlayerWidgetStateKeys.HasNext] = state.hasNext
+                            this[PlayerWidgetStateKeys.DurationMs] = state.durationMs
+                            this[PlayerWidgetStateKeys.PositionMs] = state.positionMs
+
+                            artworkBytes?.let {
+                                this[PlayerWidgetStateKeys.ArtworkBytes] = it
+                            } ?: remove(PlayerWidgetStateKeys.ArtworkBytes)
+
+                            blurBytes?.let {
+                                this[PlayerWidgetStateKeys.BackgroundBlurBytes] = it
+                            } ?: remove(PlayerWidgetStateKeys.BackgroundBlurBytes)
+
+                            state.dominantColor?.let {
+                                this[PlayerWidgetStateKeys.DominantColor] = it
+                            } ?: remove(PlayerWidgetStateKeys.DominantColor)
+                        }
+                    }
+                    widget.update(context, glanceId)
+                }
             }
         }.onFailure {
             Timber.tag("PlayerWidgetUpdater").w(it, "Unable to update OpenTune player widget")

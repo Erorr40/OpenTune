@@ -12,7 +12,9 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
@@ -21,25 +23,35 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -59,6 +71,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -803,7 +817,7 @@ fun SongListItem(
             badges = badges,
             thumbnailContent = {
                 ItemThumbnail(
-                    thumbnailUrl = song.song.thumbnailUrl?.resize(200, 200,),
+                    thumbnailUrl = song.song.thumbnailUrl?.resize(200, 200),
                     albumIndex = albumIndex,
                     isSelected = isSelected,
                     isActive = isActive,
@@ -1507,7 +1521,7 @@ fun YouTubeListItem(
 
     if (item is SongItem && isSwipeable && swipeEnabled) {
         SwipeToSongBox(
-            mediaItem = item.copy(thumbnail = item.thumbnail.resize(1080, 1080,)).toMediaItem(),
+            mediaItem = item.copy(thumbnail = item.thumbnail.resize(1080, 1080)).toMediaItem(),
             modifier = Modifier.fillMaxWidth()
         ) {
             content()
@@ -1747,7 +1761,7 @@ fun ItemThumbnail(
             if (shouldLoadImage) {
                 val request = remember(thumbnailUrl, widthPx, heightPx) {
                     ImageRequest.Builder(context)
-                        .data(thumbnailUrl?.resize(544, 544,))
+                        .data(thumbnailUrl?.resize(544, 544))
                         .allowHardware(true)
                         .apply {
                             if (widthPx != null && heightPx != null) {
@@ -1964,7 +1978,7 @@ fun PlaylistThumbnail(
         1 -> {
             val request = remember(thumbnails, sizePx) {
                 ImageRequest.Builder(context)
-                    .data(thumbnails[0].resize((sizePx * 1.5).toInt(), (sizePx * 1.5).toInt(),))
+                    .data(thumbnails[0].resize((sizePx * 1.5).toInt(), (sizePx * 1.5).toInt()))
                     .size(sizePx, sizePx)
                     .allowHardware(true)
                     .build()
@@ -1993,7 +2007,7 @@ fun PlaylistThumbnail(
                 val url = thumbnails.getOrNull(index)
                 val request = remember(url, halfPx) {
                     ImageRequest.Builder(context)
-                        .data(url?.resize((halfPx * 1.5).toInt(), (halfPx * 1.5).toInt(),))
+                        .data(url?.resize((halfPx * 1.5).toInt(), (halfPx * 1.5).toInt()))
                         .size(halfPx, halfPx)
                         .allowHardware(true)
                         .build()

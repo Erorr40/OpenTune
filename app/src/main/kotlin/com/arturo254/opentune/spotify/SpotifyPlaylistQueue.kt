@@ -54,10 +54,21 @@ class SpotifyPlaylistQueue(
             }
 
             val targetIndex = startIndex.coerceIn(allTracks.indices)
-            val resolvedEntries = resolveTrackEntries(allTracks)
-            val resolvedItems = resolvedEntries.map { it.second }
+            val batchStart = if (targetIndex > 0) maxOf(0, targetIndex) else 0
+            val batchEnd = minOf(allTracks.size, batchStart + RESOLVE_BATCH_SIZE)
+            val initialBatch = allTracks.subList(batchStart, batchEnd)
 
-            resolveOffset = allTracks.size
+            var resolvedEntries = resolveTrackEntries(initialBatch)
+            var resolvedItems = resolvedEntries.map { it.second }
+            resolveOffset = batchEnd
+
+            if (resolvedItems.isEmpty() && batchEnd < allTracks.size) {
+                val remainingBatch = allTracks.subList(batchEnd, allTracks.size)
+                resolvedEntries = resolveTrackEntries(remainingBatch)
+                resolvedItems = resolvedEntries.map { it.second }
+                resolveOffset = allTracks.size
+            }
+
             if (resolvedItems.isEmpty()) {
                 return@withContext Queue.Status(
                     title = title,
@@ -69,11 +80,7 @@ class SpotifyPlaylistQueue(
             Queue.Status(
                 title = title,
                 items = resolvedItems,
-                mediaItemIndex =
-                    resolvedEntries
-                        .indexOfFirst { it.first >= targetIndex }
-                        .takeIf { it >= 0 }
-                        ?: resolvedItems.lastIndex,
+                mediaItemIndex = 0,
             )
         }
 

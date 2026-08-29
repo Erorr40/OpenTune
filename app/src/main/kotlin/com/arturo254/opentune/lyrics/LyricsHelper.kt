@@ -11,7 +11,7 @@ package com.arturo254.opentune.lyrics
 import android.content.Context
 import android.util.Log
 import android.util.LruCache
-import com.arturo254.opentune.canvas.providers.GlobalLog
+import com.arturo254.opentune.utils.GlobalLog
 import com.arturo254.opentune.constants.PreferredLyricsProvider
 import com.arturo254.opentune.constants.PreferredLyricsProviderKey
 import com.arturo254.opentune.constants.ProviderOrderKey

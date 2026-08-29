@@ -54,14 +54,19 @@ import com.arturo254.opentune.db.entities.SongEntity
 import com.arturo254.opentune.db.entities.SongWithStats
 import com.arturo254.opentune.db.entities.TagEntity
 import com.arturo254.opentune.db.entities.PlaylistTagMap
+import com.arturo254.opentune.db.entities.PlaylistWithTags
 import com.arturo254.opentune.extensions.reversed
 import com.arturo254.opentune.extensions.toSQLiteQuery
 import com.arturo254.opentune.models.MediaMetadata
 import com.arturo254.opentune.models.toMediaMetadata
 import com.arturo254.opentune.ui.utils.resize
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.text.Collator
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -1427,7 +1432,7 @@ interface DatabaseDao {
         update(
             artist.copy(
                 name = artistPage.artist.title,
-                thumbnailUrl = artistPage.artist.thumbnail?.resize(544, 544,),
+                thumbnailUrl = artistPage.artist.thumbnail?.resize(544, 544),
                 lastUpdateTime = LocalDateTime.now()
             )
         )
