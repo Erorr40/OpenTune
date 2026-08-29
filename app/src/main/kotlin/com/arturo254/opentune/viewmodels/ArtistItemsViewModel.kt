@@ -78,7 +78,8 @@ constructor(
                             items =
                             (oldItemsPage.items + artistItemsContinuationPage.items)
                                 .distinctBy { it.id }
-                                .filterExplicit(context.dataStore.get(HideExplicitKey, false)),
+                                .filterExplicit(context.dataStore.get(HideExplicitKey, false))
+                                .filterVideo(context.dataStore.get(HideVideoKey, false)),
                             continuation = artistItemsContinuationPage.continuation,
                         )
                     }

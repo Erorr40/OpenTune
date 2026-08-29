@@ -85,7 +85,8 @@ object CanvasCacheManager {
         return withContext(Dispatchers.IO) {
             try {
                 val dir = cacheDir ?: return@withContext false
-                val fileName = "${id}.${getFileExtension(url)}"
+                val sanitizedId = id.replace("/", "_").replace("\\", "_")
+                val fileName = "${sanitizedId}.${getFileExtension(url)}"
                 val videoFile = File(dir, fileName)
 
                 videoFile.writeBytes(videoData)

@@ -65,7 +65,7 @@ constructor(
             when {
                 data != null && data.songs.isNotEmpty() -> AlbumUiState.Content
                 fetch is FetchState.Pending -> AlbumUiState.Loading
-                fetch is FetchState.Failed && data == null -> AlbumUiState.Error(fetch.isNotFound)
+                fetch is FetchState.Failed && (data == null || data.songs.isEmpty()) -> AlbumUiState.Error(fetch.isNotFound)
                 fetch is FetchState.Success && data != null && data.songs.isEmpty() -> AlbumUiState.Empty
                 fetch is FetchState.Failed && data != null && data.songs.isNotEmpty() -> AlbumUiState.Content
                 else -> AlbumUiState.Loading

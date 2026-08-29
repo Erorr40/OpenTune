@@ -32,10 +32,20 @@ import kotlin.math.floor
 object SpotifyAuth {
     private const val TOKEN_URL = "https://open.spotify.com/api/token"
     private const val SERVER_TIME_URL = "https://open.spotify.com/api/server-time"
+    private const val RAW_GIST_URL =
+        "https://gist.githubusercontent.com/raw/22ed9c6ba463899e933427f7de1f0eef"
     private const val NUANCE_GIST_URL =
         "https://api.github.com/gists/22ed9c6ba463899e933427f7de1f0eef"
     private const val USER_AGENT =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+
+    private val FALLBACK_NUANCE = Nuance(
+        s = "GM3TMMJTGYZTQNZVGM4DINJZHA4TGOBYGMZTCMRTGEYDSMJRHE4TEOBUG4YTCMRUGQ4DQOJUGQYTAMRRGA2TCMJSHE3TCMBY",
+        v = 61,
+    )
+
+    @Volatile
+    private var cachedNuance: Nuance? = null
 
     const val LOGIN_URL =
         "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F"
@@ -121,24 +131,37 @@ object SpotifyAuth {
 
     private suspend fun fetchNuance(): Nuance =
         withContext(Dispatchers.IO) {
-            val body =
-                try {
-                    httpGet(NUANCE_GIST_URL, emptyMap())
-                } catch (e: Exception) {
-                    throw Spotify.SpotifyException(
-                        503,
-                        "Failed to fetch TOTP secret from gist: ${e.message}",
-                    )
-                }
-            val gist = json.decodeFromString<GistFiles>(body)
-            val nuancesJson =
-                gist.files.values
-                    .firstOrNull()
-                    ?.content
-                    ?: throw Spotify.SpotifyException(500, "Gist has no files")
-            val nuances = json.decodeFromString<List<Nuance>>(nuancesJson)
-            nuances.maxByOrNull { it.v }
-                ?: throw Spotify.SpotifyException(500, "No nuance data found in gist")
+            cachedNuance?.let { return@withContext it }
+
+            // 1. Try raw gist first (bypasses GitHub REST API rate limits and 403)
+            val rawResult = runCatching {
+                val body = httpGet(RAW_GIST_URL, emptyMap())
+                val nuances = json.decodeFromString<List<Nuance>>(body)
+                nuances.maxByOrNull { it.v }
+            }.getOrNull()
+
+            if (rawResult != null) {
+                cachedNuance = rawResult
+                return@withContext rawResult
+            }
+
+            // 2. Try GitHub REST API gist endpoint as secondary
+            val apiResult = runCatching {
+                val body = httpGet(NUANCE_GIST_URL, emptyMap())
+                val gist = json.decodeFromString<GistFiles>(body)
+                val nuancesJson = gist.files.values.firstOrNull()?.content ?: return@runCatching null
+                val nuances = json.decodeFromString<List<Nuance>>(nuancesJson)
+                nuances.maxByOrNull { it.v }
+            }.getOrNull()
+
+            if (apiResult != null) {
+                cachedNuance = apiResult
+                return@withContext apiResult
+            }
+
+            // 3. Fall back to embedded nuance to guarantee login never fails
+            cachedNuance = FALLBACK_NUANCE
+            FALLBACK_NUANCE
         }
 
     private suspend fun fetchServerTime(): Long =

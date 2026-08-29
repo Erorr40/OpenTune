@@ -1457,7 +1457,7 @@ interface DatabaseDao {
             ),
         )
         if (artists?.size != albumPage.album.artists?.size) {
-            artists?.forEach(::delete)
+            albumArtistMaps(album.id).forEach(::delete)
         }
         albumPage.songs
             .map(SongItem::toMediaMetadata)

@@ -528,6 +528,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
+                downloadUtil.syncLikedSongsDownloads()
             }
 
             // Use remembered instances so the same state object is used everywhere
@@ -720,7 +721,9 @@ class MainActivity : ComponentActivity() {
                     val useRail = currentWindowAdaptiveInfo().windowSizeClass
                         .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
-                    val navController = rememberNavController()
+                    val navController = rememberNavController().also {
+                        this@MainActivity.navController = it
+                    }
                     val homeViewModel: HomeViewModel = hiltViewModel()
                     val accountImageUrl by homeViewModel.accountImageUrl.collectAsState()
                     val allLocalItems by homeViewModel.allLocalItems.collectAsState()

@@ -71,7 +71,7 @@ class ShazamSignatureGenerator(
 
         while (pending.size - processedSamples >= 128 &&
             (
-                signatureNumberSamples.toDouble() / sampleRateHz < maxTimeSeconds ||
+                signatureNumberSamples.toDouble() / sampleRateHz < maxTimeSeconds &&
                     bandToPeaks.values.sumOf { it.size } < maxPeaks
                 )
         ) {

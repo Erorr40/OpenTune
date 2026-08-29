@@ -39,8 +39,10 @@ import com.arturo254.opentune.constants.NetworkMeteredKey
 import com.arturo254.opentune.utils.dataStore
 import com.arturo254.opentune.utils.get
 import com.arturo254.opentune.models.toMediaMetadata
+import androidx.media3.exoplayer.offline.DownloadService
 import com.arturo254.opentune.constants.AutoDownloadArtworkKey
 import com.arturo254.opentune.constants.AutoDownloadLyricsKey
+import com.arturo254.opentune.constants.AutoDownloadOnLikeKey
 import com.arturo254.opentune.db.entities.LyricsEntity
 import com.arturo254.opentune.lyrics.LyricsHelper
 import com.arturo254.opentune.utils.reportException
@@ -118,6 +120,8 @@ constructor(
     }
 
     val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
+    private val downloadRetryCount = ConcurrentHashMap<String, Int>()
+    private val MAX_DOWNLOAD_RETRIES = 4
 
     private val dataSourceFactory =
         ResolvingDataSource.Factory(
@@ -135,20 +139,28 @@ constructor(
             if (playerCache.isCached(mediaId, dataSpec.position, length)) {
                 return@Factory dataSpec
             }
-            songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() }?.let {
+            songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() + 60_000L }?.let {
                 return@Factory dataSpec.withUri(it.first.toUri())
             }
-            val playbackData = runBlocking(Dispatchers.IO) {
-                val networkMeteredPref = context.dataStore.get(NetworkMeteredKey, true)
-                YTPlayerUtils.playerResponseForPlayback(
-                    mediaId,
-                    audioQuality = audioQuality,
-                    preferredStreamClient = preferredStreamClient,
-                    connectivityManager = connectivityManager,
-                    networkMetered = networkMeteredPref,
-                    avoidCodecs = avoidStreamCodecs,
-                )
-            }.getOrThrow()
+            var playbackDataResult: Result<YTPlayerUtils.PlaybackData>? = null
+            for (attempt in 0..2) {
+                playbackDataResult = runBlocking(Dispatchers.IO) {
+                    val networkMeteredPref = context.dataStore.get(NetworkMeteredKey, true)
+                    YTPlayerUtils.playerResponseForPlayback(
+                        mediaId,
+                        audioQuality = audioQuality,
+                        preferredStreamClient = preferredStreamClient,
+                        connectivityManager = connectivityManager,
+                        networkMetered = networkMeteredPref,
+                        avoidCodecs = avoidStreamCodecs,
+                    )
+                }
+                if (playbackDataResult.isSuccess) break
+                if (attempt < 2) {
+                    Thread.sleep(600L * (attempt + 1))
+                }
+            }
+            val playbackData = playbackDataResult?.getOrThrow() ?: error("No playback data for $mediaId")
             val format = playbackData.format
 
             database.query {
@@ -157,10 +169,10 @@ constructor(
                         id = mediaId,
                         itag = format.itag,
                         mimeType = format.mimeType.split(";")[0],
-                        codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
+                        codecs = format.mimeType.split("codecs=").getOrNull(1)?.removeSurrounding("\"").orEmpty(),
                         bitrate = format.bitrate,
                         sampleRate = format.audioSampleRate,
-                        contentLength = format.contentLength!!,
+                        contentLength = format.contentLength ?: 0L,
                         loudnessDb = playbackData.audioConfig?.loudnessDb,
                         perceptualLoudnessDb = playbackData.audioConfig?.perceptualLoudnessDb,
                         playbackUrl = playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl
@@ -215,9 +227,51 @@ constructor(
                                 set(download.request.id, download)
                             }
                         }
-                        if (download.state == Download.STATE_COMPLETED || download.state == Download.STATE_DOWNLOADING) {
-                            syncOfflineAssets(download.request.id)
+                        when (download.state) {
+                            Download.STATE_COMPLETED -> {
+                                downloadRetryCount.remove(download.request.id)
+                                syncOfflineAssets(download.request.id)
+                            }
+                            Download.STATE_DOWNLOADING -> {
+                                syncOfflineAssets(download.request.id)
+                            }
+                            Download.STATE_FAILED -> {
+                                songUrlCache.remove(download.request.id)
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val retries = downloadRetryCount.getOrDefault(download.request.id, 0)
+                                    val delayMs = ((retries + 1) * 2000L).coerceAtMost(30_000L)
+                                    downloadRetryCount[download.request.id] = retries + 1
+                                    delay(delayMs)
+                                    try {
+                                        DownloadService.sendAddDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            download.request,
+                                            false,
+                                        )
+                                    } catch (e: Exception) {
+                                        reportException(e)
+                                    }
+                                }
+                            }
+                            Download.STATE_REMOVING -> {
+                                downloadRetryCount.remove(download.request.id)
+                                songUrlCache.remove(download.request.id)
+                            }
                         }
+                    }
+
+                    override fun onDownloadRemoved(
+                        downloadManager: DownloadManager,
+                        download: Download,
+                    ) {
+                        downloads.update { map ->
+                            map.toMutableMap().apply {
+                                remove(download.request.id)
+                            }
+                        }
+                        downloadRetryCount.remove(download.request.id)
+                        songUrlCache.remove(download.request.id)
                     }
                 }
             )
@@ -226,11 +280,75 @@ constructor(
     init {
         CoroutineScope(Dispatchers.IO).launch {
             val result = mutableMapOf<String, Download>()
-            val cursor = downloadManager.downloadIndex.getDownloads()
-            while (cursor.moveToNext()) {
-                result[cursor.download.request.id] = cursor.download
+            downloadManager.downloadIndex.getDownloads().use { cursor ->
+                while (cursor.moveToNext()) {
+                    result[cursor.download.request.id] = cursor.download
+                }
             }
             downloads.value = result
+            retryFailedDownloads()
+            syncLikedSongsDownloads()
+
+            // Periodic auto-retry worker for any failed downloads
+            while (isActive) {
+                delay(30_000L)
+                val failed = downloads.value.values.filter { it.state == Download.STATE_FAILED }
+                if (failed.isNotEmpty()) {
+                    failed.forEach { dl ->
+                        try {
+                            songUrlCache.remove(dl.request.id)
+                            DownloadService.sendAddDownload(
+                                context,
+                                ExoDownloadService::class.java,
+                                dl.request,
+                                false,
+                            )
+                        } catch (e: Exception) {
+                            reportException(e)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun retryFailedDownloads() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val failed = downloads.value.values.filter { it.state == Download.STATE_FAILED }
+            failed.forEach { dl ->
+                try {
+                    songUrlCache.remove(dl.request.id)
+                    DownloadService.sendAddDownload(
+                        context,
+                        ExoDownloadService::class.java,
+                        dl.request,
+                        false,
+                    )
+                } catch (e: Exception) {
+                    reportException(e)
+                }
+            }
+        }
+    }
+
+    fun syncLikedSongsDownloads() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val autoDownloadOnLike = context.dataStore.data.map { it[AutoDownloadOnLikeKey] ?: true }.first()
+                if (!autoDownloadOnLike) return@launch
+
+                val likedSongs = database.likedSongs(com.arturo254.opentune.constants.SongSortType.CREATE_DATE, true).firstOrNull() ?: emptyList()
+                val currentDownloads = downloads.value
+
+                likedSongs.forEach { song ->
+                    val dl = currentDownloads[song.id]
+                    if (dl == null || (dl.state != Download.STATE_COMPLETED && dl.state != Download.STATE_DOWNLOADING && dl.state != Download.STATE_QUEUED)) {
+                        autoDownloadSong(song.id, song.song.title)
+                    }
+                }
+            } catch (e: Exception) {
+                reportException(e)
+            }
         }
     }
 

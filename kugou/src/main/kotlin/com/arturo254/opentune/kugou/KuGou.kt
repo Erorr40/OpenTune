@@ -180,7 +180,7 @@ object KuGou {
                 val filteredLines = lines.drop(headCutLine)
 
                 var tailCutLine = 0
-                for (i in min(lines.size - HEAD_CUT_LIMIT, lines.lastIndex) downTo 0) {
+                for (i in min(HEAD_CUT_LIMIT, lines.lastIndex) downTo 0) {
                     if (lines[lines.lastIndex - i].matches(BANNED_REGEX)) {
                         tailCutLine = i + 1
                         break

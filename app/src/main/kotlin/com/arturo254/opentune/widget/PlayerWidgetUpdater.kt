@@ -27,6 +27,19 @@ object PlayerWidgetUpdater {
     ) {
         runCatching {
             val manager = GlanceAppWidgetManager(context)
+            val widgetClasses = listOf(
+                OpenTunePlayerWidget::class.java to OpenTunePlayerWidget(),
+                OpenTuneCompactWidget::class.java to OpenTuneCompactWidget(),
+                OpenTuneVinylWidget::class.java to OpenTuneVinylWidget(),
+                OpenTuneLargeWidget::class.java to OpenTuneLargeWidget(),
+            )
+
+            val activeWidgets = widgetClasses.mapNotNull { (clazz, widget) ->
+                val glanceIds = manager.getGlanceIds(clazz)
+                if (glanceIds.isNotEmpty()) (widget to glanceIds) else null
+            }
+            if (activeWidgets.isEmpty()) return@runCatching
+
             val artworkBytes = state.artworkBitmap?.let { bmp ->
                 if (bmp == lastArtworkBitmap && lastArtworkBytes != null) {
                     lastArtworkBytes
@@ -49,17 +62,7 @@ object PlayerWidgetUpdater {
                 }
             }
 
-            val widgetClasses = listOf(
-                OpenTunePlayerWidget::class.java to OpenTunePlayerWidget(),
-                OpenTuneCompactWidget::class.java to OpenTuneCompactWidget(),
-                OpenTuneVinylWidget::class.java to OpenTuneVinylWidget(),
-                OpenTuneLargeWidget::class.java to OpenTuneLargeWidget(),
-            )
-
-            widgetClasses.forEach { (clazz, widget) ->
-                val glanceIds = manager.getGlanceIds(clazz)
-                if (glanceIds.isEmpty()) return@forEach
-
+            activeWidgets.forEach { (widget, glanceIds) ->
                 glanceIds.forEach { glanceId ->
                     updateAppWidgetState(
                         context,
