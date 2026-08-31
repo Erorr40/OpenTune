@@ -85,6 +85,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.dnsoverhttps.DnsOverHttps
 import java.net.Proxy
+import java.util.logging.Logger
 import kotlin.random.Random
 
 /**
@@ -92,6 +93,7 @@ import kotlin.random.Random
  * Modified from [ViMusic](https://github.com/vfsfitvnm/ViMusic)
  */
 object YouTube {
+    private val logger: Logger = Logger.getLogger("YouTube-InnerTube")
     private const val BROWSE_ID_EXPLORE = "FEmusic_explore"
     private const val BROWSE_ID_NEW_RELEASE_ALBUMS = "FEmusic_new_releases_albums"
     private const val BROWSE_ID_MOODS_AND_GENRES = "FEmusic_moods_and_genres"
@@ -420,6 +422,7 @@ object YouTube {
     }
 
     suspend fun album(browseId: String, withSongs: Boolean = true): Result<AlbumPage> = runCatching {
+        logger.info("album() START | browseId=$browseId, withSongs=$withSongs")
         val response = innerTube.browse(WEB_REMIX, browseId).body<BrowseResponse>()
         val playlistId = AlbumPage.getPlaylistId(response)
             ?: throw IllegalStateException("Missing album playlist id for $browseId")
@@ -439,10 +442,15 @@ object YouTube {
             explicit = false, // TODO: Extract explicit badge for albums from YouTube response
         )
         val inlineSongs = if (withSongs) AlbumPage.getSongs(response, albumItem) else emptyList()
+        logger.info("album() parse metadata | browseId=$browseId, title='$albumTitle', inlineSongs=${inlineSongs.size}")
         val songs = if (withSongs) {
             val fetchedSongs = runCatching {
                 albumSongs(playlistId, albumItem).getOrThrow()
             }.getOrElse { error ->
+                logger.warning(
+                    "album() albumSongs FAILED for playlist=$playlistId | " +
+                        "error=${error.message} | falling back to inlineSongs(${inlineSongs.size})"
+                )
                 if (inlineSongs.isNotEmpty()) {
                     inlineSongs
                 } else {
@@ -451,28 +459,38 @@ object YouTube {
             }
 
             if (fetchedSongs.isEmpty() && inlineSongs.isNotEmpty()) {
+                logger.info("album() using inlineSongs=${inlineSongs.size} (fetched was empty) | browseId=$browseId")
                 inlineSongs
             } else {
+                logger.info("album() using fetchedSongs=${fetchedSongs.size} | browseId=$browseId")
                 fetchedSongs
             }
         } else {
             emptyList()
         }
 
+        val otherVersions = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer?.contents
+            ?.mapNotNull { it.musicCarouselShelfRenderer }
+            ?.flatMap { it.contents }
+            ?.mapNotNull { it.musicTwoRowItemRenderer }
+            ?.mapNotNull(NewReleaseAlbumPage::fromMusicTwoRowItemRenderer)
+            ?.distinctBy { it.id }
+            .orEmpty()
+        logger.info(
+            "album() FINISH | browseId=$browseId, title='$albumTitle' | " +
+                "finalSongs=${songs.size} | otherVersions=${otherVersions.size}"
+        )
         AlbumPage(
             album = albumItem,
             songs = songs,
-            otherVersions = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer?.contents
-                ?.mapNotNull { it.musicCarouselShelfRenderer }
-                ?.flatMap { it.contents }
-                ?.mapNotNull { it.musicTwoRowItemRenderer }
-                ?.mapNotNull(NewReleaseAlbumPage::fromMusicTwoRowItemRenderer)
-                ?.distinctBy { it.id }
-                .orEmpty()
+            otherVersions = otherVersions
         )
+    }.onFailure { e ->
+        logger.severe("album() FAILED | browseId=$browseId | error=${e.message}")
     }
 
     suspend fun albumSongs(playlistId: String, album: AlbumItem? = null): Result<List<SongItem>> = runCatching {
+        logger.info("albumSongs() START | playlistId=$playlistId, albumTitle='${album?.title}'")
         var response = innerTube.browse(WEB_REMIX, "VL$playlistId").body<BrowseResponse>()
         val songs = linkedMapOf<String, SongItem>()
 
@@ -482,17 +500,34 @@ object YouTube {
             source: String,
         ): Boolean {
             if (candidates.isNotEmpty() && parsedSongs.isEmpty()) {
+                logger.severe(
+                    "albumSongs() parse error | playlistId=$playlistId | " +
+                        "candidates=${candidates.size} but parsedSongs=empty from source=$source"
+                )
                 throw IllegalStateException("Unable to parse album songs from $source for playlist $playlistId")
             }
 
             val previousSize = songs.size
             parsedSongs.forEach { songs.putIfAbsent(it.id, it) }
-            return songs.size > previousSize
+            val addedCount = songs.size - previousSize
+            if (addedCount > 0) {
+                logger.fine(
+                    "albumSongs() appendSongs | playlistId=$playlistId, source=$source | " +
+                        "candidates=${candidates.size}, parsed=${parsedSongs.size}, addedNew=$addedCount, total=${songs.size}"
+                )
+            }
+            return addedCount > 0
         }
 
+        val initialRenderers = AlbumPage.getSongRenderers(response)
+        val initialSongs = AlbumPage.getSongs(response, album)
+        logger.info(
+            "albumSongs() initial response | playlistId=$playlistId | " +
+                "renderers=${initialRenderers.size}, parsed=${initialSongs.size}"
+        )
         appendSongs(
-            candidates = AlbumPage.getSongRenderers(response),
-            parsedSongs = AlbumPage.getSongs(response, album),
+            candidates = initialRenderers,
+            parsedSongs = initialSongs,
             source = "initial response",
         )
 
@@ -502,8 +537,10 @@ object YouTube {
         val maxRequests = 50 // Prevent excessive API calls
 
         var consecutiveEmptyResponses = 0
+        logger.info("albumSongs() first continuation=$continuation | playlistId=$playlistId")
         while (continuation != null && requestCount < maxRequests) {
             if (continuation in seenContinuations) {
+                logger.warning("albumSongs() duplicate continuation detected, stopping | playlistId=$playlistId")
                 break
             }
             seenContinuations.add(continuation)
@@ -516,6 +553,10 @@ object YouTube {
 
             val newSongCandidates = AlbumPage.getContinuationSongRenderers(response)
             val newSongs = AlbumPage.getContinuationSongs(response, album)
+            logger.fine(
+                "albumSongs() continuation #$requestCount | playlistId=$playlistId | " +
+                    "renderers=${newSongCandidates.size}, parsed=${newSongs.size}"
+            )
             val hasNewSongs = if (newSongCandidates.isNotEmpty() || newSongs.isNotEmpty()) {
                 appendSongs(
                     candidates = newSongCandidates,
@@ -528,6 +569,10 @@ object YouTube {
 
             if (!hasNewSongs) {
                 consecutiveEmptyResponses++
+                logger.fine(
+                    "albumSongs() no new songs | playlistId=$playlistId | " +
+                        "consecutiveEmpty=$consecutiveEmptyResponses/2"
+                )
                 if (consecutiveEmptyResponses >= 2) break
             } else {
                 consecutiveEmptyResponses = 0
@@ -535,7 +580,17 @@ object YouTube {
 
             continuation = AlbumPage.getNextSongContinuation(response)
         }
-        songs.values.toList()
+        val finalList = songs.values.toList()
+        logger.info(
+            "albumSongs() FINISH | playlistId=$playlistId | " +
+                "totalSongs=${finalList.size}, requests=$requestCount"
+        )
+        finalList
+    }.onFailure { e ->
+        logger.severe(
+            "albumSongs() FAILED | playlistId=$playlistId | " +
+                "error=${e.message} | cause=${e.cause}"
+        )
     }
 
     suspend fun artist(browseId: String): Result<ArtistPage> = runCatching {

@@ -236,12 +236,9 @@
     <string name="error_no_song_playing">No se está reproduciendo ninguna canción</string>
     <string name="error_no_similar_songs">No se encontraron canciones similares</string>
     <string name="error_automix_failed">No se pudieron cargar canciones similares</string>
-    <string name="year_in_music">Tu año en música</string>
-    <string name="your_year_in_music">Tu año %d en música</string>
     <string name="total_listening_time">Tiempo total de escucha</string>
     <string name="top_songs">Canciones más escuchadas</string>
     <string name="top_artists">Artistas más escuchados</string>
-    <string name="share_summary">Compartir resumen</string>
     <string name="no_listening_data">No hay datos de escucha para este año</string>
     <string name="played">reproducida</string>
 
@@ -468,4 +465,23 @@
     <string name="your_artists">tus artistas</string>
     <string name="more_label">más</string>
     <string name="player_fullscreen">Reproductor en pantalla completa</string>
+
+    <string name="year_in_music">OpenTune SONAR</string>
+    <string name="your_year_in_music">Tu OpenTune SONAR %d</string>
+    <string name="share_summary">Compartir SONAR</string>
+    <string name="sonar">SONAR</string>
+    <string name="sonar_tagline">Tu año en ondas sonoras</string>
+    <string name="sonar_subtitle">Analizando %d minutos de tu año</string>
+    <string name="sonar_scan_depth">Profundidad del análisis</string>
+    <string name="sonar_top_signal">Señal más fuerte</string>
+    <string name="sonar_personality">Tu perfil SONAR</string>
+    <string name="sonar_summary">Informe SONAR %d</string>
+    <string name="sonar_share">Compartir informe</string>
+    <string name="sonar_generate">Generando instantánea de SONAR…</string>
+    <string name="sonar_select_year">Seleccionar año de SONAR</string>
+    <string name="sonar_swipe">Toca los laterales o desliza para continuar</string>
+    <string name="sonar_total_plays">Señales recibidas</string>
+    <string name="your_top_song">Tu canción favorita</string>
+    <string name="times_played">%1$d reproducciones</string>
+    <string name="no_most_played_yet">Empieza a escuchar música para ver aquí tu canción favorita</string>
 </resources>

@@ -111,11 +111,13 @@
     <string name="player_design_v4">Cinematic</string>
     <string name="player_design_v5">Little</string>
     <string name="player_design_v6">Expressive</string>
+    <string name="player_design_spotify">Spotify</string>
     <string name="new_mini_player_design">New mini player design</string>
     <string name="player_background_blur">Blur</string>
     <string name="coloring">Coloring</string>
     <string name="blur_gradient">Blur Gradient</string>
     <string name="glow">Glow</string>
+    <string name="player_background_spotify">Spotify Blur</string>
     <string name="player_buttons_style">Player button colors</string>
     <string name="default_style">Default</string>
     <string name="secondary_color_style">Secondary</string>
@@ -236,14 +238,56 @@
     <string name="error_no_song_playing">No song is currently playing</string>
     <string name="error_no_similar_songs">No similar songs found</string>
     <string name="error_automix_failed">Failed to load similar songs</string>
-    <string name="year_in_music">Year in Music</string>
-    <string name="your_year_in_music">Your %d Year in Music</string>
+    <string name="year_in_music">OpenTune SONAR</string>
+    <string name="your_year_in_music">Your SONAR %d</string>
     <string name="total_listening_time">Total Listening Time</string>
     <string name="top_songs">Top Songs</string>
     <string name="top_artists">Top Artists</string>
-    <string name="share_summary">Share Summary</string>
+    <string name="top_albums">Top Albums</string>
+    <string name="share_summary">Share SONAR</string>
     <string name="no_listening_data">No listening data for this year</string>
     <string name="played">played</string>
+    <string name="sonar">SONAR</string>
+    <string name="sonar_tagline">Your year in sound waves</string>
+    <string name="sonar_subtitle">Scanning %d minutes of your year</string>
+    <string name="sonar_scan_depth">Scan depth</string>
+    <string name="sonar_top_signal">Strongest signal</string>
+    <string name="sonar_personality">Your SONAR profile</string>
+    <string name="sonar_summary">SONAR report %d</string>
+    <string name="sonar_share">Share report</string>
+    <string name="sonar_generate">Generating SONAR snapshot…</string>
+    <string name="sonar_select_year">Select SONAR year</string>
+    <string name="sonar_swipe">Tap sides or swipe to continue</string>
+    <string name="sonar_total_plays">Signals received</string>
+    <string name="sonar_welcome_line1">Every signal you streamed. Every frequency you loved. Every artist you pinged.</string>
+    <string name="sonar_welcome_line2">SONAR maps the complete wave field of your year. Swipe → to start the scan.</string>
+    <string name="sonar_detected">SONAR detected</string>
+    <string name="sonar_of_music_scanned">of music scanned this year</string>
+    <string name="sonar_movies_equivalent">That\'s like watching %1$d full movies back-to-back in signal time.</string>
+    <string name="sonar_top_frequencies">Top Frequencies</string>
+    <string name="sonar_top_signals">Top 5 Signals</string>
+    <string name="sonar_holdsong_options">Hold card to see song options</string>
+    <string name="sonar_number1_transmitter">#1 TRANSMITTER</string>
+    <string name="sonar_holdartist_options">Hold card to see artist options</string>
+    <string name="sonar_top_formats">Top Formats</string>
+    <string name="sonar_top_transmissions">Top 5 Transmissions</string>
+    <string name="sonar_anthem">SONAR Anthem</string>
+    <string name="sonar_your_report">Your SONAR\nreport.</string>
+    <string name="sonar_highlights">Highlights</string>
+    <string name="sonar_album_collage">Album Universe</string>
+    <string name="sonar_album_collage_sub">Every spin you lived. Stitched together.</string>
+    <string name="sonar_listening_clock">Signal Schedule</string>
+    <string name="sonar_listening_clock_sub">When did SONAR receive the most pings?</string>
+    <string name="sonar_morning">Morning</string>
+    <string name="sonar_afternoon">Afternoon</string>
+    <string name="sonar_evening">Evening</string>
+    <string name="sonar_night">Night</string>
+    <string name="sonar_peak_early">Early bird</string>
+    <string name="sonar_peak_day">Day listener</string>
+    <string name="sonar_peak_sunset">Sunset dweller</string>
+    <string name="sonar_peak_night">Night owl</string>
+    <string name="sonar_saved_gallery">Snapshot saved to Pictures/OpenTune</string>
+    <string name="sonar_share_failed">Failed to save snapshot</string>
 
     <string name="custom_theme">Custom Theme</string>
     <string name="import_theme">Import Theme</string>
@@ -543,6 +587,9 @@
     <string name="most_played">Most played</string>
     <string name="highlights">Highlights</string>
     <string name="featured">Featured</string>
+    <string name="your_top_song">Your top song</string>
+    <string name="times_played">%1$d plays</string>
+    <string name="no_most_played_yet">Start listening to see your top song here</string>
 
     <!-- Updater -->
     <string name="unknown_error_short">Unknown error</string>
@@ -559,4 +606,32 @@
     <string name="update_downloading">Downloading update…</string>
     <string name="update_restart_notice">The app will restart once the download finishes.</string>
     <string name="update_error_prefix">Error: %1$s</string>
+    <!-- Discord Social SDK (official Rich Presence, replaces kizzy token-scraping) -->
+    <string name="discord_social_sdk_title">Discord (official)</string>
+    <string name="discord_social_sdk_ready">Sign in with Discord to enable Rich Presence via the official SDK — no account token required.</string>
+    <string name="discord_social_sdk_missing_client_id">Missing Discord client ID — set DISCORD_SOCIAL_SDK_CLIENT_ID in local.properties.</string>
+    <string name="discord_social_sdk_init_failed">Failed to initialize the Discord SDK client.</string>
+    <string name="discord_social_sdk_waiting_for_browser">Waiting for authorization in Discord…</string>
+    <string name="discord_social_sdk_authorization_failed">Authorization failed or was cancelled.</string>
+    <string name="discord_social_sdk_exchanging_token">Finishing sign-in…</string>
+    <string name="discord_social_sdk_token_exchange_failed">Failed to exchange the authorization code for a token.</string>
+    <string name="discord_social_sdk_linked">Signed in with Discord.</string>
+    <string name="discord_social_sdk_sign_in">Sign in with Discord</string>
+    <string name="discord_social_sdk_use_official">Use official Discord SDK (beta)</string>
+    <string name="discord_social_sdk_use_official_desc">No account token stored, no ban risk — requires signing in separately below.</string>
+    <string name="discord_social_sdk_status_idle">Ready to connect</string>
+
+    <string name="discord_sign_in_method">Sign-in method</string>
+    <string name="discord_sign_in_method_official">Official (recommended)</string>
+    <string name="discord_sign_in_method_legacy">Legacy (account token)</string>
+    <string name="discord_sign_in_method_legacy_warning">Uses your Discord account token directly — against Discord\'s ToS and carries a ban risk. Prefer Official above unless you need it.</string>
+    <string name="discord_section_content">Content</string>
+    <string name="discord_section_buttons">Buttons</string>
+
+    <string name="show_canvas_debug">Show Canvas debug</string>
+    <string name="description_show_canvas_debug">Show logs and statistics for the Canvas Artwork system</string>
+    <string name="canvas_debug_section">Canvas Artwork</string>
+    <string name="canvas_cache_stats">Canvas cache</string>
+    <string name="canvas_logs">Canvas logs</string>
+    <string name="refresh_catalog">Reload catalog</string>
 </resources>

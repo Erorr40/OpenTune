@@ -427,6 +427,17 @@ constructor(
             .map { it[TopSize] ?: "50" }
             .distinctUntilChanged()
 
+    // ── Canción más reproducida ─────────────────────────────────────────────
+    val mostPlayedSong =
+        context.dataStore.data
+            .map { it[HideExplicitKey] ?: false }
+            .distinctUntilChanged()
+            .flatMapLatest { hideExplicit ->
+                database.mostPlayedSong().map { song ->
+                    if (hideExplicit && song?.song?.explicit == true) null else song
+                }
+            }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+
     // ── Artistas (bookmarked) ──────────────────────────────────────────────
     var artists =
         database

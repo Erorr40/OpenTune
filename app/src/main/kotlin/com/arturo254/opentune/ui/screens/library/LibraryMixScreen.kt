@@ -8,6 +8,9 @@
 package com.arturo254.opentune.ui.screens.library
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,14 +36,20 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -92,7 +101,9 @@ import com.arturo254.opentune.constants.ShowSpotifyPlaylistsKey
 import com.arturo254.opentune.constants.ShowTopPlaylistKey
 import com.arturo254.opentune.constants.YtmSyncKey
 import com.arturo254.opentune.db.entities.Playlist
+import com.arturo254.opentune.db.entities.Song
 import com.arturo254.opentune.extensions.move
+import com.arturo254.opentune.ui.utils.resize
 import com.arturo254.opentune.extensions.toMediaItem
 import com.arturo254.opentune.playback.queues.ListQueue
 import com.arturo254.opentune.playback.queues.LocalAlbumRadio
@@ -164,6 +175,10 @@ fun LibraryMixScreen(
     val artists by viewModel.artists.collectAsState()
     val playlists by viewModel.playlists.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val mostPlayedSong by viewModel.mostPlayedSong.collectAsState()
+    val mostPlayedPlayCount by remember(mostPlayedSong) {
+        database.getLifetimePlayCount(mostPlayedSong?.id)
+    }.collectAsStateWithLifecycle(initialValue = 0)
 
     val (showLiked) = rememberPreference(ShowLikedPlaylistKey, true)
     val (showDownloaded) = rememberPreference(ShowDownloadedPlaylistKey, true)
@@ -359,7 +374,32 @@ fun LibraryMixScreen(
                 }
             }
 
-
+            item(key = "most_played_song") {
+                MostPlayedSongCard(
+                    song = mostPlayedSong,
+                    playCount = mostPlayedPlayCount,
+                    onClick = {
+                        mostPlayedSong?.let { song ->
+                            coroutineScope.launch {
+                                playerConnection.playQueue(
+                                    ListQueue(
+                                        title = song.song.title,
+                                        items = listOf(song.toMediaItem())
+                                    )
+                                )
+                            }
+                        }
+                    },
+                    onLongClick = {
+                        mostPlayedSong?.let { song ->
+                            navController.navigate("song/${song.id}")
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItem(),
+                )
+            }
 
             // Modificada para devolver un String en lugar de un Int
             fun String.extractId(): String = this.substringAfterLast('/')
@@ -863,6 +903,207 @@ private fun LibraryShortcutGrid(
                         Spacer(Modifier.weight(1f))
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun MostPlayedSongCard(
+    song: Song?,
+    playCount: Int,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val accentColor = MaterialTheme.colorScheme.secondary
+    val animatedAccent by animateColorAsState(
+        targetValue = accentColor,
+        animationSpec = spring(),
+        label = "most_played_accent",
+    )
+
+    val expressiveHeroShape = RoundedCornerShape(
+        topStart = 32.dp,
+        topEnd = 10.dp,
+        bottomEnd = 32.dp,
+        bottomStart = 32.dp,
+    )
+
+    val expressiveThumbShape = RoundedCornerShape(
+        topStart = 22.dp,
+        topEnd = 10.dp,
+        bottomEnd = 22.dp,
+        bottomStart = 10.dp,
+    )
+
+    val approxPlayCount = remember(playCount, song) {
+        when {
+            song == null -> 0
+            playCount > 0 -> playCount
+            song.song.duration > 0 -> {
+                val durationMs = song.song.duration * 1000L
+                (song.song.totalPlayTime / durationMs.coerceAtLeast(60000L)).toInt()
+            }
+            else -> 0
+        }
+    }
+
+    Card(
+        shape = expressiveHeroShape,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = { if (song != null) onClick() },
+                onLongClick = { if (song != null) onLongClick() },
+            ),
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(expressiveThumbShape)
+                        .background(animatedAccent.copy(alpha = 0.16f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (song != null) {
+                        AsyncImage(
+                            model = song.song.thumbnailUrl?.resize(120),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.trending_up),
+                            contentDescription = null,
+                            tint = animatedAccent,
+                            modifier = Modifier.size(26.dp),
+                        )
+                    }
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    SuggestionChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                text = stringResource(R.string.your_top_song).uppercase(),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing * 1.5f,
+                                    fontSize = 10.sp,
+                                ),
+                            )
+                        },
+                        shape = CircleShape,
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        ),
+                        border = null,
+                        modifier = Modifier.height(20.dp),
+                    )
+
+                    Text(
+                        text = song?.song?.title ?: stringResource(R.string.most_played),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black,
+                        ),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+
+                    Text(
+                        text = song?.artists?.joinToString { it.name }?.takeIf { it.isNotBlank() }
+                            ?: stringResource(R.string.no_most_played_yet),
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.Medium,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+
+                if (song != null) {
+                    FilledIconButton(
+                        onClick = onClick,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = animatedAccent,
+                            contentColor = MaterialTheme.colorScheme.onSecondary,
+                        ),
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.play),
+                            contentDescription = stringResource(R.string.play),
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                } else {
+                    FilledTonalIconButton(
+                        onClick = {},
+                        enabled = false,
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.music_note),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                }
+            }
+
+            if (song != null && approxPlayCount > 0) {
+                AssistChip(
+                    onClick = {},
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.trending_up),
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = stringResource(R.string.times_played, approxPlayCount),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                            ),
+                        )
+                    },
+                    shape = RoundedCornerShape(14.dp),
+                    colors = AssistChipDefaults.assistChipColors(
+                        leadingIconContentColor = animatedAccent,
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ),
+                    border = null,
+                    modifier = Modifier.height(32.dp),
+                )
             }
         }
     }
