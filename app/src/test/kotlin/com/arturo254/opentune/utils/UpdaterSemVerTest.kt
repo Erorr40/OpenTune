@@ -61,6 +61,33 @@ class UpdaterSemVerTest {
     fun isSameVersion_matchesSemverRegardlessOfPrefixOrText() {
         assertTrue(Updater.isSameVersion("v13.0.0", "13.0.0"))
         assertTrue(Updater.isSameVersion("OpenTune 13.0.0", "13.0.0"))
+        assertTrue(Updater.isSameVersion("v4.0.1", "4.0.1"))
         assertFalse(Updater.isSameVersion("13.0.1", "13.0.0"))
+        assertFalse(Updater.isSameVersion("4.0.1", "3.0.6"))
+    }
+
+    @Test
+    fun findLatestRelease_picks401Over306() {
+        val releases =
+            listOf(
+                ReleaseInfo(
+                    tagName = "3.0.6",
+                    name = "OpenTune 3.0.6",
+                    body = null,
+                    publishedAt = "2026-08-20T00:00:00Z",
+                    htmlUrl = "https://example.com/3.0.6",
+                ),
+                ReleaseInfo(
+                    tagName = "v4.0.1",
+                    name = "OpenTune v4.0.1",
+                    body = null,
+                    publishedAt = "2026-09-03T00:00:00Z",
+                    htmlUrl = "https://example.com/v4.0.1",
+                ),
+            )
+
+        val latest = Updater.findLatestRelease(releases)
+        assertNotNull(latest)
+        assertEquals("v4.0.1", latest?.tagName)
     }
 }
