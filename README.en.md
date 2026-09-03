@@ -1,4 +1,4 @@
-﻿# OpenTune
+# OpenTune
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/Erorr40/OpenTune/master/fastlane/metadata/android/en-US/images/featureGraphic.png" alt="OpenTune Banner" width="100%"/>
@@ -155,7 +155,25 @@ Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduc
 
 ---
 
+## Original Author & Rights
+
+* **Original Creator & App Owner**: [Arturo Cervantes (@Arturo254)](https://github.com/Arturo254)
+* **Current Maintainer**: [Ahmed Raafat (@Erorr40)](https://github.com/Erorr40)
+
+All original application rights, architecture, UI design, and development of OpenTune belong to [Arturo254](https://github.com/Arturo254) as the original creator and owner of the application. This repository continues the maintenance, compatibility updates, and community support for the project.
+
+---
+
+## Contact
+
+For security reports, inquiries, or support, contact the maintainer at:
+- **Email**: [ahmedrafatbad666655557777@gmail.com](mailto:ahmedrafatbad666655557777@gmail.com)
+- **GitHub**: [https://github.com/Erorr40/OpenTune](https://github.com/Erorr40/OpenTune)
+
+---
+
 ## License
 
 This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
 See the [LICENSE](LICENSE) file for the full license text.
+

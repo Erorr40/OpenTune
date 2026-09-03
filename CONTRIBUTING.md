@@ -24,7 +24,6 @@ Thank you for your interest in contributing to **OpenTune**! This document outli
   * [Git Workflow](#git-workflow)
   * [Pull Request Lifecycle](#pull-request-lifecycle)
 * [Development Environment Setup](#development-environment-setup)
-* [Translation Contributions](#translation-contributions)
 * [Design Contributions](#design-contributions)
 
 ---
@@ -204,19 +203,6 @@ To set up your local environment for contributing:
 
 ---
 
-## Translation Contributions
-
-To help with translations:
-
-1. Sign up on [Crowdin](https://crowdin.com/project/opentune)
-2. Choose the language you want to contribute to
-3. Translate missing strings or improve existing translations
-4. The maintainer team will review and approve submissions
-
-If your language is not listed, contact us at [cervantesarturo254@gmail.com](mailto:cervantesarturo254@gmail.com).
-
----
-
 ## Design Contributions
 
 To contribute design ideas:
@@ -228,7 +214,16 @@ To contribute design ideas:
 
 ---
 
+## Original Creator & Rights
+
+* **Original Creator & App Owner**: [Arturo Cervantes (@Arturo254)](https://github.com/Arturo254)
+* **Current Maintainer**: [Ahmed Raafat (@Erorr40)](https://github.com/Erorr40)
+
+All original application rights, design, and foundational code of OpenTune belong to [Arturo254](https://github.com/Arturo254).
+
+---
+
 Thank you for contributing to **OpenTune**! Your efforts help us build a better experience for all users.
-If you have any questions, feel free to open an issue labeled `question` or reach out directly to the development team.
+If you have any questions, feel free to open an issue labeled `question` or reach out directly to the maintainer at [ahmedrafatbad666655557777@gmail.com](mailto:ahmedrafatbad666655557777@gmail.com).
 
 

@@ -214,10 +214,22 @@ fun AboutScreen(
                 HeroCardExpressive(shimmerBrush = shimmerEffect())
             }
 
+            // ── Original Creator & Rights card ──────────────────────────
+            item(key = "original_creator") {
+                OriginalCreatorCard(
+                    onCreatorClick = { uriHandler.openUri("https://github.com/Arturo254") }
+                )
+            }
+
             // ── Social card ───────────────────────────────────────────────
             item(key = "social") {
                 SocialCardExpressive(
                     links = listOf(
+                        SocialLink(
+                            R.drawable.github,
+                            "https://github.com/Arturo254",
+                            "Arturo254"
+                        ),
                         SocialLink(
                             R.drawable.github,
                             "https://github.com/Erorr40/OpenTune",
@@ -695,6 +707,71 @@ private fun ContributorCardExpressive(
                 else
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+// ── Original Creator & Rights card ──────────────────────────────────────────
+
+@Composable
+private fun OriginalCreatorCard(onCreatorClick: () -> Unit) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onCreatorClick),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(44.dp),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        painter = painterResource(R.drawable.person),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Arturo Cervantes (Arturo254)",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "Original Creator & Owner of OpenTune",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = "All original application rights belong to Arturo254",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Icon(
+                painter = painterResource(R.drawable.arrow_forward),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(18.dp),
             )
         }
     }
