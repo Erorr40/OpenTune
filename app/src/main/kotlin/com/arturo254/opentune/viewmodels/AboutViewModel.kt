@@ -47,19 +47,24 @@ class AboutViewModel : ViewModel() {
 
             val result = withContext(Dispatchers.IO) {
                 try {
-                    val url = URL("https://api.github.com/repos/Arturo254/OpenTune/contributors")
+                    val url = URL("https://api.github.com/repos/Erorr40/OpenTune/contributors")
                     val connection = url.openConnection() as HttpURLConnection
                     connection.requestMethod = "GET"
+                    connection.setRequestProperty("User-Agent", "OpenTune-Android")
                     connection.connectTimeout = 5000
                     connection.readTimeout = 5000
 
-                    val responseCode = connection.responseCode
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        val response = connection.inputStream.bufferedReader().readText()
-                        parseContributors(response)
-                    } else {
-                        _error.value = "Error: $responseCode"
-                        getFallbackContributors()
+                    try {
+                        val responseCode = connection.responseCode
+                        if (responseCode == HttpURLConnection.HTTP_OK) {
+                            val response = connection.inputStream.bufferedReader().readText()
+                            parseContributors(response)
+                        } else {
+                            _error.value = "Error: $responseCode"
+                            getFallbackContributors()
+                        }
+                    } finally {
+                        connection.disconnect()
                     }
                 } catch (e: Exception) {
                     _error.value = e.message

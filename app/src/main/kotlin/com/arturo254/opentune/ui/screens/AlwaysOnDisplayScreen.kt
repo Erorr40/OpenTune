@@ -223,7 +223,6 @@ fun AlwaysOnDisplayScreen(navController: NavController) {
             if (window != null) {
                 val insetsController = WindowCompat.getInsetsController(window, window.decorView)
                 insetsController.show(WindowInsetsCompat.Type.systemBars())
-                WindowCompat.setDecorFitsSystemWindows(window, true)
             }
         }
     }

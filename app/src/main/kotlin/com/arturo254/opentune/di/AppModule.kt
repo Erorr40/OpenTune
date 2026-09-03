@@ -106,7 +106,10 @@ private class LazyCache(
         delegate().isCached(key, position, length)
 
     override fun release() =
-        delegate().release()
+        synchronized(lock) {
+            cache?.release()
+            cache = null
+        }
 }
 
 @Module

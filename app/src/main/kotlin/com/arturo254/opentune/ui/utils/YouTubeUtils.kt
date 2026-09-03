@@ -14,6 +14,7 @@ private const val PlayerArtworkHighResPx = 1080
 fun String.resize(
     width: Int? = null,
     height: Int? = null,
+    ytimgResizePolicy: YtimgResizePolicy = YtimgResizePolicy.AllowAnyAspect,
 ): String {
     if (width == null && height == null) return this
 
@@ -58,6 +59,12 @@ fun String.resize(
     }
 
     return this
+}
+
+enum class YtimgResizePolicy {
+    PreserveOriginal,
+    MatchSourceAspect,
+    AllowAnyAspect,
 }
 
 /**

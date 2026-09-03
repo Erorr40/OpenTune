@@ -62,7 +62,8 @@ class ExoDownloadService : DownloadService(
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             REMOVE_ALL_PENDING_DOWNLOADS -> {
-                downloadManager.currentDownloads.forEach { download ->
+                val nonCompleted = downloadUtil.downloads.value.values.filter { it.state != Download.STATE_COMPLETED }
+                nonCompleted.forEach { download ->
                     downloadManager.removeDownload(download.request.id)
                 }
             }

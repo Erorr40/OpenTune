@@ -637,22 +637,7 @@ fun SpotifyPlaylistScreen(
                                             viewModel.cancelDownloads()
                                             Toast.makeText(context, "Download cancelled", Toast.LENGTH_SHORT).show()
                                         } else if (tracks.isNotEmpty()) {
-                                            Toast.makeText(
-                                                context,
-                                                context.getString(R.string.downloading),
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            viewModel.downloadAllTracks(
-                                                context = context,
-                                                database = database,
-                                                onComplete = { success, failed ->
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Downloaded $success songs" + if (failed > 0) " ($failed failed)" else "",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                }
-                                            )
+                                            viewModel.downloadAllTracks()
                                         }
                                     },
                                     enabled = tracks.isNotEmpty(),
@@ -785,7 +770,7 @@ fun SpotifyPlaylistScreen(
                             IconButton(
                                 onClick = {
                                     Toast.makeText(context, context.getString(R.string.downloading), Toast.LENGTH_SHORT).show()
-                                    viewModel.downloadSingleTrack(context, database, track) { metadata ->
+                                    viewModel.downloadSingleTrack(track) { metadata ->
                                         if (metadata == null) {
                                             Toast.makeText(context, "Could not find song on YouTube", Toast.LENGTH_SHORT).show()
                                         }

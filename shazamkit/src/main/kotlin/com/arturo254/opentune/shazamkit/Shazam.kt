@@ -134,7 +134,11 @@ object Shazam {
      * Cancel all pending requests
      */
     fun cancelPendingRequests() {
-        requestQueue.clear()
+        val exception = Exception("Request cancelled")
+        while (true) {
+            val request = requestQueue.poll() ?: break
+            request.completeWith(Result.failure(exception))
+        }
     }
 
     /**
@@ -152,23 +156,27 @@ object Shazam {
     private suspend fun enqueueRequest(
         signature: String,
         sampleDurationMs: Long
-    ): Result<RecognitionResult> = requestMutex.withLock {
-        if (requestQueue.size >= MAX_QUEUE_SIZE) {
-            return Result.failure(Exception("Request queue is full. Please wait."))
-        }
+    ): Result<RecognitionResult> {
+        val request = requestMutex.withLock {
+            if (requestQueue.size >= MAX_QUEUE_SIZE) {
+                return Result.failure(Exception("Request queue is full. Please wait."))
+            }
 
-        val requestId = nextRequestId++
-        val request = PendingRequest(
-            id = requestId,
-            signature = signature,
-            sampleDurationMs = sampleDurationMs
-        )
+            val requestId = nextRequestId++
+            val request = PendingRequest(
+                id = requestId,
+                signature = signature,
+                sampleDurationMs = sampleDurationMs
+            )
 
-        requestQueue.offer(request)
+            requestQueue.offer(request)
 
-        if (!isProcessingQueue) {
-            isProcessingQueue = true
-            processQueue()
+            if (!isProcessingQueue) {
+                isProcessingQueue = true
+                processQueue()
+            }
+            
+            request
         }
 
         return request.awaitResult()
@@ -430,20 +438,14 @@ object Shazam {
         val signature: String,
         val sampleDurationMs: Long
     ) {
-        private val mutex = Mutex()
-        private var result: Result<RecognitionResult>? = null
-        private var isCompleted = false
+        private val deferred = kotlinx.coroutines.CompletableDeferred<Result<RecognitionResult>>()
 
         suspend fun awaitResult(): Result<RecognitionResult> {
-            while (!isCompleted) {
-                delay(50)
-            }
-            return result ?: Result.failure(Exception("Result not received"))
+            return deferred.await()
         }
 
         fun completeWith(result: Result<RecognitionResult>) {
-            this.result = result
-            this.isCompleted = true
+            deferred.complete(result)
         }
     }
 

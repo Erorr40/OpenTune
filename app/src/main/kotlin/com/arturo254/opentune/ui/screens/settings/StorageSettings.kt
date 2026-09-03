@@ -69,6 +69,8 @@ import com.arturo254.opentune.LocalPlayerAwareWindowInsets
 import com.arturo254.opentune.LocalPlayerConnection
 import com.arturo254.opentune.R
 import com.arturo254.opentune.canvas.CanvasCacheManager
+import com.arturo254.opentune.constants.AutoDownloadArtworkKey
+import com.arturo254.opentune.constants.AutoDownloadLyricsKey
 import com.arturo254.opentune.constants.MaxCanvasCacheSizeKey
 import com.arturo254.opentune.constants.MaxImageCacheSizeKey
 import com.arturo254.opentune.constants.MaxSongCacheSizeKey
@@ -79,6 +81,7 @@ import com.arturo254.opentune.ui.component.ActionPromptDialog
 import com.arturo254.opentune.ui.component.IconButton
 import com.arturo254.opentune.ui.component.ListPreference
 import com.arturo254.opentune.ui.component.PreferenceEntry
+import com.arturo254.opentune.ui.component.PreferenceGroupTitle
 import com.arturo254.opentune.ui.component.SwitchPreference
 import com.arturo254.opentune.ui.player.CanvasArtworkPlaybackCache
 import com.arturo254.opentune.ui.utils.backToMain
@@ -120,6 +123,14 @@ fun StorageSettings(
     val (maxSongCacheSize, onMaxSongCacheSizeChange) = rememberPreference(
         key = MaxSongCacheSizeKey,
         defaultValue = 1024
+    )
+    val (autoDownloadLyrics, onAutoDownloadLyricsChange) = rememberPreference(
+        key = AutoDownloadLyricsKey,
+        defaultValue = true
+    )
+    val (autoDownloadArtwork, onAutoDownloadArtworkChange) = rememberPreference(
+        key = AutoDownloadArtworkKey,
+        defaultValue = true
     )
     val (maxCanvasCacheSize, onMaxCanvasCacheSizeChange) = rememberPreference(
         key = MaxCanvasCacheSizeKey,
@@ -362,6 +373,24 @@ fun StorageSettings(
             checked = smartTrimmer && isSmartTrimmerAvailable,
             onCheckedChange = onSmartTrimmerChange,
             isEnabled = isSmartTrimmerAvailable,
+        )
+
+        PreferenceGroupTitle(
+            title = stringResource(R.string.offline_downloads_section)
+        )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.auto_download_lyrics)) },
+            description = stringResource(R.string.auto_download_lyrics_desc),
+            checked = autoDownloadLyrics,
+            onCheckedChange = onAutoDownloadLyricsChange,
+        )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.auto_download_artwork)) },
+            description = stringResource(R.string.auto_download_artwork_desc),
+            checked = autoDownloadArtwork,
+            onCheckedChange = onAutoDownloadArtworkChange,
         )
 
         // ✅ Tarjetas de caché con estilo MD3 Expressive

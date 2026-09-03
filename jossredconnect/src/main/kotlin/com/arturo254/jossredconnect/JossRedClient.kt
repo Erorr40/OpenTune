@@ -22,7 +22,8 @@ object JossRedClient {
 
     // Method to get the streaming URL with error handling
     fun getStreamingUrl(mediaId: String): String {
-        val requestUrl = "$BASE_STREAM_URL$mediaId"
+        val encodedMediaId = java.net.URLEncoder.encode(mediaId, "UTF-8")
+        val requestUrl = "$BASE_STREAM_URL$encodedMediaId"
         val request = Request.Builder()
             .url(requestUrl)
             .head() // We use HEAD to verify without downloading the full content

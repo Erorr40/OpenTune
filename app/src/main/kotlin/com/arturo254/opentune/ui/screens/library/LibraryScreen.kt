@@ -43,7 +43,9 @@ import com.arturo254.opentune.utils.rememberPreference
 
 @Composable
 fun LibraryScreen(navController: NavController) {
-    var filterType by rememberEnumPreference(ChipSortTypeKey, LibraryFilter.LIBRARY)
+    var filterType by androidx.compose.runtime.saveable.rememberSaveable {
+        androidx.compose.runtime.mutableStateOf(LibraryFilter.LIBRARY)
+    }
     val (disableBlur) = rememberPreference(DisableBlurKey, true)
 
     val database = LocalDatabase.current

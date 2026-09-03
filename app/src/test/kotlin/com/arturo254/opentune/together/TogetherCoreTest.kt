@@ -80,6 +80,28 @@ class TogetherCoreTest {
                 receivedAtElapsedMs = 1200L,
                 serverElapsedMs = 1150L,
             )
+        assertEquals(200L, snapshot.estimatedRttMs)
+        assertEquals(50L, snapshot.estimatedOffsetMs)
         assertTrue(snapshot.estimatedRttMs >= 0L)
+    }
+
+    @Test
+    fun compactLink_decode() {
+        val decoded = TogetherLink.decode("192.168.1.20|42117|sid123|key456")
+        assertNotNull(decoded)
+        assertEquals("192.168.1.20", decoded?.host)
+        assertEquals(42117, decoded?.port)
+        assertEquals("sid123", decoded?.sessionId)
+        assertEquals("key456", decoded?.sessionKey)
+    }
+
+    @Test
+    fun compactLink_decode_withWhitespace() {
+        val decoded = TogetherLink.decode(" 192.168.1.20 | 42117 | sid123 | key456 ")
+        assertNotNull(decoded)
+        assertEquals("192.168.1.20", decoded?.host)
+        assertEquals(42117, decoded?.port)
+        assertEquals("sid123", decoded?.sessionId)
+        assertEquals("key456", decoded?.sessionKey)
     }
 }

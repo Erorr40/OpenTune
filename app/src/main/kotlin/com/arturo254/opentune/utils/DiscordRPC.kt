@@ -28,9 +28,9 @@ class DiscordRPC(
     companion object {
         private const val APPLICATION_ID = "1165706613961789445"
         private const val PAUSE_IMAGE_URL =
-            "https://raw.githubusercontent.com/koiverse/ArchiveTune/main/fastlane/metadata/android/en-US/images/RPC/pause_icon.png"
+            "https://raw.githubusercontent.com/Erorr40/OpenTune/master/fastlane/metadata/android/en-US/images/RPC/pause_icon.png"
         private const val APP_ICON_URL = 
-            "https://raw.githubusercontent.com/Arturo254/OpenTune/refs/heads/master/assets/icon.png"
+            "https://raw.githubusercontent.com/Erorr40/OpenTune/refs/heads/master/assets/icon.png"
         private const val logtag = "DiscordRPC"
     }
 

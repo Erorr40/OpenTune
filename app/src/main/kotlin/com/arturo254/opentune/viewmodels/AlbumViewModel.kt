@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 sealed interface AlbumUiState {
@@ -62,40 +63,72 @@ constructor(
 
     val uiState: StateFlow<AlbumUiState> =
         combine(albumWithSongs, _fetchState) { data, fetch ->
-            when {
-                data != null && data.songs.isNotEmpty() -> AlbumUiState.Content
+            val songsCount = data?.songs?.size ?: -1
+            val albumExists = data != null
+            val hasSongs = data?.songs?.isNotEmpty() == true
+            val result = when {
+                hasSongs -> AlbumUiState.Content
                 fetch is FetchState.Pending -> AlbumUiState.Loading
-                fetch is FetchState.Failed && data == null -> AlbumUiState.Error(fetch.isNotFound)
-                fetch is FetchState.Success && data != null && data.songs.isEmpty() -> AlbumUiState.Empty
-                fetch is FetchState.Failed && data != null && data.songs.isNotEmpty() -> AlbumUiState.Content
+                fetch is FetchState.Success -> if (hasSongs) AlbumUiState.Content else AlbumUiState.Empty
+                fetch is FetchState.Failed -> if (hasSongs) AlbumUiState.Content else AlbumUiState.Error(fetch.isNotFound)
                 else -> AlbumUiState.Loading
             }
+            Timber.d(
+                "AlbumViewModel: uiState update | albumId=$albumId | " +
+                    "albumExists=$albumExists | songsCount=$songsCount | " +
+                    "fetch=$fetch | => result=$result"
+            )
+            result
         }.stateIn(viewModelScope, SharingStarted.Eagerly, AlbumUiState.Loading)
 
     init {
+        Timber.d("AlbumViewModel: init for albumId=$albumId")
         retry()
     }
 
     fun retry() {
         viewModelScope.launch {
+            Timber.d("AlbumViewModel: retry() called for albumId=$albumId")
             _fetchState.value = FetchState.Pending
             val album = database.album(albumId).first()
+            Timber.d("AlbumViewModel: local album exists=${album != null} for albumId=$albumId")
+
             YouTube
                 .album(albumId)
-                .onSuccess {
-                    playlistId.value = it.album.playlistId
-                    otherVersions.value = it.otherVersions
+                .onSuccess { albumPage ->
+                    Timber.d(
+                        "AlbumViewModel: YouTube fetch SUCCESS for albumId=$albumId | " +
+                            "title='${albumPage.album.title}' | " +
+                            "songsFetched=${albumPage.songs.size} | " +
+                            "otherVersions=${albumPage.otherVersions.size}"
+                    )
+                    playlistId.value = albumPage.album.playlistId
+                    otherVersions.value = albumPage.otherVersions
+
                     database.withTransaction {
                         if (album == null) {
-                            insert(it)
+                            Timber.d("AlbumViewModel: inserting NEW album into DB: $albumId")
+                            insert(albumPage)
                         } else {
-                            update(album.album, it, album.artists)
+                            Timber.d("AlbumViewModel: UPDATING existing album in DB: $albumId")
+                            update(album.album, albumPage, album.artists)
                         }
                     }
+
+                    val dbAlbumAfter = database.albumWithSongs(albumId).first()
+                    Timber.d(
+                        "AlbumViewModel: DB after transaction | albumId=$albumId | " +
+                            "songsInDB=${dbAlbumAfter?.songs?.size ?: "null"}"
+                    )
                     _fetchState.value = FetchState.Success
-                }.onFailure {
-                    reportException(it)
-                    val isNotFound = it.message?.contains("NOT_FOUND") == true
+                }.onFailure { error ->
+                    Timber.e(
+                        error,
+                        "AlbumViewModel: YouTube fetch FAILED for albumId=$albumId | " +
+                            "message=${error.message}"
+                    )
+                    reportException(error)
+                    val isNotFound = error.message?.contains("NOT_FOUND") == true
                     if (isNotFound) {
                         database.query {
                             album?.album?.let(::delete)

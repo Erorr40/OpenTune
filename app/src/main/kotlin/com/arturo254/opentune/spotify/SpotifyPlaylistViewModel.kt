@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import android.content.Context
 import androidx.core.net.toUri
 import androidx.media3.exoplayer.offline.DownloadRequest
@@ -29,9 +30,6 @@ import com.arturo254.opentune.playback.ExoDownloadService
 import com.arturo254.opentune.spotify.models.SpotifyPlaylist
 import com.arturo254.opentune.spotify.models.SpotifyTrack
 import com.arturo254.opentune.utils.reportException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,16 +38,29 @@ class SpotifyPlaylistViewModel
 constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: SpotifyLibraryRepository,
+    private val downloadManager: SpotifyDownloadManager,
 ) : ViewModel() {
-    private val playlistId: String = savedStateHandle.get<String>("playlistId").orEmpty()
+    val playlistId: String = savedStateHandle.get<String>("playlistId").orEmpty()
 
     private val _uiState = MutableStateFlow(SpotifyPlaylistUiState(isLoading = true))
     val uiState: StateFlow<SpotifyPlaylistUiState> = _uiState.asStateFlow()
 
-    private var downloadJob: Job? = null
-
     init {
         reload()
+        viewModelScope.launch {
+            downloadManager.downloadStates.collect { states ->
+                val progress = states[playlistId]
+                if (progress != null) {
+                    _uiState.update {
+                        it.copy(
+                            isDownloading = progress.isDownloading,
+                            downloadedCount = progress.processedCount,
+                            totalDownloadCount = progress.totalCount,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun reload() {
@@ -57,16 +68,17 @@ constructor(
             _uiState.value = SpotifyPlaylistUiState(errorMessage = "Missing Spotify playlist")
             return
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        viewModelScope.launch {
+            _uiState.value = SpotifyPlaylistUiState(isLoading = true)
             try {
                 val playlist = repository.playlist(playlistId)
                 val tracks = repository.playlistTracks(playlistId)
                 _uiState.value =
                     SpotifyPlaylistUiState(
+                        isLoading = false,
                         playlist = playlist,
                         tracks = tracks,
-                        isLoading = false,
                     )
             } catch (error: CancellationException) {
                 throw error
@@ -82,122 +94,21 @@ constructor(
         }
     }
 
-    fun downloadAllTracks(
-        context: Context,
-        database: MusicDatabase,
-        onProgress: ((current: Int, total: Int) -> Unit)? = null,
-        onComplete: ((successCount: Int, failedCount: Int) -> Unit)? = null,
-    ) {
+    fun downloadAllTracks() {
         val currentTracks = _uiState.value.tracks
-        if (currentTracks.isEmpty() || _uiState.value.isDownloading) return
-
-        downloadJob?.cancel()
-        downloadJob = viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update {
-                it.copy(
-                    isDownloading = true,
-                    downloadedCount = 0,
-                    totalDownloadCount = currentTracks.size,
-                )
-            }
-
-            val semaphore = Semaphore(3)
-            var successCount = 0
-            var failedCount = 0
-            var processedCount = 0
-
-            currentTracks.forEach { track ->
-                try {
-                    val metadata = semaphore.withPermit {
-                        SpotifyPlaybackResolver.resolveToMetadata(track)
-                    }
-
-                    if (metadata != null) {
-                        database.transaction {
-                            insert(metadata)
-                        }
-
-                        val downloadRequest =
-                            DownloadRequest.Builder(metadata.id, metadata.id.toUri())
-                                .setCustomCacheKey(metadata.id)
-                                .setData(metadata.title.toByteArray())
-                                .build()
-
-                        DownloadService.sendAddDownload(
-                            context,
-                            ExoDownloadService::class.java,
-                            downloadRequest,
-                            false,
-                        )
-                        successCount++
-                    } else {
-                        failedCount++
-                    }
-                } catch (e: Exception) {
-                    reportException(e)
-                    failedCount++
-                }
-
-                processedCount++
-                val currentProcessed = processedCount
-                _uiState.update {
-                    it.copy(downloadedCount = currentProcessed)
-                }
-                withContext(Dispatchers.Main) {
-                    onProgress?.invoke(currentProcessed, currentTracks.size)
-                }
-            }
-
-            _uiState.update {
-                it.copy(
-                    isDownloading = false,
-                    downloadedCount = successCount,
-                )
-            }
-            withContext(Dispatchers.Main) {
-                onComplete?.invoke(successCount, failedCount)
-            }
-        }
+        if (currentTracks.isEmpty()) return
+        downloadManager.downloadAllTracks(playlistId, currentTracks)
     }
 
     fun downloadSingleTrack(
-        context: Context,
-        database: MusicDatabase,
         track: SpotifyTrack,
         onComplete: ((MediaMetadata?) -> Unit)? = null,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val metadata = runCatching {
-                val resolved = SpotifyPlaybackResolver.resolveToMetadata(track)
-                if (resolved != null) {
-                    database.transaction {
-                        insert(resolved)
-                    }
-                    val downloadRequest =
-                        DownloadRequest.Builder(resolved.id, resolved.id.toUri())
-                            .setCustomCacheKey(resolved.id)
-                            .setData(resolved.title.toByteArray())
-                            .build()
-
-                    DownloadService.sendAddDownload(
-                        context,
-                        ExoDownloadService::class.java,
-                        downloadRequest,
-                        false,
-                    )
-                }
-                resolved
-            }.getOrNull()
-
-            withContext(Dispatchers.Main) {
-                onComplete?.invoke(metadata)
-            }
-        }
+        downloadManager.downloadSingleTrack(track, onComplete)
     }
 
     fun cancelDownloads() {
-        downloadJob?.cancel()
-        _uiState.update { it.copy(isDownloading = false) }
+        downloadManager.cancelDownloads(playlistId)
     }
 }
 

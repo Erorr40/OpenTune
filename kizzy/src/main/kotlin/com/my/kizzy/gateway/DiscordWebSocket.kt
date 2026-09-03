@@ -74,8 +74,9 @@ open class DiscordWebSocket(
         encodeDefaults = true
     }
 
+    private val job = SupervisorJob()
     override val coroutineContext: CoroutineContext
-        get() = SupervisorJob() + Dispatchers.Default
+        get() = job + Dispatchers.Default
 
     fun connect() {
         launch {
@@ -137,7 +138,9 @@ open class DiscordWebSocket(
             "READY" -> {
                 val ready = json.decodeFromJsonElement<Ready>(this.d!!)
                 sessionId = ready.sessionId
-                resumeGatewayUrl = ready.resumeGatewayUrl + "/?v=10&encoding=json"
+                if (ready.resumeGatewayUrl != null) {
+                    resumeGatewayUrl = ready.resumeGatewayUrl + "/?v=10&encoding=json"
+                }
                 Logger.getLogger("Kizzy").log(INFO, "Gateway: resume_gateway_url updated to $resumeGatewayUrl")
                 Logger.getLogger("Kizzy").log(INFO, "Gateway: session_id updated to $sessionId")
                 connected = true
@@ -174,7 +177,7 @@ open class DiscordWebSocket(
         Logger.getLogger("Kizzy").log(INFO, "Gateway: Sending $HEARTBEAT with seq: $sequence")
         send(
             op = HEARTBEAT,
-            d = if (sequence == 0) "null" else sequence.toString(),
+            d = if (sequence == 0) null else sequence,
         )
     }
 
@@ -257,13 +260,13 @@ open class DiscordWebSocket(
     fun close() {
         heartbeatJob?.cancel()
         heartbeatJob = null
-        this.cancel()
         resumeGatewayUrl = null
         sessionId = null
         connected = false
-        runBlocking {
+        launch {
             websocket?.close()
             Logger.getLogger("Kizzy").log(Level.SEVERE, "Gateway: Connection to gateway closed")
+            this@DiscordWebSocket.cancel()
         }
     }
 

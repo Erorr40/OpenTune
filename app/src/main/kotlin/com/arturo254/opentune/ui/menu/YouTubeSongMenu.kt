@@ -69,6 +69,7 @@ import com.arturo254.opentune.LocalPlayerConnection
 import com.arturo254.opentune.LocalSyncUtils
 import com.arturo254.opentune.R
 import com.arturo254.opentune.constants.ArtistSeparatorsKey
+import com.arturo254.opentune.constants.AutoDownloadOnLikeKey
 import com.arturo254.opentune.constants.ExternalDownloaderEnabledKey
 import com.arturo254.opentune.constants.ExternalDownloaderPackageKey
 import com.arturo254.opentune.constants.ListItemHeight
@@ -103,7 +104,8 @@ fun YouTubeSongMenu(
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val librarySong by database.song(song.id).collectAsState(initial = null)
-    val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
+    val downloadUtil = LocalDownloadUtil.current
+    val download by downloadUtil.getDownload(song.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
     val syncUtils = LocalSyncUtils.current
     val artists = remember {
@@ -116,6 +118,7 @@ fun YouTubeSongMenu(
 
     // Artist separators for splitting artist names
     val (artistSeparators) = rememberPreference(ArtistSeparatorsKey, defaultValue = ",;/&")
+    val (autoDownloadOnLike) = rememberPreference(AutoDownloadOnLikeKey, defaultValue = true)
     val (externalDownloaderEnabled) = rememberPreference(ExternalDownloaderEnabledKey, defaultValue = false)
     val (externalDownloaderPackage) = rememberPreference(ExternalDownloaderPackageKey, defaultValue = "")
 
@@ -261,6 +264,9 @@ fun YouTubeSongMenu(
                                 update(s)  
                             }  
                             syncUtils.likeSong(s)  
+                            if (s.liked && autoDownloadOnLike) {
+                                downloadUtil.autoDownloadSong(s.id, s.title)
+                            }
                         }  
                     }  
                 },  
@@ -477,6 +483,8 @@ fun YouTubeSongMenu(
                                 downloadRequest,
                                 false,
                             )
+                            downloadUtil.syncOfflineAssets(song.id)
+                            Toast.makeText(context, context.getString(R.string.downloading), Toast.LENGTH_SHORT).show()
                         }
                     )
                 }

@@ -71,16 +71,25 @@ class DownloadQueueViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), downloadUtil.downloadManager.downloadsPaused)
 
     fun pauseAll() {
+        try {
+            downloadUtil.downloadManager.pauseDownloads()
+        } catch (_: Exception) {}
         val intent = Intent(context, ExoDownloadService::class.java).setAction(ExoDownloadService.PAUSE_DOWNLOADS)
-        context.startService(intent)
+        try { context.startService(intent) } catch (_: Exception) {}
     }
 
     fun resumeAll() {
+        try {
+            downloadUtil.downloadManager.resumeDownloads()
+        } catch (_: Exception) {}
         val intent = Intent(context, ExoDownloadService::class.java).setAction(ExoDownloadService.RESUME_DOWNLOADS)
-        context.startService(intent)
+        try { context.startService(intent) } catch (_: Exception) {}
     }
 
     fun removeDownload(id: String) {
+        try {
+            downloadUtil.downloadManager.removeDownload(id)
+        } catch (_: Exception) {}
         DownloadService.sendRemoveDownload(
             context,
             ExoDownloadService::class.java,
@@ -90,7 +99,17 @@ class DownloadQueueViewModel @Inject constructor(
     }
 
     fun removeAll() {
-        val intent = Intent(context, ExoDownloadService::class.java).setAction(ExoDownloadService.REMOVE_ALL_PENDING_DOWNLOADS)
-        context.startService(intent)
+        val nonCompleted = downloadUtil.downloads.value.values.filter { it.state != Download.STATE_COMPLETED }
+        nonCompleted.forEach { download ->
+            try {
+                downloadUtil.downloadManager.removeDownload(download.request.id)
+            } catch (_: Exception) {}
+            DownloadService.sendRemoveDownload(
+                context,
+                ExoDownloadService::class.java,
+                download.request.id,
+                false
+            )
+        }
     }
 }

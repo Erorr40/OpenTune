@@ -246,7 +246,7 @@ class SyncUtils @Inject constructor(
             val localSongs = database.songsByNameAsc().first()
 
             if (!isSyncStillEnabled(gen)) return@onSuccess
-            localSongs.filterNot { it.id in remoteIds }
+            localSongs.filterNot { it.id in remoteIds || it.song.isLocal }
                 .forEach { database.update(it.song.copy(inLibrary = null)) }
 
             remoteSongs.forEach { song ->
@@ -292,7 +292,7 @@ class SyncUtils @Inject constructor(
             val localAlbums = database.albumsLikedByNameAsc().first()
 
             if (!isSyncStillEnabled(gen)) return@onSuccess
-            localAlbums.filterNot { it.id in remoteIds }
+            localAlbums.filterNot { it.id in remoteIds || it.album.isLocal }
                 .forEach { database.update(it.album.localToggleLike()) }
 
             remoteAlbums.forEach { album ->
@@ -347,7 +347,7 @@ class SyncUtils @Inject constructor(
             val localArtists = database.artistsBookmarkedByNameAsc().first()
 
             if (!isSyncStillEnabled(gen)) return@onSuccess
-            localArtists.filterNot { it.id in remoteIds }
+            localArtists.filterNot { it.id in remoteIds || it.artist.isLocal }
                 .forEach { database.update(it.artist.localToggleLike()) }
 
             remoteArtists.forEach { artist ->

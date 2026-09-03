@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -63,8 +64,8 @@ constructor(
                                 SearchSuggestionViewState(history = history)
                             }
                     }
-                }.collect {
-                    _viewState.value = it
+                }.collect { newState ->
+                    _viewState.update { current -> current.copy(history = newState.history) }
                 }
         }
 
@@ -81,18 +82,20 @@ constructor(
                         }
                     }
                 }.collect { result ->
-                    val history = _viewState.value.history
-                    _viewState.value = _viewState.value.copy(
-                        suggestions = result
-                            ?.queries
-                            ?.filter { s -> history.none { it.query == s } }
-                            .orEmpty(),
-                        items = result
-                            ?.recommendedItems
-                            ?.filterExplicit(context.dataStore.get(HideExplicitKey, false))
-                            ?.filterVideo(context.dataStore.get(HideVideoKey, false))
-                            .orEmpty(),
-                    )
+                    _viewState.update { current ->
+                        val history = current.history
+                        current.copy(
+                            suggestions = result
+                                ?.queries
+                                ?.filter { s -> history.none { it.query == s } }
+                                .orEmpty(),
+                            items = result
+                                ?.recommendedItems
+                                ?.filterExplicit(context.dataStore.get(HideExplicitKey, false))
+                                ?.filterVideo(context.dataStore.get(HideVideoKey, false))
+                                .orEmpty(),
+                        )
+                    }
                 }
         }
     }

@@ -93,7 +93,10 @@ constructor(
                 val searchResult =
                     YouTube.searchContinuation(continuation).getOrNull() ?: return@launch
                 viewStateMap[filter] = ItemsPage(
-                    (viewState.items + searchResult.items).distinctBy { it.id },
+                    (viewState.items + searchResult.items)
+                        .distinctBy { it.id }
+                        .filterExplicit(context.dataStore.get(HideExplicitKey, false))
+                        .filterVideo(context.dataStore.get(HideVideoKey, false)),
                     searchResult.continuation
                 )
             }

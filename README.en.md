@@ -1,160 +1,100 @@
-# OpenTune
+﻿# OpenTune
 
 <div align="center">
-  <img src="https://github.com/Arturo254/OpenTune/blob/master/fastlane/metadata/android/en-US/images/featureGraphic.png" alt="OpenTune Banner" width="100%"/>
+  <img src="https://raw.githubusercontent.com/Erorr40/OpenTune/master/fastlane/metadata/android/en-US/images/featureGraphic.png" alt="OpenTune Banner" width="100%"/>
   
   ### Advanced YouTube Music Client with Material Design 3 for Android
   
-  [![Latest Release](https://img.shields.io/github/v/release/Arturo254/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Arturo254/OpenTune/releases)
-  [![License](https://img.shields.io/github/license/Arturo254/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Arturo254/OpenTune/blob/main/LICENSE)
-  [![Translation Status](https://badges.crowdin.net/opentune/localized.svg)](https://crowdin.com/project/opentune)
-  [![Android](https://img.shields.io/badge/Platform-Android%206.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
-  [![Stars](https://img.shields.io/github/stars/Arturo254/OpenTune?style=flat-square&logo=github&color=yellow&labelColor=161B22&cacheSeconds=21600)](https://github.com/Arturo254/OpenTune/stargazers)
-  [![Forks](https://img.shields.io/github/forks/Arturo254/OpenTune?style=flat-square&logo=github&color=blue&labelColor=161B22&cacheSeconds=21600)](https://github.com/Arturo254/OpenTune/network/members)
+  [![Latest Release](https://img.shields.io/github/v/release/Erorr40/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases)
+  [![License](https://img.shields.io/github/license/Erorr40/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Erorr40/OpenTune/blob/master/LICENSE)
+  [![Platform](https://img.shields.io/badge/Platform-Android%208.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
+  [![Stars](https://img.shields.io/github/stars/Erorr40/OpenTune?style=flat-square&logo=github&color=yellow&labelColor=161B22&cacheSeconds=21600)](https://github.com/Erorr40/OpenTune/stargazers)
+  [![Forks](https://img.shields.io/github/forks/Erorr40/OpenTune?style=flat-square&logo=github&color=blue&labelColor=161B22&cacheSeconds=21600)](https://github.com/Erorr40/OpenTune/network/members)
 </div>
+
+---
+
+## Legal Notice & DMCA Compliance
+
+> **Important Legal Disclaimer**:
+> 
+> OpenTune is an independent, non-commercial, open-source Android client designed for personal use, interoperability, and study under fair use doctrines.
+> 
+> - **No Hosting of Copyrighted Content**: OpenTune does **not** host, store, stream, pirate, or redistribute any audio, video, or copyright-protected media files on any server.
+> - **Client-Side Interoperability**: The application acts strictly as an interoperable player interface communicating with public web endpoints on behalf of the user.
+> - **Trademark Notice**: YouTube, YouTube Music, Google, Spotify, Discord, and Android are registered trademarks of their respective owners. OpenTune is not affiliated with, sponsored by, or endorsed by Google LLC, Alphabet Inc., Spotify AB, or Discord Inc.
+> - **DMCA Compliance**: If you are a copyright owner or an agent thereof and believe that any content referenced in this repository infringes upon your copyrights, please contact the repository maintainers directly or submit an issue before taking formal action.
 
 ---
 
 ## Table of Contents
 
+- [Legal Notice & DMCA Compliance](#legal-notice--dmca-compliance)
 - [Overview](#overview)
-- [Technology Stack](#technology-stack)
 - [Key Features](#key-features)
-- [Documentation](#documentation)
+- [Technology Stack](#technology-stack)
 - [Installation](#installation)
 - [Building from Source](#building-from-source)
 - [Contributing](#contributing)
-- [Support the Project](#support-the-project)
-- [Acknowledgments](#acknowledgments)
 - [License](#license)
 
 ---
 
 ## Overview
 
-**OpenTune** is an open-source YouTube Music client specifically designed for Android devices. It delivers a superior user experience with a modern interface implementing Material Design 3, offering advanced functionalities to explore, play, and manage musical content without the limitations of the official application.
+**OpenTune** is a modern, lightweight, and privacy-friendly open-source client for YouTube Music built with Android Jetpack Compose and Material Design 3. It delivers a fast, ad-free listening experience with background playback, synchronized lyrics, offline downloads, audio normalization, and seamless library management.
 
-### Key Benefits
+### Key Highlights
 
-- **Ad-free Experience**: Enjoy uninterrupted music streaming
-- **Enhanced Performance**: Optimized for smooth playback and navigation
-- **Privacy-focused**: No data collection or tracking
-- **Customizable Interface**: Personalize your music experience
-- **Offline Capabilities**: Download and play music without internet connection
-
-> **Note**: OpenTune is an independent project and is not affiliated, sponsored, or endorsed by YouTube or Google.
-
----
-
-## Technology Stack
-
-<div align="center">
-  
-| Frontend | Backend | Development Tools |
-|:--------:|:-------:|:----------------:|
-| ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white) | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) | ![Android Studio](https://img.shields.io/badge/Android%20Studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white) |
-| ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white) | ![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white) | ![Gradle](https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white) |
-| ![Material Design 3](https://img.shields.io/badge/Material%20Design%203-757575?style=for-the-badge&logo=materialdesign&logoColor=white) | | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) |
-
-</div>
+- **Ad-free Listening**: Seamless playback without advertising interruptions
+- **Background & Lockscreen Playback**: Keep listening with your screen off or while multitasking
+- **Privacy First**: No telemetry, tracking, or user data collection
+- **Material You Design**: Fully dynamic themes adapting to album art colors
+- **Offline Mode**: Cache and download your favorite songs for offline listening
+- **High Audio Quality**: Support for Opus audio streaming and replay gain normalization
 
 ---
 
 ## Key Features
 
 ### Core Functionality
-<table>
-<tr>
-<th width="30%">Feature</th>
-<th width="70%">Description</th>
-</tr>
-<tr>
-<td><strong>🎵 Ad-free Playback</strong></td>
-<td>Enjoy music without any advertising interruptions</td>
-</tr>
-<tr>
-<td><strong>🔄 Background Playback</strong></td>
-<td>Continue listening while using other applications</td>
-</tr>
-<tr>
-<td><strong>🔍 Advanced Search</strong></td>
-<td>Quickly find songs, videos, albums, and playlists</td>
-</tr>
-<tr>
-<td><strong>👤 Account Integration</strong></td>
-<td>Sign in to sync preferences and collections</td>
-</tr>
-<tr>
-<td><strong>📚 Library Management</strong></td>
-<td>Organize and fully manage your music collection</td>
-</tr>
-<tr>
-<td><strong>📱 Offline Mode</strong></td>
-<td>Download content for offline listening</td>
-</tr>
-</table>
+| Feature | Description |
+|---|---|
+| **🎵 Ad-free Playback** | Uninterrupted audio streaming without advertisements |
+| **🔄 Background Audio** | Continuous background service with media session controls |
+| **🔍 Smart Search** | Fast search for songs, videos, albums, artists, and playlists |
+| **👤 Account Integration** | Sign in securely to sync playlists and personal library |
+| **📚 Library Management** | Create and organize local and online playlists |
+| **📱 Offline Cache** | Download songs with embedded metadata and artwork |
 
-### Audio Enhancement
-<table>
-<tr>
-<th width="30%">Feature</th>
-<th width="70%">Description</th>
-</tr>
-<tr>
-<td><strong>🎤 Synchronized Lyrics</strong></td>
-<td>View perfectly synchronized song lyrics</td>
-</tr>
-<tr>
-<td><strong>⚡ Smart Silence Skip</strong></td>
-<td>Automatically skip segments without audio</td>
-</tr>
-<tr>
-<td><strong>🔊 Volume Normalization</strong></td>
-<td>Balance sound levels between different tracks</td>
-</tr>
-<tr>
-<td><strong>🎛️ Tempo & Pitch Control</strong></td>
-<td>Adjust playback speed and pitch to preferences</td>
-</tr>
-</table>
+### Audio Enhancements
+| Feature | Description |
+|---|---|
+| **🎤 Synchronized Lyrics** | Real-time synchronized lyrics via LRCLIB and BetterLyrics |
+| **⚡ Skip Silence** | Automatically detect and skip silent parts between songs |
+| **🔊 Audio Normalization** | Volume leveling across varying track masterings |
+| **🎛️ Pitch & Tempo** | Fine-tune playback speed and pitch |
+| **🎧 Equalizer** | Native Android audio effects panel integration |
 
-### Personalization & Integration
-<table>
-<tr>
-<th width="30%">Feature</th>
-<th width="70%">Description</th>
-</tr>
-<tr>
-<td><strong>🎨 Dynamic Theming</strong></td>
-<td>Interface adapts to album artwork colors</td>
-</tr>
-<tr>
-<td><strong>🌐 Multi-language Support</strong></td>
-<td>Available in numerous languages for global users</td>
-</tr>
-<tr>
-<td><strong>🚗 Android Auto Compatible</strong></td>
-<td>Integration with vehicle infotainment systems</td>
-</tr>
-<tr>
-<td><strong>🎯 Material Design 3</strong></td>
-<td>Design aligned with Google's latest design guidelines</td>
-</tr>
-<tr>
-<td><strong>🖼️ Artwork Export</strong></td>
-<td>Save high-resolution album images</td>
-</tr>
-</table>
+### Design & Connectivity
+| Feature | Description |
+|---|---|
+| **🎨 Material Design 3** | Expressive UI with adaptive color schemes |
+| **🚗 Android Auto** | Vehicle dashboard display and controls |
+| **💬 Discord RPC** | Optional rich presence support showing current song |
+| **🌐 Multi-language** | Localized in over 20 languages |
 
 ---
 
-## Documentation
-
-For detailed information about configuration, advanced features, and usage guides, consult our official documentation:
+## Technology Stack
 
 <div align="center">
-  
-[![Documentation](https://img.shields.io/badge/Documentation-GitBook-4285F4?style=for-the-badge&logo=gitbook&logoColor=white)](https://opentune.gitbook.io/)
+
+| Frontend | Backend & Networking | Build & Tools |
+|:---:|:---:|:---:|
+| Jetpack Compose | Ktor Client | Gradle 9 |
+| Material 3 Expressive | Kotlinx Serialization | Kotlin 2.3 |
+| Coil Image Loader | Room Database | Android NDK / CMake |
 
 </div>
 
@@ -162,47 +102,12 @@ For detailed information about configuration, advanced features, and usage guide
 
 ## Installation
 
-### System Requirements
+### GitHub Releases (Recommended)
 
-| Component | Minimum Requirement |
-|:----------|:--------------------|
-| Operating System | Android 6.0 (Marshmallow) or higher |
-| Storage Space | 10 MB available |
-| Network | Internet connection for streaming |
-| RAM | 2 GB recommended |
-
-### Installation Methods
-
-#### Option 1: GitHub Releases (Recommended)
-
-1. Navigate to the [Releases](https://github.com/Arturo254/OpenTune/releases) section on GitHub
-2. Download the APK file from the latest stable version
-3. Enable "Install from unknown sources" in your device's security settings
-4. Open the downloaded APK file to complete installation
-
-#### Option 2: Official Website
-
-1. Visit the official [OpenTune website](https://opentune.netlify.app/)
-2. Select the download option for Android
-3. Follow the installation instructions provided
-
-#### Option 3: F-Droid
-
-<div align="center">
-  
-[<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/es/packages/com.Arturo254.opentune)
-
-</div>
-
-#### Option 4: OpenApk
-
-<div align="center">
-  
-[<img src="https://www.openapk.net/images/openapk-badge.png" alt="Get it on OpenApk" height="80">](https://www.openapk.net/opentune/com.Arturo254.opentune/)
-
-</div>
-
-> **Security Notice**: For security reasons, it is recommended to obtain the application exclusively through the official channels mentioned above. Avoid downloading APKs from unverified sources.
+1. Go to the [Releases](https://github.com/Erorr40/OpenTune/releases) page.
+2. Download the latest `app-universal-release.apk` (Version 4.0.1).
+3. If prompted, enable "Install unknown apps" for your browser or file manager.
+4. Tap the downloaded APK to install.
 
 ---
 
@@ -210,182 +115,47 @@ For detailed information about configuration, advanced features, and usage guide
 
 ### Prerequisites
 
-<table>
-<tr>
-<th>Tool</th>
-<th>Recommended Version</th>
-<th>Purpose</th>
-</tr>
-<tr>
-<td>Gradle</td>
-<td>7.5 or higher</td>
-<td>Build automation</td>
-</tr>
-<tr>
-<td>Kotlin</td>
-<td>1.7 or higher</td>
-<td>Programming language</td>
-</tr>
-<tr>
-<td>Android Studio</td>
-<td>2022.1 or higher</td>
-<td>IDE and development environment</td>
-</tr>
-<tr>
-<td>JDK</td>
-<td>11 or higher</td>
-<td>Java runtime environment</td>
-</tr>
-<tr>
-<td>Android SDK</td>
-<td>API level 33 (Android 13)</td>
-<td>Android development tools</td>
-</tr>
-</table>
+- **JDK 21** (Eclipse Adoptium or OpenJDK 21)
+- **Android SDK** (API level 36, NDK 27+)
+- **Git**
 
-### Environment Setup
+### Build Steps
 
 ```bash
 # Clone the repository
-git clone https://github.com/Arturo254/OpenTune.git
-
-# Navigate to project directory
+git clone https://github.com/Erorr40/OpenTune.git
 cd OpenTune
 
-# Update submodules (if any)
-git submodule update --init --recursive
-```
+# Build debug APK
+./gradlew assembleUniversalDebug
 
-### Build Methods
-
-#### Android Studio Build
-
-1. Open Android Studio
-2. Select "Open an existing Android Studio project"
-3. Navigate and select the OpenTune directory
-4. Wait for project synchronization and indexing
-5. Select Build → Build Bundle(s) / APK(s) → Build APK(s)
-
-#### Command Line Build
-
-```bash
-# Build production release
-./gradlew assembleRelease
-
-# Build debug version
-./gradlew assembleDebug
-
-# Full build with tests
-./gradlew build
+# Build release APK
+./gradlew assembleUniversalRelease
 
 # Run unit tests
-./gradlew test
-
-# Clean build
-./gradlew clean
+./gradlew testUniversalDebugUnitTest
 ```
 
-> **Note**: Compiled APK files will be located in the `app/build/outputs/apk/` directory.
+Compiled APK files are output to `app/build/outputs/apk/`.
 
 ---
 
 ## Contributing
 
-### Code of Conduct
+Contributions, bug reports, and suggestions are welcome!
 
-All participants in this project must adhere to our code of conduct that promotes an inclusive, respectful, and constructive environment. Please review the [complete Code of Conduct](https://github.com/Arturo254/OpenTune/blob/master/CODE_OF_CONDUCT.md) before contributing.
+1. Check existing issues or open a new one in [GitHub Issues](https://github.com/Erorr40/OpenTune/issues).
+2. Fork the repository: `https://github.com/Erorr40/OpenTune`.
+3. Create a descriptive feature branch (`git checkout -b feature/amazing-feature`).
+4. Commit your changes (`git commit -m 'feat: add amazing feature'`).
+5. Push to the branch (`git push origin feature/amazing-feature`).
+6. Open a Pull Request.
 
-### Translation
-
-Help translate OpenTune into your language or improve existing translations:
-
-<div align="center">
-  
-[![POEditor](https://img.shields.io/badge/POEditor-2196F3?style=for-the-badge&logo=translate&logoColor=white)](https://poeditor.com/join/project/208BwCVazA)
-[![Crowdin](https://img.shields.io/badge/Crowdin-2E3440?style=for-the-badge&logo=crowdin&logoColor=white)](https://crowdin.com/project/opentune)
-
-</div>
-
-### Community Channels
-
-<div align="center">
-  
-[![Telegram Chat](https://img.shields.io/badge/Telegram-Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/OpenTune_chat)
-[![Telegram Updates](https://img.shields.io/badge/Telegram-Updates-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/opentune_updates)
-
-</div>
-
-### Development Workflow
-
-1. **Issue Review**: Check [open issues](https://github.com/Arturo254/OpenTune/issues) or create a new one describing the problem or feature
-2. **Fork Repository**: Create a personal fork of the repository
-3. **Feature Branch**: Create a branch for your feature (`git checkout -b feature/new-feature`)
-4. **Implementation**: Implement changes following project coding conventions
-5. **Testing**: Ensure code passes all tests (`./gradlew test`)
-6. **Commit**: Make commits with descriptive messages (`git commit -m 'feat: add new feature'`)
-7. **Push Changes**: Upload changes to your fork (`git push origin feature/new-feature`)
-8. **Pull Request**: Open a PR detailing changes and referencing corresponding issue
-
-> **Development Guidelines**: Review our [contribution guidelines](https://github.com/Arturo254/OpenTune/blob/master/CONTRIBUTING.md) for detailed information about development process, code standards, and workflow.
-
----
-
-## Support the Project
-
-If you find value in **OpenTune** and want to contribute to its continued development, consider making a donation. Your financial support allows us to:
-
-- Implement new features and improvements
-- Fix bugs and optimize performance
-- Maintain project infrastructure
-- Dedicate more time to development and maintenance
-
-<div align="center">
-  
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/Arturo254)
-[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](mailto:cervantesarturo254@gmail.com)
-
-</div>
-
-> **Note**: Donations are completely optional. OpenTune will always be free and open-source, regardless of financial support received.
-
----
-
-## Acknowledgments
-
-Special thanks to the following contributors and supporters:
-
-- **mostafaalagamy** - MetroList implementation
-- **Fabito02** - Unconditional support from the beginning
-- **Community translators** - Making OpenTune accessible worldwide
-- **Beta testers** - Helping improve stability and usability
+Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 
 ## License
 
-**Copyright © 2025 Arturo Cervantes**
-
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but **WITHOUT ANY WARRANTY**; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GNU General Public License](https://github.com/Arturo254/OpenTune/blob/main/LICENSE) for more details.
-
-<div align="center">
-  
-[![GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge&logo=gnu&logoColor=white)](https://www.gnu.org/licenses/gpl-3.0)
-
-</div>
-
-> **Important**: Any unauthorized commercial use of this software or its derivatives constitutes a violation of the license terms.
-
----
-
-<div align="center">
-  <p><strong>© 2023-2024 Open Source Projects</strong></p>
-  <p>Developed with passion by <a href="https://github.com/Arturo254">Arturo Cervantes</a></p>
-  
-  <br>
-  
-  [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Arturo254)
-  [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:cervantesarturo254@gmail.com)
-  
-</div>
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+See the [LICENSE](LICENSE) file for the full license text.

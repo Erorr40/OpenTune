@@ -177,10 +177,16 @@ constructor(
         }
 
         // Auto-refresh suggestions when they become empty
+        var consecutiveEmptyLoads = 0
         viewModelScope.launch {
             playlistSuggestions.collect { suggestions ->
                 if (suggestions != null && suggestions.items.isEmpty() && suggestions.hasMore && !_isLoadingSuggestions.value) {
-                    loadMoreSuggestions()
+                    if (consecutiveEmptyLoads < 3) {
+                        consecutiveEmptyLoads++
+                        loadMoreSuggestions()
+                    }
+                } else if (suggestions != null && suggestions.items.isNotEmpty()) {
+                    consecutiveEmptyLoads = 0
                 }
             }
         }

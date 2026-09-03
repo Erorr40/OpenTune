@@ -1232,7 +1232,7 @@ private data class ChipData(
 )
 
 const val MusicRecognitionRoute = "music_recognition"
-const val ACTION_MUSIC_RECOGNITION = "moe.koiverse.archivetune.action.MUSIC_RECOGNITION"
+const val ACTION_MUSIC_RECOGNITION = "com.erorr40.opentune.action.MUSIC_RECOGNITION"
 const val MusicRecognitionAutoStartRequestKey = "music_recognition_auto_start_request"
 
 fun NavHostController.openMusicRecognition(

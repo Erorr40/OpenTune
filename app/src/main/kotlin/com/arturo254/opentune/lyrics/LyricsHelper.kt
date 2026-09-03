@@ -29,6 +29,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.async
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class LyricsHelper
@@ -74,8 +75,7 @@ constructor(
 
         val ordered = orderedProviders()
         val providers = if (preferredProviderOnly) listOf(ordered.first()) else ordered
-        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-        val deferred = scope.async {
+        return withContext(Dispatchers.IO) {
             for (provider in providers) {
                 val enabled = provider.isEnabled(context)
                 
@@ -90,7 +90,7 @@ constructor(
                         )
                         result.onSuccess { lyrics ->
                             if (isMeaningfulLyrics(lyrics)) {
-                                return@async lyrics
+                                return@withContext lyrics
                             }
                         }.onFailure {
                             reportException(it)
@@ -100,12 +100,8 @@ constructor(
                     }
                 }
             }
-            return@async LYRICS_NOT_FOUND
+            LYRICS_NOT_FOUND
         }
-
-        val lyrics = deferred.await()
-        scope.cancel()
-        return lyrics
     }
 
     suspend fun getAllLyrics(

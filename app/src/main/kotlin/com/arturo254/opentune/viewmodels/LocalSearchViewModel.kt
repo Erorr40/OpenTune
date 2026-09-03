@@ -18,16 +18,18 @@ import com.arturo254.opentune.db.entities.Playlist
 import com.arturo254.opentune.db.entities.Song
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class LocalSearchViewModel
 @Inject
@@ -38,7 +40,7 @@ constructor(
     val filter = MutableStateFlow(LocalFilter.ALL)
 
     val result =
-        combine(query, filter) { query, filter ->
+        combine(query.debounce(150L), filter) { query, filter ->
             query to filter
         }.flatMapLatest { (query, filter) ->
             if (query.isEmpty()) {

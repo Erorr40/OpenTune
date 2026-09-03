@@ -60,7 +60,6 @@ object LrcLib {
             parameter("artist_name", artist)
             if (album != null) parameter("album_name", album)
         }.body<List<Track>>()
-        .filter { it.syncedLyrics != null }
 
     suspend fun getLyrics(
         title: String,
@@ -192,16 +191,19 @@ object LrcLib {
                 runCatching {
                     buildMap {
                         put(0L, "")
-                        text.trim().lines().filter { it.length >= 10 }.forEach {
-                            put(
-                                it[8].digitToInt() * 10L +
-                                    it[7].digitToInt() * 100 +
-                                    it[5].digitToInt() * 1000 +
-                                    it[4].digitToInt() * 10000 +
-                                    it[2].digitToInt() * 60 * 1000 +
-                                    it[1].digitToInt() * 600 * 1000,
-                                it.substring(10),
-                            )
+                        text.trim().lines().filter { it.length >= 10 && it.startsWith("[") && it[1].isDigit() }.forEach {
+                            val closingBracket = it.indexOf(']')
+                            if (closingBracket != -1) {
+                                val timePart = it.substring(1, closingBracket)
+                                val parts = timePart.split(':', '.')
+                                if (parts.size == 3) {
+                                    val m = parts[0].toLong()
+                                    val s = parts[1].toLong()
+                                    val msStr = parts[2].padEnd(3, '0').take(3)
+                                    val totalMs = m * 60000 + s * 1000 + msStr.toLong()
+                                    put(totalMs, it.substring(closingBracket + 1))
+                                }
+                            }
                         }
                     }
                 }.getOrNull()

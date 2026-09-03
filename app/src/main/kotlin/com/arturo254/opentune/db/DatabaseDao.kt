@@ -485,6 +485,16 @@ interface DatabaseDao {
         toTimeStamp: Long? = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
     ): Flow<List<Song>>
 
+    fun mostPlayedSong(
+        fromTimeStamp: Long = 0L,
+        toTimeStamp: Long? = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli(),
+    ): Flow<Song?> = mostPlayedSongs(
+        fromTimeStamp = fromTimeStamp,
+        limit = 1,
+        offset = 0,
+        toTimeStamp = toTimeStamp,
+    ).map { it.firstOrNull() }
+
     @Transaction
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
@@ -1327,21 +1337,22 @@ interface DatabaseDao {
 
     @Transaction
     fun insert(albumPage: AlbumPage) {
-        if (insert(
-                AlbumEntity(
-                    id = albumPage.album.browseId,
-                    playlistId = albumPage.album.playlistId,
-                    title = albumPage.album.title,
-                    year = albumPage.album.year,
-                    thumbnailUrl = albumPage.album.thumbnail,
-                    songCount = albumPage.songs.size,
-                    duration = albumPage.songs.sumOf { song -> song.duration ?: 0 },
-                    explicit = albumPage.album.explicit || albumPage.songs.any { it.explicit },
-                ),
-            ) == -1L
-        ) {
-            return
+        val albumEntity = AlbumEntity(
+            id = albumPage.album.browseId,
+            playlistId = albumPage.album.playlistId,
+            title = albumPage.album.title,
+            year = albumPage.album.year,
+            thumbnailUrl = albumPage.album.thumbnail,
+            songCount = albumPage.songs.size,
+            duration = albumPage.songs.sumOf { song -> song.duration ?: 0 },
+            explicit = albumPage.album.explicit || albumPage.songs.any { it.explicit },
+        )
+
+        val insertResult = insert(albumEntity)
+        if (insertResult == -1L) {
+            update(albumEntity)
         }
+
         albumPage.songs
             .map(SongItem::toMediaMetadata)
             .onEach(::insert)
@@ -1372,6 +1383,8 @@ interface DatabaseDao {
                     order = index,
                 )
             }?.forEach(::insert)
+
+        update(albumEntity.copy(lastUpdateTime = LocalDateTime.now()))
     }
 
     @Transaction
@@ -1444,20 +1457,19 @@ interface DatabaseDao {
         albumPage: AlbumPage,
         artists: List<ArtistEntity>? = emptyList(),
     ) {
-        update(
-            album.copy(
-                id = albumPage.album.browseId,
-                playlistId = albumPage.album.playlistId,
-                title = albumPage.album.title,
-                year = albumPage.album.year,
-                thumbnailUrl = albumPage.album.thumbnail,
-                songCount = albumPage.songs.size,
-                duration = albumPage.songs.sumOf { song -> song.duration ?: 0 },
-                explicit = albumPage.album.explicit || albumPage.songs.any { it.explicit },
-            ),
+        val updatedAlbum = album.copy(
+            id = albumPage.album.browseId,
+            playlistId = albumPage.album.playlistId,
+            title = albumPage.album.title,
+            year = albumPage.album.year,
+            thumbnailUrl = albumPage.album.thumbnail,
+            songCount = albumPage.songs.size,
+            duration = albumPage.songs.sumOf { song -> song.duration ?: 0 },
+            explicit = albumPage.album.explicit || albumPage.songs.any { it.explicit },
         )
+        update(updatedAlbum)
         if (artists?.size != albumPage.album.artists?.size) {
-            artists?.forEach(::delete)
+            albumArtistMaps(album.id).forEach(::delete)
         }
         albumPage.songs
             .map(SongItem::toMediaMetadata)
@@ -1494,6 +1506,8 @@ interface DatabaseDao {
                     )
                 }.forEach(::insert)
         }
+
+        update(updatedAlbum.copy(lastUpdateTime = LocalDateTime.now()))
     }
 
     @Update

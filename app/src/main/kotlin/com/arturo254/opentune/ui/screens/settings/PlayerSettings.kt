@@ -49,6 +49,9 @@ import com.arturo254.opentune.constants.AudioQuality
 import com.arturo254.opentune.constants.AudioQualityKey
 import com.arturo254.opentune.constants.NetworkMeteredKey
 import com.arturo254.opentune.constants.AutoDownloadOnLikeKey
+import com.arturo254.opentune.constants.AutoResumeOnHeadsetKey
+import com.arturo254.opentune.constants.AudioLoudnessEnhancerKey
+import com.arturo254.opentune.constants.FastSeekDurationKey
 import com.arturo254.opentune.constants.AutoStartOnBluetoothKey
 import com.arturo254.opentune.constants.AutoSkipNextOnErrorKey
 import com.arturo254.opentune.constants.PauseOnDeviceMuteKey
@@ -69,6 +72,7 @@ import com.arturo254.opentune.ui.component.TextFieldDialog
 import com.arturo254.opentune.ui.component.EnumListPreference
 import com.arturo254.opentune.ui.component.IconButton
 import com.arturo254.opentune.ui.component.ListDialog
+import com.arturo254.opentune.ui.component.ListPreference
 import com.arturo254.opentune.ui.component.PreferenceEntry
 import com.arturo254.opentune.ui.component.PreferenceGroupTitle
 import com.arturo254.opentune.ui.component.SliderPreference
@@ -125,7 +129,7 @@ fun PlayerSettings(
 
     val (autoDownloadOnLike, onAutoDownloadOnLikeChange) = rememberPreference(
         AutoDownloadOnLikeKey,
-        defaultValue = false
+        defaultValue = true
     )
     val (autoSkipNextOnError, onAutoSkipNextOnErrorChange) = rememberPreference(
         AutoSkipNextOnErrorKey,
@@ -138,6 +142,18 @@ fun PlayerSettings(
     val (autoStartOnBluetooth, onAutoStartOnBluetoothChange) = rememberPreference(
         AutoStartOnBluetoothKey,
         defaultValue = false
+    )
+    val (autoResumeOnHeadset, onAutoResumeOnHeadsetChange) = rememberPreference(
+        AutoResumeOnHeadsetKey,
+        defaultValue = false
+    )
+    val (audioLoudnessEnhancer, onAudioLoudnessEnhancerChange) = rememberPreference(
+        AudioLoudnessEnhancerKey,
+        defaultValue = false
+    )
+    val (fastSeekDuration, onFastSeekDurationChange) = rememberPreference(
+        FastSeekDurationKey,
+        defaultValue = 10
     )
     val (stopMusicOnTaskClear, onStopMusicOnTaskClearChange) = rememberPreference(
         StopMusicOnTaskClearKey,
@@ -367,6 +383,31 @@ fun PlayerSettings(
             icon = { Icon(painterResource(R.drawable.bluetooth), null) },
             checked = autoStartOnBluetooth,
             onCheckedChange = onAutoStartOnBluetoothChange
+        )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.auto_resume_headset)) },
+            description = stringResource(R.string.auto_resume_headset_desc),
+            icon = { Icon(painterResource(R.drawable.headphones), null) },
+            checked = autoResumeOnHeadset,
+            onCheckedChange = onAutoResumeOnHeadsetChange
+        )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.audio_loudness_enhancer)) },
+            description = stringResource(R.string.audio_loudness_enhancer_desc),
+            icon = { Icon(painterResource(R.drawable.volume_up), null) },
+            checked = audioLoudnessEnhancer,
+            onCheckedChange = onAudioLoudnessEnhancerChange
+        )
+
+        ListPreference(
+            title = { Text(stringResource(R.string.fast_seek_duration)) },
+            selectedValue = fastSeekDuration,
+            values = listOf(5, 10, 15, 30),
+            valueText = { "${it}s" },
+            onValueSelected = onFastSeekDurationChange,
+            icon = { Icon(painterResource(R.drawable.fast_forward), null) },
         )
 
         PreferenceGroupTitle(

@@ -115,11 +115,11 @@ object SimpMusicLyrics {
 
         sortedTracks.forEach { track ->
             if (count <= 4) {
-                if (track.syncedLyrics != null && abs((track.duration ?: 0) - duration) <= 5) {
+                if (track.syncedLyrics != null && (duration <= 0 || abs((track.duration ?: 0) - duration) <= 5)) {
                     count++
                     callback(track.syncedLyrics)
                 }
-                if (track.plainLyrics != null && abs((track.duration ?: 0) - duration) <= 5 && plain == 0) {
+                if (track.plainLyrics != null && (duration <= 0 || abs((track.duration ?: 0) - duration) <= 5) && plain == 0) {
                     count++
                     plain++
                     callback(track.plainLyrics)

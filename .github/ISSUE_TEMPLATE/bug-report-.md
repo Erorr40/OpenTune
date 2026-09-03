@@ -1,59 +1,56 @@
----
+﻿---
 name: Bug Report
-about: Reporta un problema en OpenTune
+about: Report an issue or bug in OpenTune
 title: "[BUG] "
 labels: bug
-assignees: Arturo254
 ---
 
-## Descripción
+## Description
 
-<!-- Describe el problema de forma clara y directa. -->
+<!-- Clearly and concisely describe what the bug is. -->
 
-## Pasos para reproducir
+## Steps to Reproduce
 
 1. 
 2. 
 3. 
 
-## Comportamiento esperado
+## Expected Behavior
 
-<!-- ¿Qué debería haber pasado? -->
+<!-- A clear and concise description of what you expected to happen. -->
 
-## Comportamiento actual
+## Actual Behavior
 
-<!-- ¿Qué pasó en realidad? -->
+<!-- What actually happened instead. -->
 
-## Entorno
+## Environment
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| Versión de OpenTune | <!-- Ej: 1.2.3 --> |
-| Versión de Android | <!-- Ej: Android 14 --> |
-| Dispositivo | <!-- Ej: Pixel 8 Pro --> |
+| OpenTune Version | <!-- e.g., 4.0.1 --> |
+| Android Version | <!-- e.g., Android 14 --> |
+| Device Model | <!-- e.g., Pixel 8 Pro --> |
 
-## Frecuencia
+## Frequency
 
-- [ ] Siempre ocurre
-- [ ] Ocurre a veces
-- [ ] Ocurre raramente / no pude reproducirlo de nuevo
+- [ ] Always reproducible
+- [ ] Intermittent
+- [ ] Happened once / unable to reproduce
 
-## Evidencia
+## Evidence & Screenshots
 
-<!-- Adjunta capturas de pantalla, videos o grabaciones de pantalla si aplica. -->
+<!-- Attach screenshots, screen recordings, or error dialogs if applicable. -->
 
 ## Logs
 
-<!-- Opcional. Filtra logs relevantes con:
-adb logcat | grep -i opentune
--->
+<!-- Optional. Filter relevant logs via: adb logcat | grep -i opentune -->
 
 ```
-pega los logs aquí
+Paste logs here if available
 ```
 
 ## Checklist
 
-- [ ] Verifiqué que no existe un reporte duplicado
-- [ ] Estoy usando la última versión de OpenTune
-- [ ] Puedo reproducir el problema
+- [ ] I have verified that this issue has not already been reported.
+- [ ] I am using the latest version of OpenTune.
+- [ ] I have provided all necessary details to reproduce the issue.

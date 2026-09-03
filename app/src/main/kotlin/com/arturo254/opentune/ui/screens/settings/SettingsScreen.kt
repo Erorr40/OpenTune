@@ -110,7 +110,7 @@ fun SettingsScreen(
     }
 
     val shouldShowPermissionHint = !isStorageGranted || !isNotificationGranted
-    val hasUpdate = !Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)
+    val hasUpdate = false
 
     val resetSearch: () -> Unit = {
         isSearching = false

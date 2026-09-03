@@ -129,12 +129,13 @@ object LastFM {
         artist: String, track: String,
         album: String? = null, trackNumber: Int? = null, duration: Int? = null
     ) = runCatching {
+        val key = sessionKey ?: throw IllegalStateException("Not authenticated")
         client.post {
             lastfmParams(
                 method = "track.updateNowPlaying",
                 apiKey = API_KEY,
                 secret = SECRET,
-                sessionKey = sessionKey!!,
+                sessionKey = key,
                 extra = buildMap {
                     put("artist", artist)
                     put("track", track)
@@ -150,12 +151,13 @@ object LastFM {
         artist: String, track: String, timestamp: Long,
         album: String? = null, trackNumber: Int? = null, duration: Int? = null
     ) = runCatching {
+        val key = sessionKey ?: throw IllegalStateException("Not authenticated")
         client.post {
             lastfmParams(
                 method = "track.scrobble",
                 apiKey = API_KEY,
                 secret = SECRET,
-                sessionKey = sessionKey!!,
+                sessionKey = key,
                 extra = buildMap {
                     put("artist[0]", artist)
                     put("track[0]", track)

@@ -53,6 +53,8 @@ import com.arturo254.opentune.LocalDownloadUtil
 import com.arturo254.opentune.LocalPlayerConnection
 import com.arturo254.opentune.LocalSyncUtils
 import com.arturo254.opentune.R
+import com.arturo254.opentune.constants.AutoDownloadOnLikeKey
+import com.arturo254.opentune.utils.rememberPreference
 import com.arturo254.opentune.db.entities.PlaylistSongMap
 import com.arturo254.opentune.db.entities.Song
 import com.arturo254.opentune.extensions.toMediaItem
@@ -83,6 +85,7 @@ fun SelectionSongMenu(
     val coroutineScope = rememberCoroutineScope()
     val playerConnection = LocalPlayerConnection.current ?: return
     val syncUtils = LocalSyncUtils.current
+    val (autoDownloadOnLike) = rememberPreference(AutoDownloadOnLikeKey, defaultValue = true)
 
     val allInLibrary by remember {
         mutableStateOf(
@@ -520,6 +523,8 @@ fun SelectionMediaMetadataMenu(
     val downloadUtil = LocalDownloadUtil.current
     val coroutineScope = rememberCoroutineScope()
     val playerConnection = LocalPlayerConnection.current ?: return
+    val syncUtils = LocalSyncUtils.current
+    val (autoDownloadOnLike) = rememberPreference(AutoDownloadOnLikeKey, defaultValue = true)
 
     val allLiked by remember(songSelection) {
         mutableStateOf(songSelection.isNotEmpty() && songSelection.all { it.liked })
@@ -739,12 +744,18 @@ fun SelectionMediaMetadataMenu(
                 modifier = Modifier.clickable {
                     database.query {
                         if (allLiked) {
-                            songSelection.forEach { song ->
-                                update(song.toSongEntity().toggleLike())
+                            songSelection.forEach { item ->
+                                update(item.toSongEntity().toggleLike())
                             }
                         } else {
-                            songSelection.filter { !it.liked }.forEach { song ->
-                                update(song.toSongEntity().toggleLike())
+                            val newlyLiked = songSelection.filter { !it.liked }
+                            newlyLiked.forEach { item ->
+                                update(item.toSongEntity().toggleLike())
+                            }
+                            if (autoDownloadOnLike) {
+                                newlyLiked.forEach { item ->
+                                    downloadUtil.autoDownloadSong(item.id, item.title)
+                                }
                             }
                         }
                     }

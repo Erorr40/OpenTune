@@ -62,11 +62,16 @@ object TTMLParser {
                 val divElement = divElements.item(divIdx) as? Element ?: continue
                 if (!divElement.tagName.endsWith("div", ignoreCase = true)) continue
 
-                val pElements = divElement.getElementsByTagName("*")
+                val pElements = mutableListOf<Element>()
+                for (i in 0 until divElement.childNodes.length) {
+                    val node = divElement.childNodes.item(i)
+                    if (node is Element && node.tagName.endsWith("p", ignoreCase = true)) {
+                        pElements.add(node)
+                    }
+                }
 
-                for (pIdx in 0 until pElements.length) {
-                    val pElement = pElements.item(pIdx) as? Element ?: continue
-                    if (!pElement.tagName.endsWith("p", ignoreCase = true)) continue
+                for (pIdx in 0 until pElements.size) {
+                    val pElement = pElements[pIdx]
 
                     val begin = pElement.getAttribute("begin")
                     val end = pElement.getAttribute("end")

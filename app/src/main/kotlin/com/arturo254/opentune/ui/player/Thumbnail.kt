@@ -266,7 +266,7 @@ fun Thumbnail(
     val view = LocalView.current
 
     val hidePlayerThumbnail by rememberPreference(HidePlayerThumbnailKey, false)
-    val archiveTuneCanvasEnabled by rememberPreference(OpenTuneCanvasKey, false)
+    val openTuneCanvasEnabled by rememberPreference(OpenTuneCanvasKey, false)
     val playerDesignStyle by rememberEnumPreference(
         key = PlayerDesignStyleKey,
         defaultValue = PlayerDesignStyle.V4,
@@ -298,6 +298,7 @@ fun Thumbnail(
         PlayerBackgroundStyle.GLOW -> Color.White
         PlayerBackgroundStyle.GLOW_ANIMATED -> Color.White
         PlayerBackgroundStyle.CUSTOM -> Color.White
+        PlayerBackgroundStyle.SPOTIFY -> Color.White
     }
 
     LaunchedEffect(maxCanvasCacheSize) {
@@ -547,7 +548,7 @@ fun Thumbnail(
                                     if (country.length == 2) country.lowercase(Locale.ROOT) else "us"
                                 }
                             val shouldAnimateCanvas =
-                                archiveTuneCanvasEnabled &&
+                                openTuneCanvasEnabled &&
                                         (playerDesignStyle == PlayerDesignStyle.V7 ||
                                                 playerDesignStyle == PlayerDesignStyle.V8 ||
                                                 playerDesignStyle != PlayerDesignStyle.V6) &&

@@ -97,6 +97,8 @@ import com.arturo254.opentune.constants.AutoDownloadOnLikeKey
 import com.arturo254.opentune.constants.AutoSkipNextOnErrorKey
 import com.arturo254.opentune.constants.AutoStartOnBluetoothKey
 import com.arturo254.opentune.constants.InnerTubeCookieKey
+import com.arturo254.opentune.constants.DiscordSocialSdkEnabledKey
+import com.arturo254.opentune.constants.DiscordSocialSdkLinkedKey
 import com.arturo254.opentune.constants.DiscordTokenKey
 import com.arturo254.opentune.constants.EqualizerBandLevelsMbKey
 import com.arturo254.opentune.constants.EqualizerBassBoostEnabledKey
@@ -875,7 +877,7 @@ class MusicService :
                     scope.launch {
                         try {
                             val token = dataStore.get(DiscordTokenKey, "")
-                            if (token.isNotBlank() && DiscordPresenceManager.isRunning()) {
+                            if (DiscordPresenceManager.isRunning()) {
                                 val mediaId = mediaItem.mediaId
                                 val song = if (mediaId != null) withContext(Dispatchers.IO) { database.song(mediaId).first() } else null
                                 val finalSong = song ?: metadata?.let { createTransientSongFromMedia(it) }
@@ -1050,45 +1052,49 @@ class MusicService :
             }
 
         scope.launch(Dispatchers.IO) {
-            if (dataStore.get(PersistentQueueKey, true)) {
-                readPersistentObject<PersistQueue>(PERSISTENT_QUEUE_FILE)
-                    ?.let { persistedQueue ->
-                    restorePersistentQueue(persistedQueue)
-                }
-                readPersistentObject<PersistQueue>(PERSISTENT_AUTOMIX_FILE)
-                    ?.let { persistedAutomix ->
-                    val items = persistedAutomix.items.map { it.toMediaItem() }
-                    withContext(Dispatchers.Main) {
-                        automixItems.value = items
-                        automixSeedMediaId = player.currentMetadata?.id?.trim()?.takeIf { it.isNotBlank() }
-                    }
-                }
-                
-                readPersistentObject<PersistPlayerState>(PERSISTENT_PLAYER_STATE_FILE)
-                    ?.let { playerState ->
-                    delay(1000)
-                    withContext(Dispatchers.Main) {
-                        player.repeatMode = playerState.repeatMode
-                        player.shuffleModeEnabled = playerState.shuffleModeEnabled
-                        playerVolume.value = playerState.volume
-                        
-                        if (player.mediaItemCount > 0) {
-                            val index =
-                                if (playerState.currentMediaItemIndex in 0 until player.mediaItemCount) {
-                                    playerState.currentMediaItemIndex
-                                } else {
-                                    player.currentMediaItemIndex.coerceIn(0, player.mediaItemCount - 1)
-                                }
-                            player.seekTo(index, playerState.currentPosition)
+            try {
+                if (dataStore.get(PersistentQueueKey, true)) {
+                    readPersistentObject<PersistQueue>(PERSISTENT_QUEUE_FILE)
+                        ?.let { persistedQueue ->
+                            restorePersistentQueue(persistedQueue)
                         }
-                        
-                        currentMediaMetadata.value = player.currentMetadata
-                        updateNotification()
-                    }
+                    readPersistentObject<PersistQueue>(PERSISTENT_AUTOMIX_FILE)
+                        ?.let { persistedAutomix ->
+                            val items = persistedAutomix.items.map { it.toMediaItem() }
+                            withContext(Dispatchers.Main) {
+                                automixItems.value = items
+                                automixSeedMediaId = player.currentMetadata?.id?.trim()?.takeIf { it.isNotBlank() }
+                            }
+                        }
+
+                    readPersistentObject<PersistPlayerState>(PERSISTENT_PLAYER_STATE_FILE)
+                        ?.let { playerState ->
+                            withContext(Dispatchers.Main) {
+                                player.repeatMode = playerState.repeatMode
+                                player.shuffleModeEnabled = playerState.shuffleModeEnabled
+                                playerVolume.value = playerState.volume
+
+                                if (player.mediaItemCount > 0) {
+                                    val index =
+                                        if (playerState.currentMediaItemIndex in 0 until player.mediaItemCount) {
+                                            playerState.currentMediaItemIndex
+                                        } else {
+                                            player.currentMediaItemIndex.coerceIn(0, player.mediaItemCount - 1)
+                                        }
+                                    player.seekTo(index, playerState.currentPosition)
+                                }
+
+                                currentMediaMetadata.value = player.currentMetadata
+                                updateNotification()
+                            }
+                        }
                 }
-            }
-            withContext(Dispatchers.Main) {
-                queueRestoreCompleted.value = true
+            } catch (e: Exception) {
+                reportException(e)
+            } finally {
+                withContext(Dispatchers.Main) {
+                    queueRestoreCompleted.value = true
+                }
             }
         }
 
@@ -1185,7 +1191,9 @@ class MusicService :
             }
 
             val key: String = dataStore.get(DiscordTokenKey, "")
-            if (key.isNullOrBlank()) {
+            val usingSocialSdk = dataStore.get(DiscordSocialSdkEnabledKey, false) &&
+                dataStore.get(DiscordSocialSdkLinkedKey, false)
+            if (key.isNullOrBlank() && !usingSocialSdk) {
                 if (DiscordPresenceManager.isRunning()) {
                     Timber.tag("MusicService").d("No Discord token → stopping presence manager")
                     try { DiscordPresenceManager.stop() } catch (_: Exception) {}
@@ -3336,7 +3344,7 @@ class MusicService :
                  syncUtils.likeSong(song)
 
                  // Check if auto-download on like is enabled and the song is now liked
-                 if (dataStore.get(AutoDownloadOnLikeKey, false) && song.liked) {
+                 if (dataStore.get(AutoDownloadOnLikeKey, true) && song.liked) {
                      // Trigger download for the liked song
                      val downloadRequest = androidx.media3.exoplayer.offline.DownloadRequest
                          .Builder(song.id, song.id.toUri())
@@ -3810,7 +3818,7 @@ class MusicService :
     scope.launch {
         try {
             val token = withContext(Dispatchers.IO) { dataStore.get(DiscordTokenKey, "") }
-            if (token.isNotBlank() && DiscordPresenceManager.isRunning()) {
+            if (DiscordPresenceManager.isRunning()) {
                 // Obtain the freshest Song from DB using current media item id to avoid stale currentSong.value
                 val mediaId = player.currentMediaItem?.mediaId
                 val song = if (mediaId != null) withContext(Dispatchers.IO) { database.song(mediaId).first() } else null
@@ -3958,7 +3966,7 @@ class MusicService :
             scope.launch {
                 try {
                     val token = dataStore.get(DiscordTokenKey, "")
-                    if (token.isNotBlank() && DiscordPresenceManager.isRunning()) {
+                    if (DiscordPresenceManager.isRunning()) {
                         val mediaId = player.currentMediaItem?.mediaId
                         val song = if (mediaId != null) withContext(Dispatchers.IO) { database.song(mediaId).first() } else null
                         val finalSong = song ?: player.currentMetadata?.let { createTransientSongFromMedia(it) }
@@ -4012,7 +4020,7 @@ class MusicService :
             scope.launch {
                 try {
                     val token = withContext(Dispatchers.IO) { dataStore.get(DiscordTokenKey, "") }
-                    if (token.isNotBlank() && DiscordPresenceManager.isRunning()) {
+                    if (DiscordPresenceManager.isRunning()) {
                         val song = if (currentMediaId != null) withContext(Dispatchers.IO) { database.song(currentMediaId).first() } else null
                         val finalSong = song ?: currentMetadata?.let { createTransientSongFromMedia(it) }
 
@@ -4414,10 +4422,10 @@ class MusicService :
                             id = mediaId,
                             itag = format.itag,
                             mimeType = format.mimeType.split(";")[0],
-                            codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
+                            codecs = format.mimeType.split("codecs=").getOrNull(1)?.removeSurrounding("\"").orEmpty(),
                             bitrate = format.bitrate,
                             sampleRate = format.audioSampleRate,
-                            contentLength = format.contentLength!!,
+                            contentLength = format.contentLength ?: 0L,
                             loudnessDb = loudnessDb,
                             perceptualLoudnessDb = perceptualLoudnessDb,
                             playbackUrl = nonNullPlayback.playbackTracking?.videostatsPlaybackUrl?.baseUrl

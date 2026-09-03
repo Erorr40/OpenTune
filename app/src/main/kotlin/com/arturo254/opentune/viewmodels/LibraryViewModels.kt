@@ -209,16 +209,18 @@ constructor(
     }
 
     init {
+        val fetchedArtistIds = mutableSetOf<String>()
         viewModelScope.launch(Dispatchers.IO) {
             allArtists.collect { artists ->
                 artists
                     .map { it.artist }
                     .filter {
-                        it.thumbnailUrl == null || Duration.between(
+                        (it.thumbnailUrl == null || Duration.between(
                             it.lastUpdateTime,
                             LocalDateTime.now()
-                        ) > Duration.ofDays(10)
+                        ) > Duration.ofDays(10)) && it.id !in fetchedArtistIds
                     }.forEach { artist ->
+                        fetchedArtistIds.add(artist.id)
                         YouTube.artist(artist.id).onSuccess { artistPage ->
                             database.query {
                                 update(artist, artistPage)
@@ -313,12 +315,14 @@ constructor(
     }
 
     init {
+        val fetchedAlbumIds = mutableSetOf<String>()
         viewModelScope.launch(Dispatchers.IO) {
             allAlbums.collect { albums ->
                 albums
                     .filter {
-                        it.album.songCount == 0
+                        it.album.songCount == 0 && it.album.id !in fetchedAlbumIds
                     }.forEach { album ->
+                        fetchedAlbumIds.add(album.album.id)
                         YouTube
                             .album(album.id)
                             .onSuccess { albumPage ->
@@ -422,6 +426,17 @@ constructor(
         context.dataStore.data
             .map { it[TopSize] ?: "50" }
             .distinctUntilChanged()
+
+    // ── Canción más reproducida ─────────────────────────────────────────────
+    val mostPlayedSong =
+        context.dataStore.data
+            .map { it[HideExplicitKey] ?: false }
+            .distinctUntilChanged()
+            .flatMapLatest { hideExplicit ->
+                database.mostPlayedSong().map { song ->
+                    if (hideExplicit && song?.song?.explicit == true) null else song
+                }
+            }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     // ── Artistas (bookmarked) ──────────────────────────────────────────────
     var artists =

@@ -220,7 +220,7 @@ fun AboutScreen(
                     links = listOf(
                         SocialLink(
                             R.drawable.github,
-                            "https://github.com/Arturo254/OpenTune",
+                            "https://github.com/Erorr40/OpenTune",
                             "GitHub"
                         ),
                         SocialLink(
@@ -293,7 +293,7 @@ fun AboutScreen(
             item(key = "license") {
                 LicenseFooterExpressive(
                     onLicenseClick = {
-                        uriHandler.openUri("https://github.com/Arturo254/OpenTune/blob/master/LICENSE")
+                        uriHandler.openUri("https://github.com/Erorr40/OpenTune/blob/master/LICENSE")
                     }
                 )
             }

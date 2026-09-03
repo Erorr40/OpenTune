@@ -33,7 +33,7 @@ Thank you for your interest in contributing to **OpenTune**! This document outli
 
 ### Reporting Bugs
 
-We track bugs using [GitHub Issues](https://github.com/Arturo254/OpenTune/issues). Before creating a new issue, please search existing issues to see if the problem has already been reported. If you find a similar issue, feel free to add relevant information or insights as a comment.
+We track bugs using [GitHub Issues](https://github.com/Erorr40/OpenTune/issues). Before creating a new issue, please search existing issues to see if the problem has already been reported. If you find a similar issue, feel free to add relevant information or insights as a comment.
 
 When creating a new issue, include:
 
@@ -51,7 +51,7 @@ When creating a new issue, include:
 
 ### Suggesting Features
 
-We also handle feature suggestions through [GitHub Issues](https://github.com/Arturo254/OpenTune/issues). When suggesting a new feature:
+We also handle feature suggestions through [GitHub Issues](https://github.com/Erorr40/OpenTune/issues). When suggesting a new feature:
 
 * **Describe the problem** the feature is intended to solve
 * **Explain the solution** and how it would work
@@ -193,7 +193,7 @@ To set up your local environment for contributing:
 4. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/Arturo254/OpenTune.git
+   git clone https://github.com/Erorr40/OpenTune.git
    cd OpenTune
    ```
 5. **Build the project using Gradle**:

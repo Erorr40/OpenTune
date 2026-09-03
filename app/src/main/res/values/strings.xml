@@ -359,7 +359,27 @@
     <string name="palette_slate_gray">Slate Gray</string>
     <string name="palette_sunset_beach">Sunset Beach</string>
     <string name="palette_turquoise">Turquoise</string>
+    <string name="palette_tokyo_night">Tokyo Night</string>
+    <string name="palette_dracula">Dracula</string>
+    <string name="palette_nordic_frost">Nordic Frost</string>
+    <string name="palette_matcha_latte">Matcha</string>
+    <string name="palette_caramel_gold">Caramel Gold</string>
+    <string name="palette_amoled_crimson">AMOLED Crimson</string>
+    <string name="palette_deep_space">Deep Space</string>
+    <string name="palette_retro_synth">Retro 80s</string>
     <!-- End of Color Palette -->
+
+    <!-- New Offline and Player Settings -->
+    <string name="auto_download_lyrics">Download lyrics automatically</string>
+    <string name="auto_download_lyrics_desc">Save synchronized lyrics offline when downloading songs</string>
+    <string name="auto_download_artwork">Download HD artwork</string>
+    <string name="auto_download_artwork_desc">Cache full-resolution album and artist images offline</string>
+    <string name="auto_resume_headset">Auto resume on headphones</string>
+    <string name="auto_resume_headset_desc">Automatically resume playing when headphones or Bluetooth reconnects</string>
+    <string name="audio_loudness_enhancer">Loudness &amp; Clarity Booster</string>
+    <string name="audio_loudness_enhancer_desc">Boost audio output volume and enhance vocal clarity</string>
+    <string name="fast_seek_duration">Fast seek jump duration</string>
+    <string name="offline_downloads_section">Offline &amp; Downloads</string>
 
     <string name="dark_theme">Dark theme</string>
     <string name="enable_liquid_glass">Enable Liquid Glass</string>

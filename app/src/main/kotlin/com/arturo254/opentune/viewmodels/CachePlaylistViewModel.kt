@@ -60,21 +60,13 @@ class CachePlaylistViewModel @Inject constructor(
                 }
 
                 if (completeSongs.isNotEmpty()) {
-                    database.query {
-                        completeSongs.forEach {
-                            if (it.song.dateDownload == null) {
-                                update(it.song.copy(dateDownload = LocalDateTime.now()))
-                            }
-                        }
-                    }
+                    // Do not set dateDownload for pure cache songs, they are not permanently downloaded
                 }
 
                 _cachedSongs.value = completeSongs
-                    .filter { it.song.dateDownload != null }
-                    .sortedByDescending { it.song.dateDownload }
                     .filterExplicit(hideExplicit)
 
-                delay(1000)
+                delay(5000)
             }
         }
     }
