@@ -62,7 +62,9 @@ class UpdaterSemVerTest {
         assertTrue(Updater.isSameVersion("v13.0.0", "13.0.0"))
         assertTrue(Updater.isSameVersion("OpenTune 13.0.0", "13.0.0"))
         assertTrue(Updater.isSameVersion("v4.0.1", "4.0.1"))
+        assertTrue(Updater.isSameVersion("v4.0.2", "4.0.2"))
         assertFalse(Updater.isSameVersion("13.0.1", "13.0.0"))
+        assertFalse(Updater.isSameVersion("4.0.2", "4.0.1"))
         assertFalse(Updater.isSameVersion("4.0.1", "3.0.6"))
     }
 
@@ -89,5 +91,30 @@ class UpdaterSemVerTest {
         val latest = Updater.findLatestRelease(releases)
         assertNotNull(latest)
         assertEquals("v4.0.1", latest?.tagName)
+    }
+
+    @Test
+    fun findLatestRelease_picks402Over401() {
+        val releases =
+            listOf(
+                ReleaseInfo(
+                    tagName = "v4.0.1",
+                    name = "OpenTune v4.0.1",
+                    body = null,
+                    publishedAt = "2026-09-03T00:00:00Z",
+                    htmlUrl = "https://example.com/v4.0.1",
+                ),
+                ReleaseInfo(
+                    tagName = "v4.0.2",
+                    name = "OpenTune v4.0.2",
+                    body = null,
+                    publishedAt = "2026-09-18T00:00:00Z",
+                    htmlUrl = "https://example.com/v4.0.2",
+                ),
+            )
+
+        val latest = Updater.findLatestRelease(releases)
+        assertNotNull(latest)
+        assertEquals("v4.0.2", latest?.tagName)
     }
 }

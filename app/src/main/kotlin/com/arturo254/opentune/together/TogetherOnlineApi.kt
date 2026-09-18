@@ -64,24 +64,29 @@ class TogetherOnlineApi(
             .trimEnd('/')
             .let { if (it.endsWith("/v1")) it else "$it/v1" }
 
-    private val json =
-        Json {
-            ignoreUnknownKeys = true
-            explicitNulls = false
-            encodeDefaults = true
-        }
-
-    private val client =
-        HttpClient(OkHttp) {
-            engine {
-                config {
-                    connectTimeout(15, TimeUnit.SECONDS)
-                    readTimeout(15, TimeUnit.SECONDS)
-                    writeTimeout(15, TimeUnit.SECONDS)
-                    retryOnConnectionFailure(true)
+    companion object {
+        private val sharedClient =
+            HttpClient(OkHttp) {
+                engine {
+                    config {
+                        connectTimeout(15, TimeUnit.SECONDS)
+                        readTimeout(15, TimeUnit.SECONDS)
+                        writeTimeout(15, TimeUnit.SECONDS)
+                        retryOnConnectionFailure(true)
+                    }
                 }
             }
-        }
+
+        private val sharedJson =
+            Json {
+                ignoreUnknownKeys = true
+                explicitNulls = false
+                encodeDefaults = true
+            }
+    }
+
+    private val json = sharedJson
+    private val client = sharedClient
 
     private suspend fun <T> withRetry(
         maxAttempts: Int = 2,

@@ -93,8 +93,8 @@ android {
         applicationId = "com.Arturo254.opentune"
         minSdk = 26
         targetSdk = 36
-        versionCode = 401
-        versionName = "4.0.1"
+        versionCode = 402
+        versionName = "4.0.2"
 //        versionName = "3.0.2-$gitCommit"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -306,8 +306,6 @@ dependencies {
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
     implementation(libs.backdrop)
-    implementation(libs.kashif.mehmood.km.backdrop)
-    implementation(libs.dev.haze)
     implementation(libs.compose.markdown)
     compileOnly("androidx.compose.ui:ui-tooling-preview:${libs.versions.compose.get()}")
     debugImplementation("androidx.compose.ui:ui-tooling-preview:${libs.versions.compose.get()}")
@@ -318,8 +316,7 @@ dependencies {
     implementation(libs.viewmodel)
     implementation(libs.viewmodel.compose)
 
-    implementation("io.ktor:ktor-client-content-negotiation:3.0.3")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.3")
+    implementation(libs.ktor.client.content.negotiation)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
     implementation(libs.material3)

@@ -105,7 +105,7 @@
 ### GitHub Releases (Recommended)
 
 1. Go to the [Releases](https://github.com/Erorr40/OpenTune/releases) page.
-2. Download the latest `app-universal-release.apk` (Version 4.0.1).
+2. Download the latest `app-universal-release.apk` (Version 4.0.2).
 3. If prompted, enable "Install unknown apps" for your browser or file manager.
 4. Tap the downloaded APK to install.
 

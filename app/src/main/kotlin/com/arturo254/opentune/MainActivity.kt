@@ -97,6 +97,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -181,7 +182,6 @@ import com.arturo254.opentune.constants.FloatingToolbarHorizontalPadding
 import com.arturo254.opentune.constants.HasPressedStarKey
 import com.arturo254.opentune.constants.LaunchCountKey
 import com.arturo254.opentune.constants.EnableLiquidGlassKey
-import com.arturo254.opentune.constants.LiquidGlassNavBarKey
 import com.arturo254.opentune.constants.LyricsSyncOffsetKey
 import com.arturo254.opentune.constants.MiniPlayerBottomSpacing
 import com.arturo254.opentune.constants.MiniPlayerHeight
@@ -542,10 +542,12 @@ class MainActivity : ComponentActivity() {
             // instances in different composition scopes which caused the update
             // bottom sheet to not appear and overlay interactions to be blocked).
             val bottomSheetPageState = remember { BottomSheetPageState() }
-            val (liquidGlassNavBar) = rememberPreference(LiquidGlassNavBarKey, defaultValue = false)
             val menuState = remember { MenuState() }
             val uriHandler = LocalUriHandler.current
             val releaseNotesState = remember { mutableStateOf<String?>(null) }
+            val updateScope = rememberCoroutineScope()
+            var isDownloadingUpdate by remember { mutableStateOf(false) }
+            var updateDownloadProgress by remember { mutableFloatStateOf(0f) }
             val updateSheetContent: @Composable ColumnScope.() -> Unit = { // receiver: ColumnScope
                 Text(
                     text = stringResource(R.string.new_update_available),
@@ -591,15 +593,51 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(Modifier.height(12.dp))
 
-                Button(
-                    onClick = {
-                        try {
-                            uriHandler.openUri(Updater.getLatestDownloadUrl())
-                        } catch (_: Exception) {}
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(text = stringResource(R.string.update_text))
+                if (isDownloadingUpdate) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (updateDownloadProgress >= 0f) {
+                            androidx.compose.material3.LinearProgressIndicator(
+                                progress = { updateDownloadProgress },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            Text(
+                                text = "${(updateDownloadProgress * 100).toInt()}%",
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        } else {
+                            androidx.compose.material3.LinearProgressIndicator(
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            updateScope.launch {
+                                isDownloadingUpdate = true
+                                val destination = java.io.File(cacheDir, "update.apk")
+                                try {
+                                    Updater.downloadApk(Updater.getLatestDownloadUrl(), destination).collectLatest { progress ->
+                                        updateDownloadProgress = progress
+                                    }
+                                    isDownloadingUpdate = false
+                                    Updater.installApk(this@MainActivity, destination)
+                                } catch (_: Exception) {
+                                    isDownloadingUpdate = false
+                                    try {
+                                        uriHandler.openUri(Updater.getLatestDownloadUrl())
+                                    } catch (_: Exception) {}
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(text = stringResource(R.string.update_text))
+                    }
                 }
             }
 
