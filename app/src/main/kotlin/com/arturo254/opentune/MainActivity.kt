@@ -1318,8 +1318,8 @@ class MainActivity : ComponentActivity() {
                                                     navBackStackEntry?.destination?.route == Screens.MoodAndGenres.route ||
                                                     navBackStackEntry?.destination?.route == Screens.Library.route
                                         }
-                                        val shouldShowBlurBackground = remember(navBackStackEntry) {
-                                            shouldUseFloatingTopBar
+                                        val shouldShowBlurBackground = remember(navBackStackEntry, enableLiquidGlass) {
+                                            shouldUseFloatingTopBar || enableLiquidGlass
                                         }
 
                                         val surfaceColor = MaterialTheme.colorScheme.surface
@@ -1500,14 +1500,14 @@ class MainActivity : ComponentActivity() {
                                                     topAppBarScrollBehavior
                                                 },
                                                 colors = TopAppBarDefaults.topAppBarColors(
-                                                    containerColor = if (shouldUseFloatingTopBar) {
+                                                    containerColor = if (enableLiquidGlass || shouldUseFloatingTopBar) {
                                                         Color.Transparent
                                                     } else if (pureBlack) {
                                                         Color.Black
                                                     } else {
                                                         MaterialTheme.colorScheme.surface
                                                     },
-                                                    scrolledContainerColor = if (shouldUseFloatingTopBar) {
+                                                    scrolledContainerColor = if (enableLiquidGlass || shouldUseFloatingTopBar) {
                                                         Color.Transparent
                                                     } else if (pureBlack) {
                                                         Color.Black

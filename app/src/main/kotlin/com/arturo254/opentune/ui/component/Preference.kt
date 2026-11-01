@@ -1276,45 +1276,58 @@ fun <T> ExpressiveListBottomSheet(
             } else it
         }
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp)
+                .padding(horizontal = 24.dp),
+            contentPadding = PaddingValues(bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Spacer(Modifier.height(8.dp))
+            item(key = "header") {
+                Column {
+                    Spacer(Modifier.height(8.dp))
 
-            Text(
-                text = stringResource(R.string.select_option),
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            ExpressiveList(
-                items = values,
-                selectedValue = selectedValue,
-                valueText = valueText,
-                onItemSelected = onValueSelected
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    onClick = onDismiss,
-                ) {
                     Text(
-                        stringResource(R.string.close),
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = stringResource(R.string.select_option),
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 6.dp)
                     )
+                }
+            }
+
+            items(
+                items = values,
+                key = { it.hashCode() }
+            ) { item ->
+                ExpressiveListItem(
+                    item = item,
+                    isSelected = item == selectedValue,
+                    valueText = valueText,
+                    onItemSelected = onValueSelected
+                )
+            }
+
+            item(key = "footer") {
+                Column {
+                    Spacer(Modifier.height(6.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = onDismiss,
+                        ) {
+                            Text(
+                                stringResource(R.string.close),
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -1457,171 +1470,185 @@ fun <T> ExpressiveList(
             items = items,
             key = { it.hashCode() }
         ) { item ->
-
-            val isSelected = item == selectedValue
-
-            val animatedContainerColor by animateColorAsState(
-                targetValue = if (isSelected) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerLow
-                },
-                animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-                label = "containerColor"
+            ExpressiveListItem(
+                item = item,
+                isSelected = item == selectedValue,
+                valueText = valueText,
+                onItemSelected = onItemSelected
             )
+        }
+    }
+}
 
-            val animatedContentColor by animateColorAsState(
-                targetValue = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-                animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
-                label = "contentColor"
-            )
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun <T> ExpressiveListItem(
+    item: T,
+    isSelected: Boolean,
+    valueText: @Composable (T) -> String,
+    onItemSelected: (T) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val animatedContainerColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLow
+        },
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+        label = "containerColor"
+    )
 
-            val animatedScale by animateFloatAsState(
-                targetValue = if (isSelected) 1.015f else 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMediumLow
+    val animatedContentColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        },
+        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
+        label = "contentColor"
+    )
+
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isSelected) 1.015f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
+        label = "scale"
+    )
+
+    val animatedCornerRadius by animateDpAsState(
+        targetValue = if (isSelected) 28.dp else 20.dp,
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+        label = "cornerRadius"
+    )
+
+    Surface(
+        onClick = {
+            onItemSelected(item)
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = animatedScale
+                scaleY = animatedScale
+            },
+        shape = RoundedCornerShape(
+            topStart = animatedCornerRadius,
+            topEnd = 20.dp,
+            bottomStart = 20.dp,
+            bottomEnd = animatedCornerRadius
+        ),
+        color = animatedContainerColor,
+        contentColor = animatedContentColor,
+        tonalElevation = if (isSelected) 3.dp else 0.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 18.dp,
+                    vertical = 14.dp
                 ),
-                label = "scale"
-            )
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-            val animatedCornerRadius by animateDpAsState(
-                targetValue = if (isSelected) 28.dp else 20.dp,
-                animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-                label = "cornerRadius"
-            )
-
-            Surface(
-                onClick = {
-                    onItemSelected(item)
+            // Indicador expresivo de selección
+            AnimatedContent(
+                targetState = isSelected,
+                transitionSpec = {
+                    scaleIn(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        )
+                    ) + fadeIn() togetherWith
+                            scaleOut() + fadeOut()
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .graphicsLayer {
-                        scaleX = animatedScale
-                        scaleY = animatedScale
-                    },
-                shape = RoundedCornerShape(
-                    topStart = animatedCornerRadius,
-                    topEnd = 20.dp,
-                    bottomStart = 20.dp,
-                    bottomEnd = animatedCornerRadius
-                ),
-                color = animatedContainerColor,
-                contentColor = animatedContentColor,
-                tonalElevation = if (isSelected) 3.dp else 0.dp,
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            horizontal = 18.dp,
-                            vertical = 14.dp
+                label = "selectionIndicator"
+            ) { selected ->
+
+                if (selected) {
+                    Surface(
+                        modifier = Modifier.size(44.dp),
+                        shape = RoundedCornerShape(
+                            topStart = 16.dp,
+                            topEnd = 16.dp,
+                            bottomStart = 8.dp,
+                            bottomEnd = 16.dp
                         ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    // Indicador expresivo de selección
-                    AnimatedContent(
-                        targetState = isSelected,
-                        transitionSpec = {
-                            scaleIn(
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessMedium
-                                )
-                            ) + fadeIn() togetherWith
-                                    scaleOut() + fadeOut()
-                        },
-                        label = "selectionIndicator"
-                    ) { selected ->
-
-                        if (selected) {
-                            Surface(
-                                modifier = Modifier.size(44.dp),
-                                shape = RoundedCornerShape(
-                                    topStart = 16.dp,
-                                    topEnd = 16.dp,
-                                    bottomStart = 8.dp,
-                                    bottomEnd = 16.dp
+                        color = MaterialTheme.colorScheme.primary
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    R.drawable.check
                                 ),
-                                color = MaterialTheme.colorScheme.primary
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(
-                                            R.drawable.check
-                                        ),
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-                        } else {
-                            Surface(
-                                modifier = Modifier.size(44.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                color = MaterialTheme.colorScheme.surfaceContainerHighest
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(10.dp)
-                                            .clip(CircleShape)
-                                            .background(
-                                                MaterialTheme.colorScheme
-                                                    .onSurfaceVariant
-                                                    .copy(alpha = 0.45f)
-                                            )
-                                    )
-                                }
-                            }
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(22.dp)
+                            )
                         }
                     }
-
-                    Spacer(
-                        modifier = Modifier.width(16.dp)
-                    )
-
-                    Text(
-                        text = valueText(item),
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = if (isSelected) {
-                                FontWeight.SemiBold
-                            } else {
-                                FontWeight.Normal
-                            }
-                        )
-                    )
-
-                    AnimatedVisibility(
-                        visible = isSelected,
-                        enter = fadeIn() + expandHorizontally(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        ),
-                        exit = fadeOut() + shrinkHorizontally()
+                } else {
+                    Surface(
+                        modifier = Modifier.size(44.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.check),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        MaterialTheme.colorScheme
+                                            .onSurfaceVariant
+                                            .copy(alpha = 0.45f)
+                                    )
+                            )
+                        }
                     }
                 }
+            }
+
+            Spacer(
+                modifier = Modifier.width(16.dp)
+            )
+
+            Text(
+                text = valueText(item),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = if (isSelected) {
+                        FontWeight.SemiBold
+                    } else {
+                        FontWeight.Normal
+                    }
+                )
+            )
+
+            AnimatedVisibility(
+                visible = isSelected,
+                enter = fadeIn() + expandHorizontally(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                ),
+                exit = fadeOut() + shrinkHorizontally()
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.check),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
             }
         }
     }

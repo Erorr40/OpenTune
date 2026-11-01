@@ -236,38 +236,27 @@ fun AboutScreen(
                     links = listOf(
                         SocialLink(
                             R.drawable.github,
-                            "https://github.com/Arturo254",
-                            "Arturo254"
-                        ),
-                        SocialLink(
-                            R.drawable.github,
                             "https://github.com/Erorr40/OpenTune",
                             "GitHub"
                         ),
                         SocialLink(
                             R.drawable.telegram,
-                            "https://t.me/opentune_updates",
+                            "https://t.me/E2_opentune",
                             "Telegram"
                         ),
                         SocialLink(
-                            R.drawable.facebook,
-                            "https://www.facebook.com/Arturo254",
-                            "Facebook"
-                        ),
-                        SocialLink(R.drawable.paypal, "https://www.paypal.me/OpenTune", "PayPal"),
-                        SocialLink(
                             R.drawable.instagram,
-                            "https://www.instagram.com/arturocg.dev/",
+                            "https://www.instagram.com/error_1693/",
                             "Instagram"
                         ),
                         SocialLink(
-                            R.drawable.resource_public,
-                            "https://opentune.netlify.app/",
-                            "Website"
+                            R.drawable.github,
+                            "https://github.com/Arturo254",
+                            "Arturo254"
                         ),
                     ),
                     onLinkClick = { uriHandler.openUri(it) },
-                    columns = if (isTablet) 4 else 3,
+                    columns = if (isTablet) 4 else 2,
                 )
             }
 
