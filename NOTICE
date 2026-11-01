@@ -1,0 +1,71 @@
+OpenTune
+Copyright (C) 2026 OpenTune Contributors
+https://github.com/Erorr40/OpenTune
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+========================================================================
+Open Source Lineage & Copyright Notices
+========================================================================
+
+OpenTune is an open-source Android application derived from and building upon
+the following outstanding open-source projects under the GNU General Public
+License v3.0 (GPL-3.0):
+
+1. ArchiveTune
+   Copyright (C) 2024-2026 Rukamori and ArchiveTune Contributors
+   Website / Repository: https://github.com/ArchiveTuneApp/ArchiveTune
+   Author: Rukamori (https://github.com/rukamori)
+   License: GNU General Public License v3.0 (GPL-3.0)
+   
+   ArchiveTune provided architectural design, Spotify integration, Canvas
+   artwork loading, enhanced pull-to-refresh components, and playback logic
+   adapted and modified for OpenTune.
+
+2. InnerTune
+   Copyright (C) 2022-2026 Zion Huang and InnerTune Contributors
+   Website / Repository: https://github.com/z-huang/InnerTune
+   Author: Zion Huang (https://github.com/z-huang)
+   License: GNU General Public License v3.0 (GPL-3.0)
+   
+   InnerTune provided the foundational YouTube Music streaming client
+   architecture and database entities.
+
+3. OpenTune Contributions & Maintenance
+   Copyright (C) 2024-2026 Arturo Cervantes (@Arturo254)
+   Copyright (C) 2026 Ahmed Raafat (@Erorr40)
+   Repositories: 
+   - https://github.com/Erorr40/OpenTune
+   - https://github.com/Arturo254/OpenTune
+   License: GNU General Public License v3.0 (GPL-3.0)
+
+========================================================================
+Third-Party Libraries & Dependencies
+========================================================================
+
+This project uses open source libraries and components:
+- AndroidX Media3 / ExoPlayer: Apache License 2.0 (Google LLC)
+- Jetpack Compose: Apache License 2.0 (Google LLC)
+- Kotlin / Kotlinx: Apache License 2.0 (JetBrains s.r.o.)
+- Ktor: Apache License 2.0 (JetBrains s.r.o.)
+- Coil 3: Apache License 2.0 (Coil Contributors)
+- Room Persistence Library: Apache License 2.0 (Google LLC)
+- LRCLIB Client: MIT License
+- BetterLyrics: GPL-3.0
+- Kugou & Last.fm API integrations: Apache License 2.0 / MIT
+
+All trademarks, logos, and brand names are the property of their respective owners.
+YouTube, Google, Spotify, Discord, and Android are registered trademarks of their
+respective companies. OpenTune is not endorsed by or affiliated with Google LLC,
+Alphabet Inc., Spotify AB, or Discord Inc.

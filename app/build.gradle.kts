@@ -202,6 +202,9 @@ android {
                 keyAlias = debugConfig.keyAlias
                 keyPassword = debugConfig.keyPassword
             }
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
         }
     }
 

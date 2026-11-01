@@ -178,8 +178,8 @@
 
 | Package | Architecture | Description | Download | SHA-256 Checksum |
 |---|---|---|---|---|
-| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-universal-release.apk) | `36a9a64f1e2dad9ae86772b1e20d0644a3b636534be7a9e6a1650916816644ae` |
-| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-arm64-release.apk) | `0dcf138f4839b55676a0a55ce7d8254eb78a7d11bf46995dfb27fa4d2702c2fc` |
+| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-universal-release.apk) | `d0e4ea4caa23a97c6699d150cfb9dcb889080736eaa6a919a6038a0a3c62a8dd` |
+| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-arm64-release.apk) | `8ed2f754d4aa89cdd59d40fd23252c6a930323da630fabbd1da98a135f12b5c2` |
 
 ### Installation Instructions
 1. Download the desired APK from the table above or the [Releases](https://github.com/Erorr40/OpenTune/releases) page.
@@ -234,12 +234,17 @@ Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduc
 
 ---
 
-## Original Author & Rights
+## Lineage, Copyright & Open Source Attribution
 
-* **Original Creator & App Owner**: [Arturo Cervantes (@Arturo254)](https://github.com/Arturo254)
-* **Current Maintainer**: [Ahmed Raafat (@Erorr40)](https://github.com/Erorr40)
+OpenTune is an open-source collaborative project built upon the foundation of incredible open-source developers under the **GNU General Public License v3.0 (GPL-3.0)**:
 
-All fundamental architectural rights, application design, and original codebase of OpenTune belong to [Arturo254](https://github.com/Arturo254) as the original creator and owner of the application. This repository maintains compatibility, stability, security hardening, and new feature innovations for the community.
+* **ArchiveTune**: Core upstream project created and copyrighted by [Rukamori (@rukamori)](https://github.com/rukamori) ([ArchiveTuneApp/ArchiveTune](https://github.com/ArchiveTuneApp/ArchiveTune)), providing Spotify integration, Canvas models, and playback error handling.
+* **InnerTune**: Foundational YouTube Music client architecture created and copyrighted by [Zion Huang (@z-huang)](https://github.com/z-huang) ([z-huang/InnerTune](https://github.com/z-huang/InnerTune)).
+* **OpenTune Authors & Maintainers**: 
+  - [Arturo Cervantes (@Arturo254)](https://github.com/Arturo254): Original OpenTune author and design contributor.
+  - [Ahmed Raafat (@Erorr40)](https://github.com/Erorr40): Current project maintainer, Automix engine, performance optimization, and release coordinator.
+
+All original copyright notices from upstream projects are preserved, respected, and acknowledged in full compliance with GPL-3.0. For complete attribution details, see [ATTRIBUTION.md](ATTRIBUTION.md) and [NOTICE](NOTICE).
 
 ---
 
