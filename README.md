@@ -46,6 +46,7 @@
 - [Installation & Assets](#installation--assets)
 - [Building from Source](#building-from-source)
 - [Contributing](#contributing)
+- [Support & Donations](#-support--donations--ادعم-المشروع)
 - [Original Author & Rights](#original-author--rights)
 - [Contact](#contact)
 - [License](#license)
@@ -231,6 +232,22 @@ Contributions, bug reports, and suggestions are welcome!
 6. Open a Pull Request.
 
 Please review our [Contributing Guidelines](CONTRIBUTING.md), [Code of Conduct](CODE_OF_CONDUCT.md), and [Security Policy](SECURITY.md).
+
+---
+
+## ❤️ Support & Donations / ادعم المشروع
+
+If you enjoy using **OpenTune** and want to support ongoing development, continuous updates, and testing:
+
+### 🇪🇬 Support from Egypt (الدعم من داخل مصر):
+
+| Method / وسيلة الدفع | Account / الحساب | How to Send / طريقة الإرسال |
+|:---|:---|:---|
+| **InstaPay (إنستاباي)** | `erorr404` | Send via InstaPay app (IPA / Username: `erorr404`) |
+| **Vodafone Cash (فودافون كاش)** | `01067671979` | Transfer to wallet number (`01067671979`) |
+
+> [!NOTE]
+> Every contribution directly supports development time, testing on new Android versions, and keeping OpenTune 100% free, ad-free, and open-source for everyone! Thank you for your support ❤️
 
 ---
 
