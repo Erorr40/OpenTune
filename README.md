@@ -178,8 +178,8 @@
 
 | Package | Architecture | Description | Download | SHA-256 Checksum |
 |---|---|---|---|---|
-| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-universal-release.apk) | `928543b06b43b86a2c68e1e46601017764dad842a8c0821ac7e7e78420b44bf4` |
-| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-arm64-release.apk) | `5014f8fb95ae9daac2b46b279f97828d3fc92c08409dd53f2ce2ced6e91c5cff` |
+| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-universal-release.apk) | `bb1cd662a56cc8394a01ad544903c2bb346d70b3e47df20450de77de1bc59319` |
+| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-arm64-release.apk) | `695078cf523b1c37ed4aef80c53284cebe613a53511778ba9f80a3122d11937f` |
 
 ### Installation Instructions
 1. Download the desired APK from the table above or the [Releases](https://github.com/Erorr40/OpenTune/releases) page.
