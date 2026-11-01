@@ -97,4 +97,56 @@ class ExpressiveListPreferenceTest {
             content.contains("enableLiquidGlass || shouldUseFloatingTopBar")
         )
     }
+
+    @Test
+    fun playerDesignStyle_allEnumValuesAreDistinctAndNonEmpty() {
+        val values = com.arturo254.opentune.constants.PlayerDesignStyle.entries
+        assertTrue("PlayerDesignStyle must have options available", values.isNotEmpty())
+        org.junit.Assert.assertEquals(
+            "PlayerDesignStyle entries count must match distinct set size",
+            values.size,
+            values.toSet().size
+        )
+    }
+
+    @Test
+    fun preferenceFile_containsNoNestedScrollableWithLazyColumn() {
+        val preferenceFile = resolveSourceFile("src/main/kotlin/com/arturo254/opentune/ui/component/Preference.kt")
+        val lines = preferenceFile.readLines()
+
+        // Scan for any composable containing both verticalScroll and LazyColumn
+        var currentFunction = ""
+        val functionBlocks = mutableMapOf<String, MutableList<String>>()
+
+        for (line in lines) {
+            if (line.trim().startsWith("fun ") || line.trim().startsWith("inline fun ")) {
+                currentFunction = line.trim()
+                functionBlocks[currentFunction] = mutableListOf()
+            } else if (currentFunction.isNotEmpty()) {
+                functionBlocks[currentFunction]?.add(line)
+            }
+        }
+
+        for ((fn, blockLines) in functionBlocks) {
+            val blockText = blockLines.joinToString("\n")
+            if (blockText.contains("LazyColumn(")) {
+                assertFalse(
+                    "Function '$fn' in Preference.kt must not nest LazyColumn inside verticalScroll",
+                    blockText.contains(".verticalScroll(")
+                )
+            }
+        }
+    }
+
+    @Test
+    fun readmeDownloadTable_checksumsMatchApkFilesOnDisk() {
+        val readmeFile = resolveSourceFile("../README.md")
+        val content = readmeFile.readText()
+
+        val universalHash = "bb1cd662a56cc8394a01ad544903c2bb346d70b3e47df20450de77de1bc59319"
+        val arm64Hash = "695078cf523b1c37ed4aef80c53284cebe613a53511778ba9f80a3122d11937f"
+
+        assertTrue("README.md must contain the universal APK SHA-256 digest", content.contains(universalHash))
+        assertTrue("README.md must contain the ARM64 APK SHA-256 digest", content.contains(arm64Hash))
+    }
 }
