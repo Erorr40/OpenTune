@@ -188,6 +188,13 @@
 3. Tap the downloaded file to complete the installation.
 4. *Existing users:* You can update directly over your previous installation without losing playlists, settings, or offline cache.
 
+### Automated Updates via Obtainium
+You can install OpenTune and receive seamless background update notifications directly from our GitHub Releases using [Obtainium](https://github.com/ImranR98/Obtainium):
+
+[![Add to Obtainium](https://img.shields.io/badge/Obtainium-Add%20to%20Obtainium-107C41?style=for-the-badge&logo=android&logoColor=white)](https://api.obtainium.imranr.dev/redirect?r=https://github.com/Erorr40/OpenTune)
+
+*Or manually add the repository URL in Obtainium:* `https://github.com/Erorr40/OpenTune`
+
 ---
 
 ## Building from Source
