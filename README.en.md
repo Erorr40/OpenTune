@@ -176,10 +176,10 @@
 
 ### Official Release Downloads (v4.0.3)
 
-| Package | Architecture | Description | Download |
-|---|---|---|---|
-| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-universal-release.apk) |
-| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-arm64-release.apk) |
+| Package | Architecture | Description | Download | SHA-256 Checksum |
+|---|---|---|---|---|
+| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-universal-release.apk) | `36a9a64f1e2dad9ae86772b1e20d0644a3b636534be7a9e6a1650916816644ae` |
+| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-arm64-release.apk) | `0dcf138f4839b55676a0a55ce7d8254eb78a7d11bf46995dfb27fa4d2702c2fc` |
 
 ### Installation Instructions
 1. Download the desired APK from the table above or the [Releases](https://github.com/Erorr40/OpenTune/releases) page.
