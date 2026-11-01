@@ -1,0 +1,147 @@
+name: Bug Report
+description: Report an error, crash, or unexpected behavior in OpenTune
+title: "[Bug]: "
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue!
+        
+        Before submitting, please make sure you:
+        - Search [existing issues](https://github.com/Erorr40/OpenTune/issues) to avoid duplicates.
+        - Test with the latest version of OpenTune.
+        - For security concerns, please refer to our [Security Policy](https://github.com/Erorr40/OpenTune/blob/master/SECURITY.md).
+
+  - type: input
+    id: version
+    attributes:
+      label: OpenTune Version
+      description: What version of OpenTune are you using? (Check Settings > About)
+      placeholder: "e.g., 4.0.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_source
+    attributes:
+      label: Installation Source
+      description: Where did you download OpenTune from?
+      options:
+        - "GitHub Releases (Official APK)"
+        - "F-Droid"
+        - "Self-built from source"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device Model & Manufacturer
+      description: What device are you using?
+      placeholder: "e.g., Google Pixel 8 Pro, Samsung Galaxy S24 Ultra, Xiaomi 13"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: android_version
+    attributes:
+      label: Android Version / ROM
+      description: Which Android OS version is installed?
+      options:
+        - "Android 15 (API 35)"
+        - "Android 14 (API 34)"
+        - "Android 13 (API 33)"
+        - "Android 12 / 12L (API 31/32)"
+        - "Android 11 (API 30)"
+        - "Android 10 (API 29)"
+        - "Android 9 Pie (API 28)"
+        - "Android 8.x Oreo (API 26/27)"
+        - "Custom ROM (LineageOS, GrapheneOS, crDroid, etc.)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Frequency of Occurrence
+      description: How often does this issue occur?
+      options:
+        - "Always (reproducible every time)"
+        - "Frequently (often happens under same conditions)"
+        - "Intermittently (randomly or occasionally)"
+        - "Happened only once"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug.
+      placeholder: "When I try to play a track with Automix enabled, ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to reproduce the issue.
+      placeholder: |
+        1. Open OpenTune
+        2. Navigate to 'Explore' tab
+        3. Play song '...'
+        4. Observe the crash or playback error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "The song should crossfade smoothly to the next track without audio stutter."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened instead?
+      placeholder: "Audio paused abruptly and showed playback error code -1004."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Screen Recordings
+      description: Drag and drop screenshots or screen recordings showing the issue.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logcat / Crash Logs
+      description: |
+        Please provide ADB logcat logs if available (`adb logcat | grep -i opentune`).
+        Redact any personal tokens or sensitive information before posting.
+      render: shell
+      placeholder: |
+        --------- beginning of crash
+        AndroidRuntime: FATAL EXCEPTION: ...
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-Submission Checklist
+      options:
+        - label: I have searched existing issues and verified this is not a duplicate.
+          required: true
+        - label: I am using the latest official release of OpenTune.
+          required: true
+        - label: I have provided all necessary details, reproduction steps, and logs.
+          required: true

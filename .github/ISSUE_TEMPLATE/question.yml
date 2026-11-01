@@ -1,0 +1,38 @@
+name: Question & Discussion
+description: Ask a question, request clarification, or get help with OpenTune
+title: "[Question]: "
+labels: ["question"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about OpenTune or need assistance?
+        
+        > [!TIP]
+        > For quick interactive discussions, questions, and community support, you can also join our official [Telegram Channel](https://t.me/E2_opentune)!
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know or understand about OpenTune?
+      placeholder: "How can I configure custom LRCLIB servers or export my playlists?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Provide any additional context, screenshots, or device details that might help answer your question.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched the README and documentation before asking.
+          required: true
+        - label: I understand this is for general questions and not bug reports (use Bug Report for crashes/issues).
+          required: true

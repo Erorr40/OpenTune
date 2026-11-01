@@ -34,6 +34,9 @@ Thank you for your interest in contributing to **OpenTune**! This document outli
 
 We track bugs using [GitHub Issues](https://github.com/Erorr40/OpenTune/issues). Before creating a new issue, please search existing issues to see if the problem has already been reported. If you find a similar issue, feel free to add relevant information or insights as a comment.
 
+> [!CAUTION]
+> If you have discovered a security vulnerability, please **do NOT** open a public issue. Follow our [Security Policy](SECURITY.md) to report it privately and responsibly.
+
 When creating a new issue, include:
 
 * **Descriptive title** that summarizes the issue

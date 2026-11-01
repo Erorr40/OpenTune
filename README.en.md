@@ -230,7 +230,7 @@ Contributions, bug reports, and suggestions are welcome!
 5. Push to the branch (`git push origin feature/amazing-feature`).
 6. Open a Pull Request.
 
-Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
+Please review our [Contributing Guidelines](CONTRIBUTING.md), [Code of Conduct](CODE_OF_CONDUCT.md), and [Security Policy](SECURITY.md).
 
 ---
 
@@ -250,7 +250,7 @@ All original copyright notices from upstream projects are preserved, respected, 
 
 ## Contact
 
-For security reports, inquiries, or support:
+For security reports, please review our [Security Policy](SECURITY.md) or contact us directly:
 - **Maintainer**: Ahmed Raafat
 - **Email**: [ahmedrafatbad666655557777@gmail.com](mailto:ahmedrafatbad666655557777@gmail.com)
 - **Telegram Channel**: [https://t.me/E2_opentune](https://t.me/E2_opentune)

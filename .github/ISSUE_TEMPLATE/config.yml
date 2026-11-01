@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Telegram Community
+    url: https://t.me/E2_opentune
+    about: Join our official Telegram channel for announcements, community chat, and fast support.
+  - name: 💡 GitHub Discussions
+    url: https://github.com/Erorr40/OpenTune/discussions
+    about: Share ideas, discuss playlists, or ask general questions with other users and developers.
+  - name: 🛡️ Security Vulnerability Reporting
+    url: https://github.com/Erorr40/OpenTune/security/advisories/new
+    about: Privately report a security vulnerability to the maintainers under responsible disclosure.

@@ -1,0 +1,57 @@
+name: Feature Request
+description: Propose a new feature, UX idea, or functional improvement for OpenTune
+title: "[Feature]: "
+labels: ["enhancement"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an improvement for OpenTune!
+        
+        Before submitting, please make sure you:
+        - Search [existing feature requests](https://github.com/Erorr40/OpenTune/issues?q=is%3Aissue+label%3Aenhancement) to ensure your idea hasn't already been proposed or discussed.
+        - Review our [Contributing Guidelines](https://github.com/Erorr40/OpenTune/blob/master/CONTRIBUTING.md).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem or limitation?
+      description: A clear and concise description of what the problem or limitation is.
+      placeholder: "I'm always frustrated when I want to reorder tracks in a queued playlist because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution / Enhancement
+      description: A clear and concise description of what you want to happen and how you envision it working.
+      placeholder: "Add a drag-to-reorder handle next to tracks in the active queue with haptic feedback..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or Workarounds Considered
+      description: Have you considered any alternative solutions or features?
+      placeholder: "An alternative would be adding 'Move to top' and 'Move to bottom' in the track's context menu."
+
+  - type: textarea
+    id: ui_concept
+    attributes:
+      label: UI / UX Concept & Mockups (Optional)
+      description: Attach mockups, wireframes, drawings, or links to similar implementations in other apps.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched open and closed issues to ensure this is not a duplicate.
+          required: true
+        - label: This feature aligns with OpenTune's scope as an open-source, client-side music player.
+          required: true
+        - label: I am willing to test beta/debug APK builds if this feature is implemented.
+          required: false
