@@ -140,6 +140,8 @@ import com.arturo254.opentune.constants.UseNewMiniPlayerDesignKey
 import com.arturo254.opentune.constants.PlayerBackgroundStyle
 import com.arturo254.opentune.constants.PlayerBackgroundStyleKey
 import com.arturo254.opentune.constants.EnableLiquidGlassKey
+import com.arturo254.opentune.ui.component.frostedGlassSurface
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 import com.arturo254.opentune.constants.PlayerCustomImageUriKey
 import com.arturo254.opentune.constants.PlayerCustomBlurKey
 import com.arturo254.opentune.constants.PlayerCustomContrastKey
@@ -347,20 +349,8 @@ fun BottomSheetPlayer(
                 if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
             useDarkTheme && pureBlack
         }
-    val enableLiquidGlass by rememberPreference(EnableLiquidGlassKey, defaultValue = false)
-    val backgroundColor = if (enableLiquidGlass) {
-        val progress = ((state.value - state.collapsedBound) / (state.expandedBound - state.collapsedBound))
-            .coerceIn(0f, 1f)
-        Color.White.copy(alpha = 0.1f * progress)
-    } else if (useBlackBackground && state.value > state.collapsedBound) {
-        val progress = ((state.value - state.collapsedBound) / (state.expandedBound - state.collapsedBound))
-            .coerceIn(0f, 1f)
-        Color.Black.copy(alpha = progress)
-    } else {
-        val progress = ((state.value - state.collapsedBound) / (state.expandedBound - state.collapsedBound))
-            .coerceIn(0f, 1f)
-        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = progress)
-    }
+    val frostedGlass = LocalFrostedGlass.current
+    val enableLiquidGlass = frostedGlass.isEnabled
 
     val playbackState by playerConnection.playbackState.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -859,7 +849,18 @@ fun BottomSheetPlayer(
                     else -> false
                 }
             },
-        backgroundColor = if (playerDesignStyle == PlayerDesignStyle.V7) {
+        backgroundColor = if (enableLiquidGlass) {
+            val progress = ((state.value - state.collapsedBound) / (state.expandedBound - state.collapsedBound))
+                .coerceIn(0f, 1f)
+            val fadeProgress = if (progress < 0.2f) {
+                ((0.2f - progress) / 0.2f).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
+            val baseAlpha = if (frostedGlass.isBlurSupported) 0.65f else 0.88f
+            val baseColor = if (frostedGlass.isBlurSupported) Color.Black else MaterialTheme.colorScheme.surfaceContainer
+            baseColor.copy(alpha = (baseAlpha * (1f - fadeProgress)).coerceIn(0f, 1f))
+        } else if (playerDesignStyle == PlayerDesignStyle.V7) {
             val progress = ((state.value - state.collapsedBound) / (state.expandedBound - state.collapsedBound))
                 .coerceIn(0f, 1f)
             val fadeProgress = if (progress < 0.2f) {
@@ -1674,11 +1675,17 @@ fun BottomSheetPlayer(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(
-                            MaterialTheme.colorScheme.surface.copy(
-                                alpha = lyricsSheetState.progress.coerceIn(0f, 1f)
-                            )
-                        )
+                        .let {
+                            if (enableLiquidGlass) {
+                                it.frostedGlassSurface()
+                            } else {
+                                it.background(
+                                    MaterialTheme.colorScheme.surface.copy(
+                                        alpha = lyricsSheetState.progress.coerceIn(0f, 1f)
+                                    )
+                                )
+                            }
+                        }
                 ) {
                     LyricsScreen(
                         mediaMetadata = metadata,

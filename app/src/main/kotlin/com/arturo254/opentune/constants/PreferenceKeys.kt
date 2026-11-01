@@ -242,6 +242,7 @@ val SongFilterKey = stringPreferencesKey("songFilter")
 val ArtistFilterKey = stringPreferencesKey("artistFilter")
 val AlbumFilterKey = stringPreferencesKey("albumFilter")
 val AudioCrossfadeGaplessKey = booleanPreferencesKey("audio_crossfade_gapless")
+val AudioAutomixKey = booleanPreferencesKey("audio_automix_enabled")
 
 val ArtistViewTypeKey = stringPreferencesKey("artistViewType")
 val AlbumViewTypeKey = stringPreferencesKey("albumViewType")

@@ -42,8 +42,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -55,6 +58,8 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -64,11 +69,17 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.toShape
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import com.arturo254.opentune.playback.CrossfadeAudio
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -77,7 +88,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -558,6 +568,127 @@ fun SliderPreference(
     )
 }
 
+@Composable
+fun EqualPowerMixCurvePreview(
+    crossfadeSeconds: Int,
+    modifier: Modifier = Modifier,
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.tertiary
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Box(Modifier.size(8.dp).clip(CircleShape).background(primaryColor))
+                Text(
+                    text = "Track 1 (Fade-Out)",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = primaryColor
+                )
+            }
+            Text(
+                text = if (crossfadeSeconds > 0) "${crossfadeSeconds}s Equal-Power Mix" else "Direct Cut (No Mix)",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = if (crossfadeSeconds > 0) primaryColor else onSurfaceVariant
+            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Track 2 (Fade-In)",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = secondaryColor
+                )
+                Box(Modifier.size(8.dp).clip(CircleShape).background(secondaryColor))
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            val width = size.width
+            val height = size.height
+            val strokeWidth = 3.dp.toPx()
+
+            if (crossfadeSeconds == 0) {
+                // Cut line
+                drawLine(
+                    color = onSurfaceVariant.copy(alpha = 0.4f),
+                    start = Offset(0f, height * 0.5f),
+                    end = Offset(width * 0.5f, height * 0.5f),
+                    strokeWidth = strokeWidth
+                )
+                drawLine(
+                    color = onSurfaceVariant.copy(alpha = 0.4f),
+                    start = Offset(width * 0.5f, 0f),
+                    end = Offset(width * 0.5f, height),
+                    strokeWidth = strokeWidth
+                )
+                drawLine(
+                    color = onSurfaceVariant.copy(alpha = 0.4f),
+                    start = Offset(width * 0.5f, height * 0.5f),
+                    end = Offset(width, height * 0.5f),
+                    strokeWidth = strokeWidth
+                )
+            } else {
+                val outPath = Path()
+                val inPath = Path()
+
+                val steps = 40
+                for (i in 0..steps) {
+                    val t = i.toFloat() / steps.toFloat()
+                    val x = t * width
+                    val (outFactor, inFactor) = CrossfadeAudio.calculateEqualPowerVolumes(t)
+                    val yOut = height - (outFactor * (height - 8.dp.toPx())) - 4.dp.toPx()
+                    val yIn = height - (inFactor * (height - 8.dp.toPx())) - 4.dp.toPx()
+
+                    if (i == 0) {
+                        outPath.moveTo(x, yOut)
+                        inPath.moveTo(x, yIn)
+                    } else {
+                        outPath.lineTo(x, yOut)
+                        inPath.lineTo(x, yIn)
+                    }
+                }
+
+                drawPath(
+                    path = outPath,
+                    color = primaryColor,
+                    style = Stroke(width = strokeWidth)
+                )
+                drawPath(
+                    path = inPath,
+                    color = secondaryColor,
+                    style = Stroke(width = strokeWidth)
+                )
+
+                // Midpoint intersection dot (-3 dB constant acoustic power)
+                val midX = width * 0.5f
+                val midY = height - (0.7071f * (height - 8.dp.toPx())) - 4.dp.toPx()
+                drawCircle(
+                    color = Color.White,
+                    radius = 4.dp.toPx(),
+                    center = Offset(midX, midY)
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrossfadeSliderPreference(
@@ -565,21 +696,51 @@ fun CrossfadeSliderPreference(
     value: Int,
     onValueChange: (Int) -> Unit,
     isEnabled: Boolean = true,
+    audioOffload: Boolean = false,
+    onAudioOffloadDisable: (() -> Unit)? = null,
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     var localValue by remember { mutableFloatStateOf(value.toFloat()) }
+    var lastActiveValue by remember { mutableIntStateOf(if (value > 0) value else 4) }
 
     androidx.compose.runtime.LaunchedEffect(value) {
         localValue = value.toFloat()
+        if (value > 0) {
+            lastActiveValue = value
+        }
     }
 
-    val displayValue = localValue.roundToInt().coerceIn(0, 10)
-    val isCrossfadeEnabled = displayValue > 0
+    val displayValue = localValue.roundToInt().coerceIn(0, 12)
+    val isCrossfadeEnabled = value > 0
 
-    val descriptionText = when (displayValue) {
+    val baseDescription = when (value) {
         0 -> stringResource(R.string.crossfade_disabled_description)
-        else -> pluralStringResource(R.plurals.seconds, displayValue, displayValue)
+        else -> pluralStringResource(R.plurals.seconds, value, value)
     }
+    val descriptionText = if (audioOffload) {
+        "$baseDescription • ${stringResource(R.string.audio_offload)} is active (enabling crossfade turns it off)"
+    } else {
+        baseDescription
+    }
+
+    val switchRotation by animateFloatAsState(
+        targetValue = if (isCrossfadeEnabled) 0f else 180f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
+        label = "switchRotation"
+    )
+
+    val switchTrackColor by animateColorAsState(
+        targetValue = if (isCrossfadeEnabled) {
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        },
+        animationSpec = tween(300),
+        label = "trackColor"
+    )
 
     if (showBottomSheet) {
         ExpressiveActionBottomSheet(
@@ -598,7 +759,10 @@ fun CrossfadeSliderPreference(
                 showBottomSheet = false
             },
             onConfirm = {
-                val finalValue = localValue.roundToInt().coerceIn(0, 10)
+                val finalValue = localValue.roundToInt().coerceIn(0, 12)
+                if (finalValue > 0 && audioOffload) {
+                    onAudioOffloadDisable?.invoke()
+                }
                 onValueChange(finalValue)
                 showBottomSheet = false
             },
@@ -611,8 +775,13 @@ fun CrossfadeSliderPreference(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    EqualPowerMixCurvePreview(
+                        crossfadeSeconds = displayValue,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
                     val valueColor by animateColorAsState(
-                        targetValue = if (isCrossfadeEnabled) {
+                        targetValue = if (displayValue > 0) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -633,36 +802,64 @@ fun CrossfadeSliderPreference(
                         color = valueColor,
                     )
 
-                    Spacer(Modifier.height(24.dp))
+                    if (audioOffload) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "Enabling crossfade will automatically disable hardware audio offload.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
 
                     SquigglySlider(
                         value = localValue,
                         onValueChange = {
                             localValue = it.roundToInt()
-                                .coerceIn(0, 10)
+                                .coerceIn(0, 12)
                                 .toFloat()
                         },
-                        valueRange = 0f..10f,
+                        valueRange = 0f..12f,
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(12.dp))
 
+                    // Spotify-style Quick Preset Pills
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        listOf(0, 2, 4, 6, 8, 10).forEach { mark ->
-                            val isActive = displayValue >= mark && mark > 0
-                            Badge(
-                                text = "${mark}s",
-                                color = if (isActive) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        listOf(
+                            0 to stringResource(R.string.mixing_preset_off),
+                            3 to stringResource(R.string.mixing_preset_subtle),
+                            6 to stringResource(R.string.mixing_preset_standard),
+                            9 to stringResource(R.string.mixing_preset_club),
+                            12 to stringResource(R.string.mixing_preset_flow)
+                        ).forEach { (presetSec, label) ->
+                            val isSelected = displayValue == presetSec
+                            SuggestionChip(
+                                onClick = {
+                                    localValue = presetSec.toFloat()
                                 },
-                                modifier = Modifier
-                                    .alpha(if (isActive) 1f else 0.5f)
+                                label = {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                    )
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                    labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                border = SuggestionChipDefaults.suggestionChipBorder(
+                                    enabled = true,
+                                    borderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                ),
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
@@ -681,7 +878,7 @@ fun CrossfadeSliderPreference(
                 Text(stringResource(R.string.audio_crossfade_title))
                 if (isCrossfadeEnabled) {
                     Badge(
-                        text = "${displayValue}s",
+                        text = "${value}s",
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -698,6 +895,49 @@ fun CrossfadeSliderPreference(
             }
         },
         onClick = { if (isEnabled) showBottomSheet = true },
+        trailingContent = {
+            Switch(
+                checked = isCrossfadeEnabled,
+                onCheckedChange = { checked ->
+                    if (checked) {
+                        if (audioOffload) {
+                            onAudioOffloadDisable?.invoke()
+                        }
+                        val target = if (lastActiveValue in 1..12) lastActiveValue else 4
+                        onValueChange(target)
+                    } else {
+                        onValueChange(0)
+                    }
+                },
+                enabled = isEnabled,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = switchTrackColor,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.surfaceVariant,
+                    uncheckedTrackColor = switchTrackColor,
+                    checkedBorderColor = Color.Transparent,
+                    uncheckedBorderColor = Color.Transparent,
+                ),
+                thumbContent = {
+                    Icon(
+                        painter = painterResource(
+                            id = if (isCrossfadeEnabled) R.drawable.check else R.drawable.close
+                        ),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(SwitchDefaults.IconSize)
+                            .graphicsLayer {
+                                rotationZ = switchRotation
+                            },
+                        tint = if (isCrossfadeEnabled) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        }
+                    )
+                }
+            )
+        },
         isEnabled = isEnabled,
     )
 }
@@ -903,13 +1143,19 @@ fun ExpressiveActionBottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val frostedGlass = LocalFrostedGlass.current
+    val sheetContainerColor = if (frostedGlass.isEnabled) {
+        if (frostedGlass.isBlurSupported) Color(0xCC1E1E1E) else frostedGlass.fallbackSurfaceColor.copy(alpha = 0.92f)
+    } else {
+        MaterialTheme.colorScheme.surfaceContainer
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = expressiveBottomSheetShape,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 6.dp,
+        containerColor = sheetContainerColor,
+        tonalElevation = if (frostedGlass.isEnabled) 0.dp else 6.dp,
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -919,11 +1165,16 @@ fun ExpressiveActionBottomSheet(
                     .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
             )
         },
-        modifier = Modifier
+        modifier = Modifier.let {
+            if (frostedGlass.isEnabled && frostedGlass.borderStroke != null) {
+                it.border(frostedGlass.borderStroke, expressiveBottomSheetShape)
+            } else it
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp)
         ) {
@@ -997,13 +1248,19 @@ fun <T> ExpressiveListBottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val frostedGlass = LocalFrostedGlass.current
+    val sheetContainerColor = if (frostedGlass.isEnabled) {
+        if (frostedGlass.isBlurSupported) Color(0xCC1E1E1E) else frostedGlass.fallbackSurfaceColor.copy(alpha = 0.92f)
+    } else {
+        MaterialTheme.colorScheme.surfaceContainer
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = expressiveBottomSheetShape,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 6.dp,
+        containerColor = sheetContainerColor,
+        tonalElevation = if (frostedGlass.isEnabled) 0.dp else 6.dp,
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -1013,11 +1270,16 @@ fun <T> ExpressiveListBottomSheet(
                     .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
             )
         },
-        modifier = Modifier
+        modifier = Modifier.let {
+            if (frostedGlass.isEnabled && frostedGlass.borderStroke != null) {
+                it.border(frostedGlass.borderStroke, expressiveBottomSheetShape)
+            } else it
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp)
         ) {
@@ -1074,13 +1336,19 @@ fun ExpressiveTextFieldBottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val frostedGlass = LocalFrostedGlass.current
+    val sheetContainerColor = if (frostedGlass.isEnabled) {
+        if (frostedGlass.isBlurSupported) Color(0xCC1E1E1E) else frostedGlass.fallbackSurfaceColor.copy(alpha = 0.92f)
+    } else {
+        MaterialTheme.colorScheme.surfaceContainer
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = expressiveBottomSheetShape,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 6.dp,
+        containerColor = sheetContainerColor,
+        tonalElevation = if (frostedGlass.isEnabled) 0.dp else 6.dp,
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -1090,11 +1358,16 @@ fun ExpressiveTextFieldBottomSheet(
                     .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
             )
         },
-        modifier = Modifier
+        modifier = Modifier.let {
+            if (frostedGlass.isEnabled && frostedGlass.borderStroke != null) {
+                it.border(frostedGlass.borderStroke, expressiveBottomSheetShape)
+            } else it
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp)
         ) {

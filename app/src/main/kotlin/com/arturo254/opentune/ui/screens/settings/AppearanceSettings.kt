@@ -352,7 +352,7 @@ fun AppearanceSettings(
         )
 
         SwitchPreference(
-            title = { Text("Haptic feedback") },
+            title = { Text(stringResource(R.string.haptic_feedback)) },
             icon = { Icon(painterResource(R.drawable.haptic), null) },
             checked = hapticEnabled,
             onCheckedChange = onHapticEnabledChange,
@@ -378,8 +378,8 @@ fun AppearanceSettings(
         }
 
         SwitchPreference(
-            title = { Text(stringResource(R.string.enable_liquid_glass)) },
-            description = stringResource(R.string.enable_liquid_glass_desc),
+            title = { Text(stringResource(R.string.frosted_glass_theme)) },
+            description = stringResource(R.string.frosted_glass_theme_desc),
             icon = { Icon(painterResource(R.drawable.palette), null) },
             checked = enableLiquidGlass,
             onCheckedChange = { newValue ->
@@ -492,7 +492,7 @@ fun AppearanceSettings(
                     PlayerBackgroundStyle.COLORING -> stringResource(R.string.coloring)
                     PlayerBackgroundStyle.BLUR_GRADIENT -> stringResource(R.string.blur_gradient)
                     PlayerBackgroundStyle.GLOW -> stringResource(R.string.glow)
-                    PlayerBackgroundStyle.GLOW_ANIMATED -> "Glow Animated"
+                    PlayerBackgroundStyle.GLOW_ANIMATED -> stringResource(R.string.glow_animated)
                     PlayerBackgroundStyle.SPOTIFY -> stringResource(R.string.player_background_spotify)
                 }
             },
@@ -516,16 +516,16 @@ fun AppearanceSettings(
         )
 
         ListPreference(
-            title = { Text("Canvas source") },
+            title = { Text(stringResource(R.string.canvas_source)) },
             icon = { Icon(painterResource(R.drawable.motion_photos_on), null) },
             selectedValue = canvasSource,
             values = CanvasSource.entries,
             valueText = { source ->
                 when (source) {
-                    CanvasSource.AUTO -> "Auto"
-                    CanvasSource.APPLE_MUSIC -> "Apple Music"
-                    CanvasSource.CUSTOM -> "Custom by OpenTune"
-                    CanvasSource.TIDAL -> "Tidal"
+                    CanvasSource.AUTO -> stringResource(R.string.canvas_source_auto)
+                    CanvasSource.APPLE_MUSIC -> stringResource(R.string.canvas_source_apple_music)
+                    CanvasSource.CUSTOM -> stringResource(R.string.canvas_source_custom)
+                    CanvasSource.TIDAL -> stringResource(R.string.canvas_source_tidal)
                 }
             },
             onValueSelected = setCanvasSource,
@@ -656,8 +656,8 @@ fun AppearanceSettings(
         )
 
         SwitchPreference(
-            title = { Text("Lyrics V2 (Experimental)") },
-            description = "Use the new fluid word-synced lyrics engine",
+            title = { Text(stringResource(R.string.lyrics_v2_title)) },
+            description = stringResource(R.string.lyrics_v2_desc),
             icon = { Icon(painterResource(R.drawable.lyrics), null) },
             checked = useLyricsV2,
             onCheckedChange = onUseLyricsV2Change,
@@ -896,15 +896,15 @@ fun AppearanceSettings(
 
 
         PreferenceEntry(
-            title = { Text("Always On Display") },
+            title = { Text(stringResource(R.string.aod_screen_title)) },
             description = stringResource(R.string.always_on_display_description),
             icon = { Icon(painterResource(R.drawable.dark_mode), null) },
             onClick = { navController.navigate("settings/appearance/always_on_display") }
         )
 
         PreferenceEntry(
-            title = { Text("Widget Settings") },
-            description = "Personaliza la apariencia del widget",
+            title = { Text(stringResource(R.string.widget_settings)) },
+            description = stringResource(R.string.widget_settings_desc),
             icon = { Icon(painterResource(R.drawable.buttons), null) },
             onClick = { navController.navigate("settings/widget") }
         )

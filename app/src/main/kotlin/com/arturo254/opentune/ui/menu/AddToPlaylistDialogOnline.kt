@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -75,6 +76,7 @@ fun AddToPlaylistDialogOnline(
     onPercentageChange: (Int) -> Unit,
     onStatusChange: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
     val database = LocalDatabase.current
     val coroutineScope = rememberCoroutineScope()
     var allPlaylists by remember { mutableStateOf(emptyList<Playlist>()) }
@@ -121,7 +123,7 @@ fun AddToPlaylistDialogOnline(
                 withContext(Dispatchers.Main) {
                     onProgressStart(true)
                     onPercentageChange(0)
-                    onStatusChange("Preparing import...")
+                    onStatusChange(context.getString(R.string.preparing_import))
                     onDismiss()
                 }
 
@@ -201,7 +203,7 @@ fun AddToPlaylistDialogOnline(
 
                                 withContext(Dispatchers.Main) {
                                     onPercentageChange(percent)
-                                    onStatusChange("Importing: $currentProcessed/$total\nFailed: ${failCount.get()}")
+                                    onStatusChange(context.getString(R.string.importing_progress, currentProcessed, total, failCount.get()))
                                 }
                             }
                         }
@@ -251,7 +253,10 @@ fun AddToPlaylistDialogOnline(
                 )
             }
 
-            items(playlists) { playlist ->
+            items(
+                items = playlists,
+                key = { it.id }
+            ) { playlist ->
                 PlaylistListItem(
                     playlist = playlist,
                     modifier = Modifier.clickable {
@@ -301,27 +306,38 @@ fun AddToPlaylistDialogOnline(
     if (showResultDialog && processingSummary != null) {
         val summary = processingSummary!!
         DefaultDialog(
-            title = { Text("Import Complete") },
+            title = { Text(stringResource(R.string.import_complete)) },
             onDismiss = { showResultDialog = false },
             buttons = {
                 TextButton(onClick = { showResultDialog = false }) {
-                    Text("OK")
+                    Text(stringResource(android.R.string.ok))
                 }
             }
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Total Processed: ${summary.total}")
-                Text("Successfully Imported: ${summary.success}", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.total_processed, summary.total))
+                Text(
+                    stringResource(R.string.successfully_imported, summary.success),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
                 if (summary.failed > 0) {
-                    Text("Failed: ${summary.failed}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(R.string.failed_count, summary.failed),
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                    Text("Failed Items:", style = MaterialTheme.typography.labelLarge)
+                    Text(stringResource(R.string.failed_items), style = MaterialTheme.typography.labelLarge)
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(150.dp)
                     ) {
-                        items(summary.failedItems) { title ->
+                        items(
+                            items = summary.failedItems,
+                            key = { it }
+                        ) { title ->
                             Text(
                                 text = "• $title",
                                 style = MaterialTheme.typography.bodySmall,

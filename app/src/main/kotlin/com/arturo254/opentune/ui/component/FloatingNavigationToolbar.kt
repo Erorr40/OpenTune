@@ -81,6 +81,7 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.core.Animatable
 import com.arturo254.opentune.constants.EnableLiquidGlassKey
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 import com.arturo254.opentune.utils.rememberPreference
 
 @Composable
@@ -100,7 +101,8 @@ fun FloatingNavigationToolbar(
     isSelected: (Screens) -> Boolean,
     onItemClick: (Screens, Boolean) -> Unit,
 ) {
-    val enableLiquidGlass by rememberPreference(EnableLiquidGlassKey, defaultValue = false)
+    val frostedGlass = LocalFrostedGlass.current
+    val enableLiquidGlass = frostedGlass.isEnabled
     val toolbarContainerColor = if (enableLiquidGlass) Color.Transparent else floatingToolbarContainerColor(pureBlack = pureBlack)
     val toolbarColors = FloatingToolbarDefaults.standardFloatingToolbarColors(
         toolbarContainerColor = toolbarContainerColor,
@@ -111,7 +113,10 @@ fun FloatingNavigationToolbar(
     val toolbarModifier = Modifier
         .widthIn(max = 480.dp)
         .let {
-            if (enableLiquidGlass) it.graphicsLayer { shadowElevation = 0f } else it
+            if (enableLiquidGlass) {
+                it.graphicsLayer { shadowElevation = 0f }
+                    .frostedGlassSurface(shape = CircleShape)
+            } else it
         }
 
     BoxWithConstraints(
@@ -176,7 +181,10 @@ fun FloatingNavigationToolbar(
                 modifier = Modifier
                     .widthIn(max = 420.dp)
                     .let {
-                        if (enableLiquidGlass) it.graphicsLayer { shadowElevation = 0f } else it
+                        if (enableLiquidGlass) {
+                            it.graphicsLayer { shadowElevation = 0f }
+                                .frostedGlassSurface(shape = CircleShape)
+                        } else it
                     },
                 colors = toolbarColors,
                 scrollBehavior = scrollBehavior,
@@ -227,21 +235,19 @@ private fun ToolbarItemsContainer(
         label = "pillOffset"
     )
 
-    val enableLiquidGlass by rememberPreference(EnableLiquidGlassKey, defaultValue = false)
+    val frostedGlass = LocalFrostedGlass.current
+    val enableLiquidGlass = frostedGlass.isEnabled
     val layer = rememberGraphicsLayer()
     val luminanceAnimation = remember { Animatable(0.3f) }
-    val backdrop = LocalBackdrop.current
 
     Box(
         modifier = Modifier
             .let {
-                if (enableLiquidGlass && backdrop != null) {
+                if (enableLiquidGlass) {
                     it
-                        .drawBackdropCustomShape(
-                            backdrop = backdrop,
-                            layer = layer,
+                        .frostedGlassSurface(
+                            shape = CircleShape,
                             luminanceAnimation = luminanceAnimation.value,
-                            shape = CircleShape
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 } else it

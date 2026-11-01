@@ -27,6 +27,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withClip
 import androidx.core.graphics.withTranslation
 import coil3.ImageLoader
+import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
@@ -149,7 +150,7 @@ object ComposeToImage {
     private suspend fun loadCoverArt(context: Context, url: String?): Bitmap? {
         if (url == null) return null
         return runCatching {
-            val loader  = ImageLoader(context)
+            val loader  = SingletonImageLoader.get(context)
             val request = ImageRequest.Builder(context).data(url).size(512).allowHardware(false).build()
             loader.execute(request).image?.toBitmap()
         }.getOrNull()

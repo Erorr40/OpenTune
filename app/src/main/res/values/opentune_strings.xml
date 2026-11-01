@@ -36,7 +36,8 @@
     <string name="cached_playlist">Cached</string>
     <string name="sync_playlist">Sync playlist</string>
     <string name="sync_disabled">Sync disabled</string>
-    <string name="elements_selected">%1$d elements selected</string>
+    <string name="elements_selected">%1$d songs selected</string>
+    <string name="allows_for_sync_with_youtube">Note: This allows for syncing with YouTube Music. This is NOT changeable later.</string>
     <string name="allows_for_sync_witch_youtube">Note: This allows for syncing with YouTube Music. This is NOT changeable later.</string>
     <string name="generating_image">Generating image</string>
     <string name="please_wait">Please wait</string>
@@ -86,8 +87,8 @@
     <string name="show_tags_in_library_desc">Show tag filter chips in the library</string>
     <string name="already_in_playlist">Already in playlist:</string>
     <plurals name="n_element">
-        <item quantity="one">%d element</item>
-        <item quantity="other">%d elements</item>
+        <item quantity="one">%d song</item>
+        <item quantity="other">%d songs</item>
     </plurals>
     <plurals name="n_time">
         <item quantity="one">%d time</item>
@@ -101,23 +102,23 @@
     <string name="seek_seconds_addup_description">If enabled,  Adds up 5 extra seconds incrementally on each seek skip</string>
     <string name="login_settings">Login settings</string>
     <string name="general_settings">General settings</string>
-    <string name="player_background_style">Player background style</string>
-    <string name="follow_theme">Follow theme</string>
-    <string name="gradient">Gradient</string>
-    <string name="player_design_style">Player design style</string>
-    <string name="player_design_v1">Classic</string>
-    <string name="player_design_v2">Modern</string>
-    <string name="player_design_v3">Minimal</string>
-    <string name="player_design_v4">Cinematic</string>
-    <string name="player_design_v5">Little</string>
-    <string name="player_design_v6">Expressive</string>
-    <string name="player_design_spotify">Spotify</string>
+    <string name="player_background_style">Player Background &amp; Atmosphere</string>
+    <string name="follow_theme">Adaptive Theme</string>
+    <string name="gradient">Vibrant Gradient</string>
+    <string name="player_design_style">Player Design &amp; Aesthetic</string>
+    <string name="player_design_v1">Classic Studio</string>
+    <string name="player_design_v2">Modern Flow</string>
+    <string name="player_design_v3">Pure Minimal</string>
+    <string name="player_design_v4">Cinematic Immersion</string>
+    <string name="player_design_v5">Compact Essential</string>
+    <string name="player_design_v6">Expressive Dynamic</string>
+    <string name="player_design_spotify">Spotify Aesthetic</string>
     <string name="new_mini_player_design">New mini player design</string>
-    <string name="player_background_blur">Blur</string>
-    <string name="coloring">Coloring</string>
-    <string name="blur_gradient">Blur Gradient</string>
-    <string name="glow">Glow</string>
-    <string name="player_background_spotify">Spotify Blur</string>
+    <string name="player_background_blur">Atmospheric Blur</string>
+    <string name="coloring">Artwork Chroma</string>
+    <string name="blur_gradient">Aurora Blur Gradient</string>
+    <string name="glow">Luminous Glow</string>
+    <string name="player_background_spotify">Spotify Atmosphere</string>
     <string name="player_buttons_style">Player button colors</string>
     <string name="default_style">Default</string>
     <string name="secondary_color_style">Secondary</string>
@@ -217,9 +218,21 @@
         <item quantity="one">1 second</item>
         <item quantity="other">%d seconds</item>
     </plurals>
-    <string name="audio_crossfade_title">Crossfade</string>
-    <string name="audio_crossfade_description">Smoothly transition between songs by fading out the end of each track.</string>
-    <string name="audio_crossfade_dialog_title">Crossfade duration</string>
+    <string name="audio_crossfade_title">Mixing Mode &amp; Crossfade</string>
+    <string name="audio_crossfade_description">Spotify-style seamless transitions between tracks using equal-power acoustic crossfade.</string>
+    <string name="audio_crossfade_dialog_title">Mixing Transition Settings</string>
+    <string name="mixing_and_transitions_title">Mixing &amp; Transitions</string>
+    <string name="album_gapless_playback">Album Gapless Playback</string>
+    <string name="album_gapless_playback_desc">Keep continuous transitions between consecutive album tracks without crossfade.</string>
+    <string name="audio_automix_title">Smart Automix</string>
+    <string name="audio_automix_desc">Intelligently blend tracks with equal-power mixing curve while preserving seamless gapless transitions on full studio albums.</string>
+    <string name="equal_power_mixing_title">Equal-Power Acoustic Mix</string>
+    <string name="equal_power_mixing_desc">Constant power curve eliminates volume dips for professional DJ-style transitions.</string>
+    <string name="mixing_preset_off">Off</string>
+    <string name="mixing_preset_subtle">3s Subtle</string>
+    <string name="mixing_preset_standard">6s Standard</string>
+    <string name="mixing_preset_club">9s Club</string>
+    <string name="mixing_preset_flow">12s Flow</string>
     <string name="disable_load_more_when_repeat_all">Disable load more when repeat all</string>
     <string name="disable_load_more_when_repeat_all_desc">Don\'t auto load more songs and similar content when repeat all mode is enabled</string>
     <string name="player_stream_client">Playback client</string>
@@ -507,13 +520,13 @@
     <string name="spotify_reload_playlist_desc">Refresh Spotify playlists from your account.</string>
     <string name="spotify_no_tracks">No Spotify tracks found.</string>
     <string name="spotify_connected">Connected to Spotify</string>
-    <string name="ai_model_no_results">ia model no results</string>
+    <string name="ai_model_no_results">AI model returned no results</string>
     <string name="tracks_label">Tracks</string>
     <string name="spotify">Spotify</string>
-    <string name="see_all">see all</string>
-    <string name="your_albums">your albums</string>
-    <string name="your_artists">your artist</string>
-    <string name="more_label">more</string>
+    <string name="see_all">See all</string>
+    <string name="your_albums">Your albums</string>
+    <string name="your_artists">Your artists</string>
+    <string name="more_label">More</string>
     <string name="player_fullscreen">Player fullscreen</string>
 
     <string name="playback">Playback</string>
@@ -634,4 +647,57 @@
     <string name="canvas_cache_stats">Canvas cache</string>
     <string name="canvas_logs">Canvas logs</string>
     <string name="refresh_catalog">Reload catalog</string>
+
+    <!-- Appearance Settings Extracted Strings -->
+    <string name="frosted_glass_theme">Liquid Frosted Glass</string>
+    <string name="frosted_glass_theme_desc">Experience next-generation translucent frosted glass aesthetics with real-time backdrop blur, light refraction, and sleek specular borders across the entire app.</string>
+    <string name="haptic_feedback">Haptic feedback</string>
+    <string name="glow_animated">Dynamic Ambient Glow</string>
+    <string name="canvas_source">Canvas source</string>
+    <string name="canvas_source_auto">Auto</string>
+    <string name="canvas_source_apple_music">Apple Music</string>
+    <string name="canvas_source_custom">Custom by OpenTune</string>
+    <string name="canvas_source_tidal">Tidal</string>
+    <string name="lyrics_v2_title">Lyrics V2 (Experimental)</string>
+    <string name="lyrics_v2_desc">Use the new fluid word-synced lyrics engine</string>
+    <string name="widget_settings">Widget Settings</string>
+    <string name="widget_settings_desc">Customize widget appearance</string>
+
+    <!-- Online Playlist Import Dialog Strings -->
+    <string name="preparing_import">Preparing import…</string>
+    <string name="importing_progress">Importing: %1$d/%2$d\nFailed: %3$d</string>
+    <string name="import_complete">Import Complete</string>
+    <string name="total_processed">Total Processed: %1$d</string>
+    <string name="successfully_imported">Successfully Imported: %1$d</string>
+    <string name="failed_count">Failed: %1$d</string>
+    <string name="failed_items">Failed Items:</string>
+
+    <!-- Theme Creator Extracted Preview Strings -->
+    <string name="theme_preview_components_surfaces">Components &amp; surfaces</string>
+    <string name="theme_preview_light">Light</string>
+    <string name="theme_preview_dark">Dark</string>
+    <string name="theme_preview_premium_look">Premium look</string>
+    <string name="theme_preview_hues_contrasts">Hues, contrasts, and elevation</string>
+    <string name="theme_preview_buttons">Buttons</string>
+    <string name="theme_preview_primary_btn">Primary</string>
+    <string name="theme_preview_elevated_btn">Elevated</string>
+    <string name="theme_preview_outlined_btn">Outlined</string>
+    <string name="theme_preview_text_btn">Text</string>
+    <string name="theme_preview_chips">Chips</string>
+    <string name="theme_preview_assist_chip">Assist</string>
+    <string name="theme_preview_selected_chip">Selected</string>
+    <string name="theme_preview_filter_chip">Filter</string>
+    <string name="theme_preview_tertiary_chip">Tertiary</string>
+    <string name="theme_preview_inputs">Inputs</string>
+    <string name="theme_preview_disabled_label">Disabled</string>
+    <string name="theme_preview_toggles">Toggles</string>
+    <string name="theme_preview_switch">Switch</string>
+    <string name="theme_preview_switch_desc">On/off states</string>
+    <string name="theme_preview_checkbox">Checkbox</string>
+    <string name="theme_preview_progress">Progress</string>
+    <string name="theme_preview_loading">Loading</string>
+    <string name="theme_preview_list">List</string>
+    <string name="theme_preview_playlist">Playlist</string>
+    <string name="theme_preview_playlist_supporting">Curated picks • 24 tracks</string>
+    <string name="theme_preview_liked_supporting">Smart collection</string>
 </resources>

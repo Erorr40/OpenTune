@@ -108,3 +108,7 @@ core.*
 # AI code review
 /.qodo/
 /.github/copilot-instructions.md
+
+# Antigravity agent files & temporary screenshots
+/.agents/
+emulator_screen*.png

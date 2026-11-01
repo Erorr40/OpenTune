@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 
 val LocalMenuState = compositionLocalOf { MenuState() }
 
@@ -64,6 +66,10 @@ fun BottomSheetMenu(
     background: Color = MaterialTheme.colorScheme.surface,
 ) {
     val focusManager = LocalFocusManager.current
+    val frostedGlass = LocalFrostedGlass.current
+    val effectiveBackground = if (frostedGlass.isEnabled) {
+        if (frostedGlass.isBlurSupported) Color(0xD91E1E1E) else frostedGlass.fallbackSurfaceColor.copy(alpha = 0.90f)
+    } else background
 
     if (state.isVisible) {
         ModalBottomSheet(
@@ -71,7 +77,7 @@ fun BottomSheetMenu(
                 focusManager.clearFocus()
                 state.isVisible = false
             },
-            containerColor = background,
+            containerColor = effectiveBackground,
             contentColor = MaterialTheme.colorScheme.onSurface,
             dragHandle = {
                 Box(
@@ -82,7 +88,13 @@ fun BottomSheetMenu(
                         .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
                 )
             },
-            modifier = modifier.fillMaxHeight()
+            modifier = modifier
+                .fillMaxHeight()
+                .let {
+                    if (frostedGlass.isEnabled) {
+                        it.border(frostedGlass.borderStroke, BottomSheetDefaults.ExpandedShape)
+                    } else it
+                }
         ) {
             Column(
                 modifier = Modifier

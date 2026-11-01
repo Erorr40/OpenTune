@@ -20,6 +20,7 @@ import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
 import coil3.disk.directory
+import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.allowHardware
 import coil3.request.crossfade
@@ -288,6 +289,11 @@ class App : Application(), SingletonImageLoader.Factory {
             .maxSizeBytes(imageCacheConfig.maxSizeBytes)
             .build()
 
+        val memoryCache = MemoryCache.Builder()
+            .maxSizePercent(context = this, percent = 0.25)
+            .strongReferencesEnabled(true)
+            .build()
+
         if (smartTrimmer && imageCacheConfig.policy == CachePolicy.ENABLED && didRunImageCacheTrim.compareAndSet(false, true)) {
             applicationScope.launch(Dispatchers.IO) { trimImageDiskCache(diskCache) }
         }
@@ -295,6 +301,7 @@ class App : Application(), SingletonImageLoader.Factory {
         return ImageLoader.Builder(this)
             .crossfade(true)
             .allowHardware(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+            .memoryCache(memoryCache)
             .diskCache(diskCache)
             .diskCachePolicy(imageCacheConfig.policy)
             .build()

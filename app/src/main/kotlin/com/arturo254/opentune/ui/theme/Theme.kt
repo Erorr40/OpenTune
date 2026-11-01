@@ -14,6 +14,7 @@ import android.util.Base64
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -22,13 +23,18 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.palette.graphics.Palette
 import com.kyant.m3color.hct.Hct
 import com.kyant.m3color.scheme.SchemeMonochrome
@@ -52,6 +58,62 @@ data class ThemeSeedPalette(
     val neutral: Color,
 )
 
+data class FrostedGlassTokens(
+    val isEnabled: Boolean,
+    val isBlurSupported: Boolean, // Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !disableBlur
+    val surfaceAlpha: Float = 0.82f,
+    val borderStrokeWidthDp: Float = 1.0f,
+    val borderTopAlpha: Float = 0.22f,
+    val borderBottomAlpha: Float = 0.05f,
+    val fallbackSurfaceColor: Color = Color(0xFF121212),
+    val borderStroke: BorderStroke = BorderStroke(
+        1.dp,
+        Brush.verticalGradient(
+            listOf(
+                Color.White.copy(alpha = 0.22f),
+                Color.White.copy(alpha = 0.05f)
+            )
+        )
+    ),
+)
+
+val LocalFrostedGlass: ProvidableCompositionLocal<FrostedGlassTokens> =
+    staticCompositionLocalOf {
+        FrostedGlassTokens(
+            isEnabled = false,
+            isBlurSupported = false,
+            surfaceAlpha = 0.82f,
+            fallbackSurfaceColor = Color(0xFF121212)
+        )
+    }
+
+fun resolveFrostedGlassTokens(
+    isEnabled: Boolean,
+    sdkInt: Int = Build.VERSION.SDK_INT,
+    disableBlur: Boolean = false,
+    fallbackColor: Color = Color(0xFF121212),
+): FrostedGlassTokens {
+    val blurSupported = isEnabled && sdkInt >= Build.VERSION_CODES.S && !disableBlur
+    return FrostedGlassTokens(
+        isEnabled = isEnabled,
+        isBlurSupported = blurSupported,
+        surfaceAlpha = 0.82f,
+        fallbackSurfaceColor = fallbackColor,
+    )
+}
+
+fun resolveFrostedGlassTokens(
+    isEnabled: Boolean,
+    sdkInt: Int,
+    disableBlur: Boolean,
+    fallbackColor: Long,
+): FrostedGlassTokens = resolveFrostedGlassTokens(
+    isEnabled = isEnabled,
+    sdkInt = sdkInt,
+    disableBlur = disableBlur,
+    fallbackColor = Color(fallbackColor),
+)
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun OpenTuneTheme(
@@ -61,6 +123,8 @@ fun OpenTuneTheme(
     motionScheme: MotionScheme = MotionScheme.expressive(),
     seedPalette: ThemeSeedPalette? = null,
     useSystemFont: Boolean = false,
+    enableFrostedGlass: Boolean = false,
+    disableBlur: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -100,12 +164,24 @@ fun OpenTuneTheme(
 
     val animatedColorScheme = updateTransition(colorScheme)
 
-    MaterialExpressiveTheme(
-        colorScheme = animatedColorScheme,
-        typography = typography,
-        motionScheme = motionScheme,
-        content = content
-    )
+    val frostedGlassTokens = remember(enableFrostedGlass, disableBlur, animatedColorScheme) {
+        resolveFrostedGlassTokens(
+            isEnabled = enableFrostedGlass,
+            disableBlur = disableBlur,
+            fallbackColor = animatedColorScheme.surfaceContainer,
+        )
+    }
+
+    CompositionLocalProvider(
+        LocalFrostedGlass provides frostedGlassTokens,
+    ) {
+        MaterialExpressiveTheme(
+            colorScheme = animatedColorScheme,
+            typography = typography,
+            motionScheme = motionScheme,
+            content = content
+        )
+    }
 }
 
 @Composable

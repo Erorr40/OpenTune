@@ -49,6 +49,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.arturo254.opentune.LocalPlayerAwareWindowInsets
@@ -56,9 +57,11 @@ import com.arturo254.opentune.LocalPlayerConnection
 import com.arturo254.opentune.R
 import com.arturo254.opentune.constants.CONTENT_TYPE_HEADER
 import com.arturo254.opentune.constants.CONTENT_TYPE_SONG
+import com.arturo254.opentune.constants.CropThumbnailToSquareKey
 import com.arturo254.opentune.constants.HideExplicitKey
 import com.arturo254.opentune.constants.SongFilter
 import com.arturo254.opentune.constants.SongFilterKey
+import com.arturo254.opentune.constants.SwipeToSongKey
 import com.arturo254.opentune.constants.SongSortDescendingKey
 import com.arturo254.opentune.constants.SongSortType
 import com.arturo254.opentune.constants.SongSortTypeKey
@@ -89,8 +92,8 @@ fun LibrarySongsScreen(
     val menuState = LocalMenuState.current
     val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current ?: return
-    val isPlaying by playerConnection.isPlaying.collectAsState()
-    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+    val isPlaying by playerConnection.isPlaying.collectAsStateWithLifecycle()
+    val mediaMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
 
     val (sortType, onSortTypeChange) = rememberEnumPreference(
         SongSortTypeKey,
@@ -100,9 +103,11 @@ fun LibrarySongsScreen(
 
     val (ytmSync) = rememberPreference(YtmSyncKey, true)
     val hideExplicit by rememberPreference(key = HideExplicitKey, defaultValue = false)
+    val swipeEnabled by rememberPreference(SwipeToSongKey, defaultValue = false)
+    val cropThumbnailToSquare by rememberPreference(CropThumbnailToSquareKey, defaultValue = false)
 
-    val songs by viewModel.allSongs.collectAsState()
-    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val songs by viewModel.allSongs.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     var filter by rememberEnumPreference(SongFilterKey, SongFilter.LIKED)
 
@@ -117,6 +122,13 @@ fun LibrarySongsScreen(
     }
 
     val wrappedSongs = remember(songs) { songs.map { item -> ItemWrapper(item) } }
+    val filteredSongs = remember(wrappedSongs, hideExplicit) {
+        if (hideExplicit) {
+            wrappedSongs.filter { !it.item.song.explicit }
+        } else {
+            wrappedSongs
+        }
+    }
     var selection by remember {
         mutableStateOf(false)
     }
@@ -126,7 +138,7 @@ fun LibrarySongsScreen(
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop =
-        backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
+        backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsStateWithLifecycle()
 
     LaunchedEffect(scrollToTop?.value) {
         if (scrollToTop?.value == true) {
@@ -272,11 +284,6 @@ fun LibrarySongsScreen(
                 }
             }
 
-            val filteredSongs = if (hideExplicit) {
-                wrappedSongs.filter { !it.item.song.explicit }
-            } else {
-                wrappedSongs
-            }
             itemsIndexed(
                 items = filteredSongs,
                 key = { _, item -> item.item.song.id },
@@ -287,6 +294,8 @@ fun LibrarySongsScreen(
                     showInLibraryIcon = true,
                     isActive = songWrapper.item.id == mediaMetadata?.id,
                     isPlaying = isPlaying,
+                    swipeEnabled = swipeEnabled,
+                    cropThumbnailToSquare = cropThumbnailToSquare,
 
                     trailingContent = {
                         IconButton(

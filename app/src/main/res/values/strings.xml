@@ -124,7 +124,7 @@
     <string name="together_role_guest">Guest</string>
     <string name="together_pending_approval">Pending approval</string>
     <string name="together_waiting_approval">Waiting Approval</string>
-    <string name="together_host_left_session">Host Leaved Sessions</string>
+    <string name="together_host_left_session">Host left the session</string>
     <string name="together_kick">Kick</string>
     <string name="together_ban">Ban</string>
     <string name="together_kick_confirm">Kick %1$s?</string>
@@ -419,12 +419,12 @@
     <string name="left">Left</string>
     <string name="center">Center</string>
     <string name="right">Right</string>
-    <string name="player_slider_style">Player slider style</string>
-    <string name="slider_style_standard">Standard</string>
-    <string name="slider_style_wavy">Wavy</string>
-    <string name="slider_style_thick">Thick</string>
-    <string name="slider_style_circular">Circular</string>
-    <string name="slider_style_simple">Simple</string>
+    <string name="player_slider_style">Seekbar &amp; Slider Aesthetics</string>
+    <string name="slider_style_standard">Fluid Standard</string>
+    <string name="slider_style_wavy">Sonic Wave</string>
+    <string name="slider_style_thick">Capsule Bar</string>
+    <string name="slider_style_circular">Orbital Ring</string>
+    <string name="slider_style_simple">Minimal Line</string>
     <string name="default_">Default</string>
     <string name="squiggly">Squiggly</string>
     <string name="misc">Misc</string>

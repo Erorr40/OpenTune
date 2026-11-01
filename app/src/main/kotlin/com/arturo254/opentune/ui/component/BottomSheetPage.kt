@@ -38,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.surfaceColorAtElevation
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -89,6 +90,7 @@ fun BottomSheetPage(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     var dragOffset by remember { mutableFloatStateOf(0f) }
+    val frostedGlass = LocalFrostedGlass.current
 
     AnimatedVisibility(
         visible = state.isVisible,
@@ -129,8 +131,15 @@ fun BottomSheetPage(
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
                 .padding(top = 100.dp) // Give enough space from top
-                .clip(ShapeDefaults.Large)
-                .background(background)
+                .let {
+                    if (frostedGlass.isEnabled) {
+                        it.frostedGlassSurface(ShapeDefaults.Large)
+                    } else {
+                        it
+                            .clip(ShapeDefaults.Large)
+                            .background(background)
+                    }
+                }
                 .pointerInput(Unit) {
                     detectVerticalDragGestures(
                         onDragEnd = {

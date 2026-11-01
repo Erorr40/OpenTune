@@ -181,6 +181,7 @@ import com.arturo254.opentune.constants.FloatingToolbarHeight
 import com.arturo254.opentune.constants.FloatingToolbarHorizontalPadding
 import com.arturo254.opentune.constants.HasPressedStarKey
 import com.arturo254.opentune.constants.LaunchCountKey
+import com.arturo254.opentune.constants.DisableBlurKey
 import com.arturo254.opentune.constants.EnableLiquidGlassKey
 import com.arturo254.opentune.constants.LyricsSyncOffsetKey
 import com.arturo254.opentune.constants.MiniPlayerBottomSpacing
@@ -236,6 +237,9 @@ import com.arturo254.opentune.ui.component.BottomSheetPageState
 import com.arturo254.opentune.ui.component.MenuState
 import com.arturo254.opentune.ui.component.TopSearch
 import com.arturo254.opentune.ui.component.rememberBottomSheetState
+import androidx.compose.ui.graphics.RectangleShape
+import com.arturo254.opentune.ui.component.frostedGlassSurface
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 import com.arturo254.opentune.ui.component.LocalBackdrop
 import com.arturo254.opentune.ui.component.layerBackdrop
 import com.arturo254.opentune.ui.component.rememberBackdrop
@@ -649,6 +653,7 @@ class MainActivity : ComponentActivity() {
             val useSystemFont by rememberPreference(UseSystemFontKey, defaultValue = false)
             val lyricsSyncOffset by rememberPreference(LyricsSyncOffsetKey, defaultValue = 0)
             val enableLiquidGlass by rememberPreference(EnableLiquidGlassKey, defaultValue = false)
+            val disableBlur by rememberPreference(DisableBlurKey, defaultValue = false)
             val backdrop = rememberBackdrop()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val useDarkTheme =
@@ -747,6 +752,8 @@ class MainActivity : ComponentActivity() {
                 themeColor = themeColor,
                 seedPalette = if (!enableDynamicTheme) customThemeSeedPalette else null,
                 useSystemFont = useSystemFont,
+                enableFrostedGlass = enableLiquidGlass,
+                disableBlur = disableBlur,
             ) {
                 BoxWithConstraints(
                     modifier =
@@ -1243,8 +1250,9 @@ class MainActivity : ComponentActivity() {
                         Row {
                             AnimatedVisibility(useRail && shouldShowNavigationBar) {
                                 NavigationRail(
-                                    containerColor = if(pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = if(pureBlack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.frostedGlassSurface(RectangleShape),
+                                    containerColor = if (enableLiquidGlass) Color.Transparent else if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer,
+                                    contentColor = if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                     header = { Spacer(Modifier.height(24.dp)) }
                                 ) {
                                     navigationItems.fastForEach { screen ->
@@ -1325,27 +1333,40 @@ class MainActivity : ComponentActivity() {
                                                 )
                                             }
                                         ) {
-                                            // Gradient shadow background
+                                            // Gradient shadow / Frosted glass background
                                             if (shouldShowBlurBackground) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .height(AppBarHeight + with(LocalDensity.current) {
-                                                            WindowInsets.systemBars.getTop(
-                                                                LocalDensity.current
-                                                            ).toDp()
-                                                        })
-                                                        .background(
-                                                            Brush.verticalGradient(
-                                                                colors = listOf(
-                                                                    surfaceColor.copy(alpha = 0.95f),
-                                                                    surfaceColor.copy(alpha = 0.85f),
-                                                                    surfaceColor.copy(alpha = 0.6f),
-                                                                    Color.Transparent
+                                                if (enableLiquidGlass) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .height(AppBarHeight + with(LocalDensity.current) {
+                                                                WindowInsets.systemBars.getTop(
+                                                                    LocalDensity.current
+                                                                ).toDp()
+                                                            })
+                                                            .frostedGlassSurface(RectangleShape)
+                                                    )
+                                                } else {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .height(AppBarHeight + with(LocalDensity.current) {
+                                                                WindowInsets.systemBars.getTop(
+                                                                    LocalDensity.current
+                                                                ).toDp()
+                                                            })
+                                                            .background(
+                                                                Brush.verticalGradient(
+                                                                    colors = listOf(
+                                                                        surfaceColor.copy(alpha = 0.95f),
+                                                                        surfaceColor.copy(alpha = 0.85f),
+                                                                        surfaceColor.copy(alpha = 0.6f),
+                                                                        Color.Transparent
+                                                                    )
                                                                 )
                                                             )
-                                                        )
-                                                )
+                                                    )
+                                                }
                                             }
 
                                             TopAppBar(

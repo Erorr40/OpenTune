@@ -3904,7 +3904,10 @@ private fun SpotifyLyricsPreviewCard(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(lyricEntries.size) { index ->
+                        items(
+                            count = lyricEntries.size,
+                            key = { index -> lyricEntries[index].time }
+                        ) { index ->
                             val isCurrent = index == activeLineIndex
                             val isPast = index < activeLineIndex
                             Text(

@@ -407,7 +407,10 @@ fun ExploreScreen(
                         contentPadding = PaddingValues(6.dp),
                         modifier = Modifier.height((MoodAndGenresButtonHeight + 12.dp) * 4 + 12.dp),
                     ) {
-                        items(moodAndGenres) {
+                        items(
+                            items = moodAndGenres,
+                            key = { it.title }
+                        ) {
                             MoodAndGenresButton(
                                 title = it.title,
                                 stripeColor = it.stripeColor,

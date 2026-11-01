@@ -63,6 +63,8 @@ import com.arturo254.opentune.constants.StopMusicOnTaskClearKey
 import com.arturo254.opentune.constants.WakelockKey
 import com.arturo254.opentune.constants.HistoryDuration
 import com.arturo254.opentune.constants.AudioCrossfadeDurationKey
+import com.arturo254.opentune.constants.AudioCrossfadeGaplessKey
+import com.arturo254.opentune.constants.AudioAutomixKey
 import com.arturo254.opentune.constants.PlayerStreamClient
 import com.arturo254.opentune.constants.PlayerStreamClientKey
 import com.arturo254.opentune.constants.SeekExtraSeconds
@@ -167,6 +169,14 @@ fun PlayerSettings(
     val (audioCrossfadeSeconds, onAudioCrossfadeSecondsChange) = rememberPreference(
         AudioCrossfadeDurationKey,
         defaultValue = 0
+    )
+    val (audioCrossfadeGapless, onAudioCrossfadeGaplessChange) = rememberPreference(
+        AudioCrossfadeGaplessKey,
+        defaultValue = false
+    )
+    val (audioAutomix, onAudioAutomixChange) = rememberPreference(
+        AudioAutomixKey,
+        defaultValue = false
     )
 
     val (artistSeparators, onArtistSeparatorsChange) = rememberPreference(
@@ -327,11 +337,52 @@ fun PlayerSettings(
             onValueChange = onHistoryDurationChange,
         )
 
+        PreferenceGroupTitle(
+            title = stringResource(R.string.mixing_and_transitions_title)
+        )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.audio_automix_title)) },
+            description = stringResource(R.string.audio_automix_desc),
+            icon = { Icon(painterResource(R.drawable.graphic_eq), null) },
+            checked = audioAutomix,
+            onCheckedChange = { enabled ->
+                onAudioAutomixChange(enabled)
+                if (enabled) {
+                    if (audioOffload) onAudioOffloadChange(false)
+                    if (audioCrossfadeSeconds == 0) onAudioCrossfadeSecondsChange(5)
+                    onAudioCrossfadeGaplessChange(true)
+                }
+            }
+        )
+
         CrossfadeSliderPreference(
             value = audioCrossfadeSeconds,
-            onValueChange = onAudioCrossfadeSecondsChange,
-            isEnabled = !audioOffload,
+            onValueChange = { seconds ->
+                if (seconds > 0 && audioOffload) {
+                    onAudioOffloadChange(false)
+                }
+                onAudioCrossfadeSecondsChange(seconds)
+                if (seconds == 0 && audioAutomix) {
+                    onAudioAutomixChange(false)
+                }
+            },
+            isEnabled = true,
+            audioOffload = audioOffload,
+            onAudioOffloadDisable = {
+                onAudioOffloadChange(false)
+            },
         )
+
+        if (audioCrossfadeSeconds > 0 || audioAutomix) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.album_gapless_playback)) },
+                description = stringResource(R.string.album_gapless_playback_desc),
+                icon = { Icon(painterResource(R.drawable.album), null) },
+                checked = audioCrossfadeGapless,
+                onCheckedChange = onAudioCrossfadeGaplessChange,
+            )
+        }
 
         SwitchPreference(
             title = { Text(stringResource(R.string.skip_silence)) },
@@ -357,6 +408,7 @@ fun PlayerSettings(
                 onAudioOffloadChange(enabled)
                 if (enabled) {
                     onSkipSilenceChange(false)
+                    onAudioCrossfadeSecondsChange(0)
                 }
             }
         )

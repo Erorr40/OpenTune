@@ -88,6 +88,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Popup
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 import androidx.navigation.NavController
 import com.arturo254.opentune.R
 import com.arturo254.opentune.ui.screens.settings.AccountSettings
@@ -117,11 +118,21 @@ fun DefaultDialog(
                 .navigationBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
+            val frostedGlass = LocalFrostedGlass.current
             Surface(
-                modifier = Modifier.heightIn(max = maxHeight),
+                modifier = Modifier
+                    .heightIn(max = maxHeight)
+                    .let {
+                        if (frostedGlass.isEnabled) {
+                            it.frostedGlassSurface(AlertDialogDefaults.shape)
+                        } else it
+                    },
                 shape = AlertDialogDefaults.shape,
-                color = AlertDialogDefaults.containerColor,
-                tonalElevation = AlertDialogDefaults.TonalElevation,
+                color = if (frostedGlass.isEnabled) {
+                    if (frostedGlass.isBlurSupported) Color(0xCC1E1E1E) else frostedGlass.fallbackSurfaceColor.copy(alpha = 0.90f)
+                } else AlertDialogDefaults.containerColor,
+                tonalElevation = if (frostedGlass.isEnabled) 0.dp else AlertDialogDefaults.TonalElevation,
+                border = if (frostedGlass.isEnabled) frostedGlass.borderStroke else null,
             ) {
                 Column(
                     modifier = modifier.padding(24.dp),

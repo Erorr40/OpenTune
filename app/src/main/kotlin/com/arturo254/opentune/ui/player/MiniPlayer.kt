@@ -37,6 +37,8 @@ import androidx.compose.runtime.remember
 import com.arturo254.opentune.constants.EnableLiquidGlassKey
 import com.arturo254.opentune.ui.component.LocalBackdrop
 import com.arturo254.opentune.ui.component.drawBackdropCustomShape
+import com.arturo254.opentune.ui.component.frostedGlassSurface
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 
 
 @Composable
@@ -72,12 +74,10 @@ private fun NewMiniPlayer(
     val coroutineScope = rememberCoroutineScope()
     val swipeSensitivity by rememberPreference(SwipeSensitivityKey, 0.73f)
     val swipeThumbnail by rememberPreference(com.arturo254.opentune.constants.SwipeThumbnailKey, true)
-    val enableLiquidGlass by rememberPreference(EnableLiquidGlassKey, defaultValue = false)
+    val frostedGlass = LocalFrostedGlass.current
+    val enableLiquidGlass = frostedGlass.isEnabled
 
-    val layer = rememberGraphicsLayer()
     val luminanceAnimation = remember { Animatable(0.3f) }
-    val backdrop = LocalBackdrop.current
-
     val backgroundColor = MaterialTheme.colorScheme.surfaceContainer
 
     SwipeableMiniPlayerBox(
@@ -96,17 +96,17 @@ private fun NewMiniPlayer(
                 .height(64.dp)
                 .offset { IntOffset(offsetX.roundToInt(), 0) }
                 .let {
-                    if (enableLiquidGlass && backdrop != null) {
-                        it.drawBackdropCustomShape(
-                            backdrop = backdrop,
-                            layer = layer,
+                    if (enableLiquidGlass) {
+                        it.frostedGlassSurface(
+                            shape = RoundedCornerShape(32.dp),
                             luminanceAnimation = luminanceAnimation.value,
-                            shape = RoundedCornerShape(32.dp)
                         )
-                    } else it
+                    } else {
+                        it
+                            .clip(RoundedCornerShape(32.dp))
+                            .background(color = backgroundColor)
+                    }
                 }
-                .clip(RoundedCornerShape(32.dp))
-                .background(color = if (enableLiquidGlass) Color.Transparent else backgroundColor)
         ) {
             NewMiniPlayerContent(
                 pureBlack = pureBlack,

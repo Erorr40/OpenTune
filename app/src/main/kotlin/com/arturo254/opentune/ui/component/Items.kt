@@ -802,18 +802,23 @@ fun SongListItem(
     isSwipeable: Boolean = true,
     swipeContentBackgroundColor: Color? = null,
     trailingContent: @Composable RowScope.() -> Unit = {},
+    swipeEnabled: Boolean = rememberPreference(SwipeToSongKey, defaultValue = false).value,
+    cropThumbnailToSquare: Boolean = rememberPreference(CropThumbnailToSquareKey, defaultValue = false).value,
 ) {
-    val swipeEnabled by rememberPreference(SwipeToSongKey, defaultValue = false)
     val resolvedSwipeContentBackgroundColor = swipeContentBackgroundColor ?: MaterialTheme.colorScheme.surface
+
+    val formattedSubtitle = remember(song.artists, song.song.duration, viewCountText) {
+        joinByBullet(
+            song.artists.joinToString { it.name },
+            makeTimeString(song.song.duration * 1000L),
+            viewCountText
+        )
+    }
 
     val content: @Composable () -> Unit = {
         ListItem(
             title = song.song.title,
-            subtitle = joinByBullet(
-                song.artists.joinToString { it.name },
-                makeTimeString(song.song.duration * 1000L),
-                viewCountText
-            ),
+            subtitle = formattedSubtitle,
             badges = badges,
             thumbnailContent = {
                 ItemThumbnail(
@@ -823,7 +828,8 @@ fun SongListItem(
                     isActive = isActive,
                     isPlaying = isPlaying,
                     shape = RoundedCornerShape(ThumbnailCornerRadius),
-                    modifier = Modifier.size(ListThumbnailSize)
+                    modifier = Modifier.size(ListThumbnailSize),
+                    cropThumbnailToSquare = cropThumbnailToSquare,
                 )
             },
             trailingContent = trailingContent,
@@ -1459,6 +1465,8 @@ fun YouTubeListItem(
     isPlaying: Boolean = false,
     isSwipeable: Boolean = true,
     trailingContent: @Composable RowScope.() -> Unit = {},
+    swipeEnabled: Boolean = rememberPreference(SwipeToSongKey, defaultValue = false).value,
+    cropThumbnailToSquare: Boolean = rememberPreference(CropThumbnailToSquareKey, defaultValue = false).value,
     badges: @Composable RowScope.() -> Unit = {
         if (metadata != null) {
             if (metadata.isLiked) Icon.Favorite()
@@ -1486,21 +1494,23 @@ fun YouTubeListItem(
         }
     },
 ) {
-    val swipeEnabled by rememberPreference(SwipeToSongKey, defaultValue = false)
+    val formattedSubtitle = remember(item, viewCountText) {
+        when (item) {
+            is SongItem -> joinByBullet(
+                item.artists.joinToString { it.name },
+                makeTimeString(item.duration?.times(1000L)),
+                viewCountText
+            )
+            is AlbumItem -> joinByBullet(item.artists?.joinToString { it.name }, item.year?.toString())
+            is ArtistItem -> null
+            is PlaylistItem -> joinByBullet(item.author?.name, item.songCountText)
+        }
+    }
 
     val content: @Composable () -> Unit = {
         ListItem(
             title = item.title,
-            subtitle = when (item) {
-                is SongItem -> joinByBullet(
-                    item.artists.joinToString { it.name },
-                    makeTimeString(item.duration?.times(1000L)),
-                    viewCountText
-                )
-                is AlbumItem -> joinByBullet(item.artists?.joinToString { it.name }, item.year?.toString())
-                is ArtistItem -> null
-                is PlaylistItem -> joinByBullet(item.author?.name, item.songCountText)
-            },
+            subtitle = formattedSubtitle,
             badges = badges,
             thumbnailContent = {
                 ItemThumbnail(
@@ -1510,7 +1520,8 @@ fun YouTubeListItem(
                     isActive = isActive,
                     isPlaying = isPlaying,
                     shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(ThumbnailCornerRadius),
-                    modifier = Modifier.size(ListThumbnailSize)
+                    modifier = Modifier.size(ListThumbnailSize),
+                    cropThumbnailToSquare = cropThumbnailToSquare,
                 )
             },
             trailingContent = trailingContent,
@@ -1739,35 +1750,26 @@ fun ItemThumbnail(
     isSelected: Boolean = false,
     shouldLoadImage: Boolean = true,
     @DrawableRes placeholderIconRes: Int? = null,
-    thumbnailRatio: Float = 1f
+    thumbnailRatio: Float = 1f,
+    cropThumbnailToSquare: Boolean = rememberPreference(CropThumbnailToSquareKey, false).value,
 ) {
     val context = LocalContext.current
-    val density = LocalDensity.current
 
-    BoxWithConstraints(
+    Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .fillMaxSize()
             .aspectRatio(thumbnailRatio)
             .clip(shape)
     ) {
-        val (cropThumbnailToSquare, _) = rememberPreference(CropThumbnailToSquareKey, false)
         val isYouTubeThumb = thumbnailUrl?.contains("ytimg.com", ignoreCase = true) == true
         val shouldApplySquareCrop = cropThumbnailToSquare && isYouTubeThumb && kotlin.math.abs(thumbnailRatio - 1f) < 0.001f
-        val widthPx = if (maxWidth == Dp.Infinity) null else with(density) { maxWidth.roundToPx().coerceAtLeast(1) }
-        val heightPx = if (maxHeight == Dp.Infinity) null else with(density) { maxHeight.roundToPx().coerceAtLeast(1) }
 
         if (albumIndex == null) {
             if (shouldLoadImage) {
-                val request = remember(thumbnailUrl, widthPx, heightPx) {
+                val request = remember(thumbnailUrl) {
                     ImageRequest.Builder(context)
                         .data(thumbnailUrl?.resize(544, 544))
                         .allowHardware(true)
-                        .apply {
-                            if (widthPx != null && heightPx != null) {
-                                size(widthPx, heightPx)
-                            }
-                        }
                         .build()
                 }
                 AsyncImage(
@@ -1842,31 +1844,23 @@ fun LocalThumbnail(
     modifier: Modifier = Modifier,
     showCenterPlay: Boolean = false,
     playButtonVisible: Boolean = false,
-    thumbnailRatio: Float = 1f
+    thumbnailRatio: Float = 1f,
+    cropThumbnailToSquare: Boolean = rememberPreference(CropThumbnailToSquareKey, false).value,
 ) {
     val context = LocalContext.current
-    val density = LocalDensity.current
 
-    BoxWithConstraints(
+    Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .aspectRatio(thumbnailRatio)
             .clip(shape)
     ) {
-        val (cropThumbnailToSquare, _) = rememberPreference(CropThumbnailToSquareKey, false)
         val isYouTubeThumb = thumbnailUrl?.contains("ytimg.com", ignoreCase = true) == true
         val shouldApplySquareCrop = cropThumbnailToSquare && isYouTubeThumb && kotlin.math.abs(thumbnailRatio - 1f) < 0.001f
-        val widthPx = if (maxWidth == Dp.Infinity) null else with(density) { maxWidth.roundToPx().coerceAtLeast(1) }
-        val heightPx = if (maxHeight == Dp.Infinity) null else with(density) { maxHeight.roundToPx().coerceAtLeast(1) }
-        val request = remember(thumbnailUrl, widthPx, heightPx) {
+        val request = remember(thumbnailUrl) {
             ImageRequest.Builder(context)
                 .data(thumbnailUrl)
                 .allowHardware(true)
-                .apply {
-                    if (widthPx != null && heightPx != null) {
-                        size(widthPx, heightPx)
-                    }
-                }
                 .build()
         }
         AsyncImage(

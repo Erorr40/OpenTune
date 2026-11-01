@@ -60,6 +60,7 @@ import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERR
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.ContentMetadata
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
@@ -91,6 +92,7 @@ import com.arturo254.opentune.R
 import com.arturo254.opentune.constants.AudioNormalizationKey
 import com.arturo254.opentune.constants.AudioOffload
 import com.arturo254.opentune.constants.AudioCrossfadeDurationKey
+import com.arturo254.opentune.constants.AudioAutomixKey
 import com.arturo254.opentune.constants.AudioQualityKey
 import com.arturo254.opentune.constants.AutoLoadMoreKey
 import com.arturo254.opentune.constants.AutoDownloadOnLikeKey
@@ -640,11 +642,21 @@ class MusicService :
             reportException(e)
         }
 
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                /* minBufferMs = */ 15000,
+                /* maxBufferMs = */ 50000,
+                /* bufferForPlaybackMs = */ 500,
+                /* bufferForPlaybackAfterRebufferMs = */ 1000
+            )
+            .build()
+
         player =
             ExoPlayer
                 .Builder(this)
                 .setMediaSourceFactory(createMediaSourceFactory())
                 .setRenderersFactory(createRenderersFactory())
+                .setLoadControl(loadControl)
                 .setHandleAudioBecomingNoisy(true)
                 .setWakeMode(C.WAKE_MODE_NETWORK)
                 .setAudioAttributes(
@@ -828,7 +840,12 @@ class MusicService :
             }
         
         dataStore.data
-            .map { (it[AudioCrossfadeDurationKey] ?: 0) * 1000 }
+            .map { prefs ->
+                val seconds = prefs[AudioCrossfadeDurationKey] ?: 0
+                val automix = prefs[AudioAutomixKey] ?: false
+                val effectiveSeconds = if (automix && seconds == 0) 5 else seconds
+                effectiveSeconds * 1000
+            }
             .distinctUntilChanged()
             .collectLatest(scope) {
                 crossfadeDurationMs.value = it
@@ -4955,7 +4972,6 @@ class MusicService :
 
 
     override fun onDestroy() {
-        super.onDestroy()
         unregisterBluetoothReceiver()
         try {
             scope.launch { stopTogetherInternal() }
@@ -4985,9 +5001,11 @@ class MusicService :
                 val volume = playerVolume.value
                 val playbackState = player.playbackState
                 val playWhenReady = player.playWhenReady
-                runBlocking(Dispatchers.IO) {
-                    val persistQueue = currentQueue.toPersistQueue(
-                        title = queueTitle,
+                val queueSnapshot = currentQueue
+                val queueTitleSnapshot = queueTitle
+                CoroutineScope(Dispatchers.IO).launch {
+                    val persistQueue = queueSnapshot.toPersistQueue(
+                        title = queueTitleSnapshot,
                         items = mediaItemsSnapshot,
                         mediaItemIndex = currentMediaItemIndex,
                         position = currentPosition
@@ -5030,6 +5048,7 @@ class MusicService :
             player.release()
         } catch (_: Exception) {}
         scopeJob.cancel()
+        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): android.os.IBinder? {

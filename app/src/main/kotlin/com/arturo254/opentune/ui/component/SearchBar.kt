@@ -60,8 +60,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
+import com.arturo254.opentune.ui.theme.LocalFrostedGlass
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -177,18 +179,30 @@ fun TopSearch(
             ).toDp()
         }
 
+        val frostedGlass = LocalFrostedGlass.current
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(topInset + AppBarHeight)
-                .background(color = MaterialTheme.colorScheme.surface)
+                .let {
+                    if (frostedGlass.isEnabled) {
+                        it.frostedGlassSurface(RectangleShape)
+                    } else {
+                        it.background(color = MaterialTheme.colorScheme.surface)
+                    }
+                }
         )
 
         Surface(
             shape = animatedShape,
-            color = colors.containerColor,
+            color = if (frostedGlass.isEnabled) {
+                if (frostedGlass.isBlurSupported) Color.White.copy(alpha = 0.08f)
+                else MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)
+            } else colors.containerColor,
             contentColor = contentColorFor(colors.containerColor),
-            tonalElevation = tonalElevation,
+            tonalElevation = if (frostedGlass.isEnabled) 0.dp else tonalElevation,
+            border = if (frostedGlass.isEnabled) frostedGlass.borderStroke else null,
             modifier = Modifier
                 .padding(
                     top = animatedSurfaceTopPadding,

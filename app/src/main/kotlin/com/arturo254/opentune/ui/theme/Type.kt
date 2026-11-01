@@ -16,14 +16,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.arturo254.opentune.R
 
-// TODO: Define or import actual M3 Expressive font families if needed.
-// For now, using default FontFamily as a placeholder.
-
 // Define M3 Expressive Typography based on Material Design guidelines
-// https://m3.material.io/styles/typography/type-scale-tokens
-// Note: M3 Expressive might introduce subtle changes or new roles.
-// Referencing standard M3 roles for now, adjust if Expressive spec differs significantly.
-private fun buildTypography(fontFamily: FontFamily) =
+// Explicit font weight declarations using bundled Poppins typeface (Normal, Medium, SemiBold, Bold)
+val PoppinsFontFamily = FontFamily(
+    Font(R.font.poppins, weight = FontWeight.Normal),
+    Font(R.font.poppins, weight = FontWeight.Medium),
+    Font(R.font.poppins, weight = FontWeight.SemiBold),
+    Font(R.font.poppins, weight = FontWeight.Bold),
+)
+
+fun buildTypography(fontFamily: FontFamily) =
     Typography(
         displayLarge = TextStyle(
             fontFamily = fontFamily,
@@ -48,28 +50,28 @@ private fun buildTypography(fontFamily: FontFamily) =
         ),
         headlineLarge = TextStyle(
             fontFamily = fontFamily,
-            fontWeight = FontWeight.Normal,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 32.sp,
             lineHeight = 40.sp,
             letterSpacing = 0.sp
         ),
         headlineMedium = TextStyle(
             fontFamily = fontFamily,
-            fontWeight = FontWeight.Normal,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 28.sp,
             lineHeight = 36.sp,
             letterSpacing = 0.sp
         ),
         headlineSmall = TextStyle(
             fontFamily = fontFamily,
-            fontWeight = FontWeight.Normal,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 24.sp,
             lineHeight = 32.sp,
             letterSpacing = 0.sp
         ),
         titleLarge = TextStyle(
             fontFamily = fontFamily,
-            fontWeight = FontWeight.Normal, // M3 uses Normal, M2 used Medium
+            fontWeight = FontWeight.SemiBold,
             fontSize = 22.sp,
             lineHeight = 28.sp,
             letterSpacing = 0.sp
@@ -93,7 +95,7 @@ private fun buildTypography(fontFamily: FontFamily) =
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             lineHeight = 24.sp,
-            letterSpacing = 0.5.sp // M3 uses 0.5, M2 used 0.15
+            letterSpacing = 0.5.sp
         ),
         bodyMedium = TextStyle(
             fontFamily = fontFamily,
@@ -111,7 +113,7 @@ private fun buildTypography(fontFamily: FontFamily) =
         ),
         labelLarge = TextStyle(
             fontFamily = fontFamily,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp,
             lineHeight = 20.sp,
             letterSpacing = 0.1.sp
@@ -132,7 +134,7 @@ private fun buildTypography(fontFamily: FontFamily) =
         )
     )
 
-private val AppFontFamily = FontFamily(Font(R.font.linotte))
+val AppFontFamily = PoppinsFontFamily
 val AppTypography = buildTypography(AppFontFamily)
 val SystemTypography = buildTypography(FontFamily.Default)
 
