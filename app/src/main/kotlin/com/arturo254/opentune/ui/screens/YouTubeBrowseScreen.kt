@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -74,6 +75,7 @@ import com.arturo254.opentune.ui.menu.YouTubeAlbumMenu
 import com.arturo254.opentune.ui.menu.YouTubeArtistMenu
 import com.arturo254.opentune.ui.menu.YouTubePlaylistMenu
 import com.arturo254.opentune.ui.menu.YouTubeSongMenu
+import com.arturo254.opentune.ui.utils.ResponsiveLayoutUtils
 import com.arturo254.opentune.ui.utils.SnapLayoutInfoProvider
 import com.arturo254.opentune.ui.utils.backToMain
 import com.arturo254.opentune.viewmodels.YouTubeBrowseViewModel
@@ -139,6 +141,8 @@ fun YouTubeBrowseScreen(
                     }
                     if (it.items.all { item -> item is SongItem }) {
                         item {
+                            val scaledItemHeight = ResponsiveLayoutUtils.calculateScaledItemHeight(ListItemHeight, LocalDensity.current.fontScale)
+
                             LazyHorizontalGrid(
                                 state = lazyGridState,
                                 rows = GridCells.Fixed(4),
@@ -148,7 +152,7 @@ fun YouTubeBrowseScreen(
                                     .asPaddingValues(),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(ListItemHeight * 4)
+                                    .height(scaledItemHeight * 4)
                                     .animateItem()
                             ) {
                                 items(

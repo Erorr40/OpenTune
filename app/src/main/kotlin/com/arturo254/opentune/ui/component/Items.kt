@@ -152,7 +152,7 @@ inline fun ListItem(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .height(ListItemHeight)
+            .heightIn(min = ListItemHeight)
             .padding(horizontal = 8.dp)
             .then(
                 if (isActive) Modifier
@@ -522,7 +522,7 @@ fun LibraryArtistSpotlightCard(
 }
 
 enum class GridPosition {
-    LEFT, RIGHT, SINGLE
+    LEFT, RIGHT, MIDDLE, SINGLE
 }
 
 @Composable
@@ -660,6 +660,8 @@ fun LibraryPinnedCollectionTile(
             topEnd = 28.dp,
             bottomEnd = 28.dp
         )
+
+        GridPosition.MIDDLE -> RoundedCornerShape(6.dp)
 
         GridPosition.SINGLE -> RoundedCornerShape(28.dp)
     }

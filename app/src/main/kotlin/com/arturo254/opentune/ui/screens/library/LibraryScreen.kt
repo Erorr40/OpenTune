@@ -46,7 +46,7 @@ fun LibraryScreen(navController: NavController) {
     var filterType by androidx.compose.runtime.saveable.rememberSaveable {
         androidx.compose.runtime.mutableStateOf(LibraryFilter.LIBRARY)
     }
-    val (disableBlur) = rememberPreference(DisableBlurKey, true)
+    val (disableBlur) = rememberPreference(DisableBlurKey, false)
 
     val database = LocalDatabase.current
     val (showTagsInLibrary) = rememberPreference(ShowTagsInLibraryKey, true)

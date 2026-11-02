@@ -668,6 +668,9 @@ class MainActivity : ComponentActivity() {
                 }
             LaunchedEffect(useDarkTheme) {
                 setSystemBarAppearance(useDarkTheme)
+                window.decorView.setBackgroundColor(
+                    if (useDarkTheme) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+                )
             }
             val pureBlackEnabled by rememberPreference(PureBlackKey, defaultValue = false)
             val pureBlack = pureBlackEnabled && useDarkTheme && !enableLiquidGlass
@@ -1325,36 +1328,38 @@ class MainActivity : ComponentActivity() {
                                         val surfaceColor = MaterialTheme.colorScheme.surface
                                         val currentScrollBehavior = if (shouldUseFloatingTopBar) searchBarScrollBehavior else topAppBarScrollBehavior
 
-                                        Box(
-                                            modifier = Modifier.offset {
-                                                IntOffset(
-                                                    x = 0,
-                                                    y = currentScrollBehavior.state.heightOffset.toInt()
+                                        Box {
+                                            if (shouldShowBlurBackground && enableLiquidGlass) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding())
+                                                        .frostedGlassSurface(RectangleShape)
                                                 )
                                             }
-                                        ) {
+
+                                            Box(
+                                                modifier = Modifier.offset {
+                                                    IntOffset(
+                                                        x = 0,
+                                                        y = currentScrollBehavior.state.heightOffset.toInt().coerceAtMost(0)
+                                                    )
+                                                }
+                                            ) {
                                             // Gradient shadow / Frosted glass background
                                             if (shouldShowBlurBackground) {
                                                 if (enableLiquidGlass) {
                                                     Box(
                                                         modifier = Modifier
                                                             .fillMaxWidth()
-                                                            .height(AppBarHeight + with(LocalDensity.current) {
-                                                                WindowInsets.systemBars.getTop(
-                                                                    LocalDensity.current
-                                                                ).toDp()
-                                                            })
+                                                            .height(AppBarHeight + WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding())
                                                             .frostedGlassSurface(RectangleShape)
                                                     )
                                                 } else {
                                                     Box(
                                                         modifier = Modifier
                                                             .fillMaxWidth()
-                                                            .height(AppBarHeight + with(LocalDensity.current) {
-                                                                WindowInsets.systemBars.getTop(
-                                                                    LocalDensity.current
-                                                                ).toDp()
-                                                            })
+                                                            .height(AppBarHeight + WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding())
                                                             .background(
                                                                 Brush.verticalGradient(
                                                                     colors = listOf(
@@ -1519,6 +1524,7 @@ class MainActivity : ComponentActivity() {
                                                     navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                             )
+                                            }
                                         }
                                     }
                                     AnimatedVisibility(

@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,6 +54,7 @@ import com.arturo254.opentune.ui.component.shimmer.ShimmerHost
 import com.arturo254.opentune.ui.component.shimmer.TextPlaceholder
 import com.arturo254.opentune.ui.menu.YouTubeSongMenu
 import com.arturo254.opentune.ui.utils.backToMain
+import com.arturo254.opentune.ui.utils.ResponsiveLayoutUtils
 import com.arturo254.opentune.ui.utils.SnapLayoutInfoProvider
 import com.arturo254.opentune.viewmodels.ChartsViewModel
 
@@ -119,13 +121,14 @@ fun ChartsScreen(
                         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                             val horizontalLazyGridItemWidthFactor = if (maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
                             val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+                            val scaledItemHeight = ResponsiveLayoutUtils.calculateScaledItemHeight(ListItemHeight, LocalDensity.current.fontScale)
 
                             LazyHorizontalGrid(
                                 rows = GridCells.Fixed(4),
                                 contentPadding = PaddingValues(start = 4.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(ListItemHeight * 4),
+                                    .height(scaledItemHeight * 4),
                             ) {
                                 items(4) {
                                     Row(
@@ -208,6 +211,8 @@ fun ChartsScreen(
                                     )
                                 }
 
+                                val scaledItemHeight = ResponsiveLayoutUtils.calculateScaledItemHeight(ListItemHeight, LocalDensity.current.fontScale)
+
                                 LazyHorizontalGrid(
                                     state = lazyGridState,
                                     rows = GridCells.Fixed(4),
@@ -217,7 +222,7 @@ fun ChartsScreen(
                                         .asPaddingValues(),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(ListItemHeight * 4)
+                                        .height(scaledItemHeight * 4)
                                         .animateItem(),
                                 ) {
                                     items(

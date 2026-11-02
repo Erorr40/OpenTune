@@ -14,6 +14,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -41,8 +42,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arturo254.opentune.ui.utils.ResponsiveLayoutUtils
 
 // Enhanced Action Button - Material 3 Expressive Design
 @Composable
@@ -152,33 +155,42 @@ fun NewMenuSectionHeader(
 fun NewActionGrid(
     actions: List<NewAction>,
     modifier: Modifier = Modifier,
-    columns: Int = 3
+    columns: Int? = null,
+    minColumnWidth: Dp = 88.dp,
 ) {
-    val rows = actions.chunked(columns)
-    
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        rows.forEach { row ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                row.forEach { action ->
-                    NewActionButton(
-                        icon = action.icon,
-                        text = action.text,
-                        onClick = action.onClick,
-                        modifier = Modifier.weight(1f),
-                        enabled = action.enabled,
-                        backgroundColor = if (action.backgroundColor != Color.Unspecified) action.backgroundColor else MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = if (action.contentColor != Color.Unspecified) action.contentColor else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                // Fill remaining space if row is not full
-                repeat(columns - row.size) {
-                    Spacer(modifier = Modifier.weight(1f))
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val effectiveColumns = ResponsiveLayoutUtils.calculateAdaptiveColumns(
+            availableWidth = maxWidth,
+            minColumnWidth = minColumnWidth,
+            explicitColumns = columns
+        )
+        val rows = actions.chunked(effectiveColumns)
+        
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            rows.forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    row.forEach { action ->
+                        NewActionButton(
+                            icon = action.icon,
+                            text = action.text,
+                            onClick = action.onClick,
+                            modifier = Modifier.weight(1f),
+                            enabled = action.enabled,
+                            backgroundColor = if (action.backgroundColor != Color.Unspecified) action.backgroundColor else MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = if (action.contentColor != Color.Unspecified) action.contentColor else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // Fill remaining space if row is not full
+                    repeat(effectiveColumns - row.size) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }

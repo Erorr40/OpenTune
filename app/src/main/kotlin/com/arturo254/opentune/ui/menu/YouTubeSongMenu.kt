@@ -288,7 +288,7 @@ fun YouTubeSongMenu(
     val bottomSheetPageState = LocalBottomSheetPageState.current
 
     LazyColumn(
-        userScrollEnabled = !isPortrait,
+        userScrollEnabled = true,
         contentPadding = PaddingValues(
             start = 0.dp,
             top = 0.dp,

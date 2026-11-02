@@ -181,8 +181,10 @@ fun DefaultDialog(
                     if (buttons != null) {
                         Spacer(Modifier.height(24.dp))
 
-                        Row(
-                            modifier = Modifier.align(Alignment.End)
+                        FlowRow(
+                            horizontalArrangement = Arrangement.End,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
                                 ProvideTextStyle(
@@ -291,19 +293,16 @@ fun ActionPromptDialog(
                 if (confirmButton != null) {
                     confirmButton()
                 } else {
-                    Row(
+                    FlowRow(
                         horizontalArrangement = Arrangement.End,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         if (onReset != null) {
-                            Row(
-                                modifier = Modifier.weight(1f)
+                            TextButton(
+                                onClick = onReset
                             ) {
-                                TextButton(
-                                    onClick = onReset
-                                ) {
-                                    Text(stringResource(R.string.reset))
-                                }
+                                Text(stringResource(R.string.reset))
                             }
                         }
 

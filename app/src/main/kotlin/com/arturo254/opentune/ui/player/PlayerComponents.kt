@@ -53,6 +53,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -134,6 +135,7 @@ import com.arturo254.opentune.ui.menu.PlayerMenu
 import com.arturo254.opentune.ui.theme.PlayerBackgroundColorUtils
 import com.arturo254.opentune.ui.component.PlayerSliderColors
 import com.arturo254.opentune.ui.component.V8DeviceSelector
+import com.arturo254.opentune.ui.utils.ResponsiveLayoutUtils
 import com.arturo254.opentune.ui.utils.ShowMediaInfo
 import com.arturo254.opentune.ui.utils.highRes
 import com.arturo254.opentune.utils.makeTimeString
@@ -908,11 +910,13 @@ fun PlayerTimeLabel(
     showRemainingTime: Boolean = false,
     centerContent: @Composable (() -> Unit)? = null,
 ) {
-    Box(
+    Row(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = PlayerHorizontalPadding + 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = makeTimeString(sliderPosition ?: position),
@@ -920,12 +924,11 @@ fun PlayerTimeLabel(
             color = textBackgroundColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.align(Alignment.CenterStart),
         )
 
         if (centerContent != null) {
             Box(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier.weight(1f, fill = false),
                 contentAlignment = Alignment.Center,
             ) {
                 centerContent()
@@ -945,7 +948,6 @@ fun PlayerTimeLabel(
             color = textBackgroundColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.align(Alignment.CenterEnd),
         )
     }
 }
@@ -975,7 +977,7 @@ fun PlayerPlaybackControls(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 val maxW = maxWidth
-                val playButtonHeight = maxW / 6f
+                val playButtonHeight = ResponsiveLayoutUtils.calculateControlButtonSize(maxW)
                 val playButtonWidth = playButtonHeight * 1.6f
                 val sideButtonHeight = playButtonHeight * 0.8f
                 val sideButtonWidth = sideButtonHeight * 1.3f
@@ -1009,7 +1011,10 @@ fun PlayerPlaybackControls(
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .widthIn(max = 540.dp)
+                        .fillMaxWidth()
                 ) {
                     FilledTonalIconButton(
                         onClick = playerConnection::seekToPrevious,

@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.arturo254.opentune.LocalPlayerConnection
+import com.arturo254.opentune.constants.MiniPlayerHeight
 import com.arturo254.opentune.constants.SwipeSensitivityKey
 import com.arturo254.opentune.ui.component.BottomSheetState
 import com.arturo254.opentune.utils.rememberPreference
@@ -93,7 +95,7 @@ private fun NewMiniPlayer(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .heightIn(min = MiniPlayerHeight)
                 .offset { IntOffset(offsetX.roundToInt(), 0) }
                 .let {
                     if (enableLiquidGlass) {

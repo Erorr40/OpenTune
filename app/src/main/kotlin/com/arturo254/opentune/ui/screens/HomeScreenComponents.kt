@@ -98,6 +98,7 @@ import com.arturo254.opentune.playback.PlayerConnection
 import com.arturo254.opentune.playback.queues.ListQueue
 import com.arturo254.opentune.playback.queues.YouTubeQueue
 import com.arturo254.opentune.ui.component.AlbumGridItem
+import com.arturo254.opentune.ui.utils.ResponsiveLayoutUtils
 import com.arturo254.opentune.ui.component.ArtistGridItem
 import com.arturo254.opentune.ui.component.LocalMenuState
 import com.arturo254.opentune.ui.component.MenuState
@@ -547,6 +548,7 @@ fun ForgottenFavoritesSection(
 ) {
     val rows = min(4, forgottenFavorites.size)
     val distinctForgottenFavorites = remember(forgottenFavorites) { forgottenFavorites.distinctBy { it.id } }
+    val scaledItemHeight = ResponsiveLayoutUtils.calculateScaledItemHeight(ListItemHeight, LocalDensity.current.fontScale)
     
     LazyHorizontalGrid(
         state = lazyGridState,
@@ -557,7 +559,7 @@ fun ForgottenFavoritesSection(
             .asPaddingValues(),
         modifier = modifier
             .fillMaxWidth()
-            .height(ListItemHeight * rows)
+            .height(scaledItemHeight * rows)
     ) {
         items(
             items = distinctForgottenFavorites,

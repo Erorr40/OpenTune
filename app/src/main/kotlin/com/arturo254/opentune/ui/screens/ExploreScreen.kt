@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import com.arturo254.opentune.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,6 +58,7 @@ import com.arturo254.opentune.ui.component.shimmer.ShimmerHost
 import com.arturo254.opentune.ui.component.shimmer.TextPlaceholder
 import com.arturo254.opentune.ui.menu.YouTubeAlbumMenu
 import com.arturo254.opentune.ui.menu.YouTubeSongMenu
+import com.arturo254.opentune.ui.utils.ResponsiveLayoutUtils
 import com.arturo254.opentune.ui.utils.SnapLayoutInfoProvider
 import com.arturo254.opentune.viewmodels.ChartsViewModel
 import com.arturo254.opentune.viewmodels.ExploreViewModel
@@ -121,13 +123,14 @@ fun ExploreScreen(
                     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                         val horizontalLazyGridItemWidthFactor = if (maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
                         val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+                        val scaledItemHeight = ResponsiveLayoutUtils.calculateScaledItemHeight(ListItemHeight, LocalDensity.current.fontScale)
 
                         LazyHorizontalGrid(
                             rows = GridCells.Fixed(4),
                             contentPadding = PaddingValues(start = 4.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(ListItemHeight * 4),
+                                .height(scaledItemHeight * 4),
                         ) {
                             items(4) {
                                 Row(
@@ -233,6 +236,8 @@ fun ExploreScreen(
                             )
                         }
 
+                        val scaledItemHeight = ResponsiveLayoutUtils.calculateScaledItemHeight(ListItemHeight, LocalDensity.current.fontScale)
+
                         LazyHorizontalGrid(
                             state = lazyGridState,
                             rows = GridCells.Fixed(4),
@@ -242,7 +247,7 @@ fun ExploreScreen(
                                 .asPaddingValues(),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(ListItemHeight * 4),
+                                .height(scaledItemHeight * 4),
                         ) {
                             items(
                                 items = section.items.filterIsInstance<SongItem>().distinctBy { it.id },

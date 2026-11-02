@@ -62,7 +62,7 @@ class AppBarScrollBehavior(
                         state.contentOffset = 0f
                     }
                 }
-                state.heightOffset += consumed.y
+                state.heightOffset = (state.heightOffset + consumed.y).coerceIn(state.heightOffsetLimit, 0f)
                 return Offset.Zero
             }
         }

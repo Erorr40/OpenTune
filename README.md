@@ -6,7 +6,7 @@
   ### Advanced YouTube Music Client with Material Design 3 for Android
   
   [![Latest Release](https://img.shields.io/github/v/release/Erorr40/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases)
-  [![Version](https://img.shields.io/badge/Version-4.0.3-6366F1.svg?style=flat-square&logo=android&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases/tag/v4.0.3)
+  [![Version](https://img.shields.io/badge/Version-4.0.4-6366F1.svg?style=flat-square&logo=android&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases/tag/v4.0.4)
   [![License](https://img.shields.io/github/license/Erorr40/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Erorr40/OpenTune/blob/master/LICENSE)
   [![Platform](https://img.shields.io/badge/Platform-Android%208.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
   [![Stars](https://img.shields.io/github/stars/Erorr40/OpenTune?style=flat-square&logo=github&color=yellow&labelColor=161B22&cacheSeconds=21600)](https://github.com/Erorr40/OpenTune/stargazers)
@@ -32,7 +32,7 @@
 
 - [Legal Notice & DMCA Compliance](#legal-notice--dmca-compliance)
 - [Overview](#overview)
-- [What's New in v4.0.3](#whats-new-in-v403)
+- [What's New in v4.0.4](#whats-new-in-v404)
 - [Key Features](#key-features)
   - [Equal-Power Mixing & Automix](#-equal-power-mixing--automix)
   - [Liquid Frosted Glass Visuals](#-liquid-frosted-glass-visuals)
@@ -67,6 +67,24 @@
 - **Material You Dynamic Theming**: Fully dynamic themes adapting in real-time to album artwork
 - **Offline Mode**: Cache and download songs with embedded metadata and high-res artwork
 - **High Audio Fidelity**: Opus audio streaming support and ReplayGain volume normalization
+
+---
+
+## What's New in v4.0.4
+
+### 📱 Full Responsive Layout & Dynamic Font Scaling
+- **Extreme Font Size Resilience**: System font scaling up to maximum/largest settings without distorted layouts, clipped text, or overlapping elements.
+- **Scroll Unlocked Across All Menus**: Unlocked full vertical scrolling across all 10 bottom sheet menu dialogs and views in portrait mode (`SongMenu`, `AlbumMenu`, `ArtistMenu`, `PlaylistMenu`, `LyricsMenu`, `SelectionSongsMenu`, etc.).
+- **Auto-Wrapping Dialog Actions**: Replaced rigid horizontal button rows in dialogs with auto-wrapping `FlowRow` to ensure buttons remain reachable and unclipped.
+- **Dynamic Flexible Heights**: Replaced fixed heights with flexible `heightIn(min = ...)` across list items, action grids, and the miniplayer.
+
+### 💎 Liquid Glass Topbar Artifact Fix
+- **Eliminated White Inset Artifact**: Resolved the white band artifact appearing above the top bar under the dark Liquid Glass theme when system display or font scale is small.
+- **Safe Drawing & Decor Insets**: Unified window background handling in night mode and clamped app bar scroll behavior height offsets to prevent downward gaps.
+
+### 🖥️ Tablet & Foldable Form Factor Adaptations
+- **Ergonomic Playback Controls**: Clamped player control button sizing (`coerceIn(48.dp, 80.dp)`) with centered max-width bounds (`540.dp`) to prevent oversized controls on tablets.
+- **Adaptive Multi-Column Grids**: Dynamic 2-to-6 column layouts on wide displays and tablets for playlist shortcuts and library collections.
 
 ---
 

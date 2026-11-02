@@ -12,6 +12,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -77,6 +78,7 @@ import com.arturo254.opentune.ui.component.LibraryPinnedCollectionTile
 import com.arturo254.opentune.ui.component.LibraryPlaylistListItem
 import com.arturo254.opentune.ui.component.LocalMenuState
 import com.arturo254.opentune.ui.component.SortHeader
+import com.arturo254.opentune.ui.utils.ResponsiveLayoutUtils
 import com.arturo254.opentune.utils.rememberEnumPreference
 import com.arturo254.opentune.utils.rememberPreference
 import com.arturo254.opentune.viewmodels.LibraryPlaylistsViewModel
@@ -455,11 +457,20 @@ private fun PlaylistShortcutGrid(
     onLongClick: (String) -> Unit = {}, // Añadido para aprovechar combinedClickable si lo necesitas
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = modifier,
-    ) {
-        if (entries.isNotEmpty()) {
+    if (entries.isEmpty()) return
+
+    BoxWithConstraints(modifier = modifier) {
+        val columns = ResponsiveLayoutUtils.calculateAdaptiveColumns(
+            availableWidth = maxWidth,
+            minColumnWidth = 160.dp,
+            minColumns = 2,
+            maxColumns = 6,
+        )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             val heroEntry = entries.first()
 
             LibraryHeroFavoriteTile(
@@ -476,7 +487,7 @@ private fun PlaylistShortcutGrid(
             )
 
             val remainingEntries = entries.drop(1)
-            remainingEntries.chunked(2).forEach { rowEntries ->
+            remainingEntries.chunked(columns).forEach { rowEntries ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.fillMaxWidth(),
@@ -485,7 +496,8 @@ private fun PlaylistShortcutGrid(
                         val position = when {
                             rowEntries.size == 1 -> GridPosition.SINGLE
                             index == 0 -> GridPosition.LEFT
-                            else -> GridPosition.RIGHT
+                            index == rowEntries.size - 1 -> GridPosition.RIGHT
+                            else -> GridPosition.MIDDLE
                         }
 
                         LibraryPinnedCollectionTile(
@@ -501,8 +513,10 @@ private fun PlaylistShortcutGrid(
                                 ),
                         )
                     }
-                    if (rowEntries.size == 1) {
-                        Spacer(Modifier.weight(1f))
+                    if (rowEntries.size < columns) {
+                        repeat(columns - rowEntries.size) {
+                            Spacer(Modifier.weight(1f))
+                        }
                     }
                 }
             }

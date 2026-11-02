@@ -185,6 +185,8 @@ private fun expressiveGridShape(position: GridPosition) = when (position) {
         bottomEnd = 32.dp,
     )
 
+    GridPosition.MIDDLE -> RoundedCornerShape(10.dp)
+
     GridPosition.SINGLE -> RoundedCornerShape(32.dp)
 }
 

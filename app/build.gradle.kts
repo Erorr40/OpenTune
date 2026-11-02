@@ -93,8 +93,8 @@ android {
         applicationId = "com.Arturo254.opentune"
         minSdk = 26
         targetSdk = 36
-        versionCode = 403
-        versionName = "4.0.3"
+        versionCode = 404
+        versionName = "4.0.4"
 //        versionName = "3.0.2-$gitCommit"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

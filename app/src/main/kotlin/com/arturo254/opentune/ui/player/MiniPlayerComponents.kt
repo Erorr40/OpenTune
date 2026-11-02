@@ -73,6 +73,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -91,6 +93,7 @@ import com.arturo254.opentune.models.MediaMetadata
 import com.arturo254.opentune.playback.PlayerConnection
 import com.arturo254.opentune.together.TogetherSessionState
 import com.arturo254.opentune.ui.component.BottomSheetState
+import com.arturo254.opentune.ui.utils.ResponsiveLayoutUtils
 import com.arturo254.opentune.utils.rememberHaptic
 import com.arturo254.opentune.utils.rememberPreference
 import kotlin.math.absoluteValue
@@ -241,10 +244,12 @@ fun SwipeableMiniPlayerBox(
 fun RowScope.MiniPlayerInfo(
     mediaMetadata: MediaMetadata
 ) {
+    val fontScale = LocalDensity.current.fontScale
+    val horizontalPadding = if (fontScale > 1.25f) 4.dp else 8.dp
     Column(
         modifier = Modifier
             .weight(1f)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = horizontalPadding),
         verticalArrangement = Arrangement.Center
     ) {
         AnimatedContent(
@@ -453,6 +458,9 @@ fun NewMiniPlayerContent(
     val isLiked = currentSong?.song?.liked == true
 
     val isLoading = playbackState == Player.STATE_BUFFERING
+    val configuration = LocalConfiguration.current
+    val fontScale = LocalDensity.current.fontScale
+    val isNarrowOrLargeFont = ResponsiveLayoutUtils.isNarrowOrLargeFont(configuration.screenWidthDp, fontScale)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -467,14 +475,14 @@ fun NewMiniPlayerContent(
             isLoading = isLoading
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(if (isNarrowOrLargeFont) 6.dp else 12.dp))
 
         mediaMetadata?.let {
             MiniPlayerInfo(mediaMetadata = it)
         } ?: Spacer(Modifier.weight(1f))
 
         if (togetherSessionState !is TogetherSessionState.Idle) {
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(if (isNarrowOrLargeFont) 4.dp else 8.dp))
             Surface(
                 shape = RoundedCornerShape(999.dp),
                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -493,26 +501,28 @@ fun NewMiniPlayerContent(
             }
         }
 
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(if (isNarrowOrLargeFont) 2.dp else 4.dp))
 
         // ── Ícono de Persona (acceso al perfil del artista) ─────────
-        IconButton(
-            onClick = {
-                val firstArtist = mediaMetadata?.artists?.firstOrNull()
-                val artistId = firstArtist?.id
-                if (!artistId.isNullOrBlank()) {
-                    navController.navigate("artist/$artistId")
-                    state.collapseSoft()
-                }
-            },
-            modifier = Modifier.size(40.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.person),
-                contentDescription = stringResource(R.string.artists),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
-            )
+        if (!isNarrowOrLargeFont) {
+            IconButton(
+                onClick = {
+                    val firstArtist = mediaMetadata?.artists?.firstOrNull()
+                    val artistId = firstArtist?.id
+                    if (!artistId.isNullOrBlank()) {
+                        navController.navigate("artist/$artistId")
+                        state.collapseSoft()
+                    }
+                },
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.person),
+                    contentDescription = stringResource(R.string.artists),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
         // ── Ícono de Corazón (guardar en favoritos) ────────────────

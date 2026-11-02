@@ -201,7 +201,7 @@ fun SelectionSongMenu(
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     LazyColumn(
-        userScrollEnabled = !isPortrait,
+        userScrollEnabled = true,
         contentPadding = PaddingValues(
             start = 0.dp,
             top = 0.dp,
