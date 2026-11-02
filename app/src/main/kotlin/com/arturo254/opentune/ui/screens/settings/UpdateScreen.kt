@@ -134,7 +134,7 @@ fun UpdateScreen(
     }
 
     val (enableUpdateNotification, onEnableUpdateNotificationChange) = rememberPreference(
-        EnableUpdateNotificationKey, defaultValue = false
+        EnableUpdateNotificationKey, defaultValue = true
     )
     val (updateChannel, onUpdateChannelChange) = rememberEnumPreference(
         UpdateChannelKey, defaultValue = UpdateChannel.STABLE

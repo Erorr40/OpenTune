@@ -96,6 +96,7 @@ import kotlinx.coroutines.launch
 import com.arturo254.opentune.LocalPlayerConnection
 import com.arturo254.opentune.R
 import com.arturo254.opentune.ui.component.IconButton
+import com.arturo254.opentune.ui.component.PreferenceEntry
 import com.arturo254.opentune.ui.component.PreferenceGroupTitle
 import com.arturo254.opentune.ui.component.SwitchPreference
 import com.arturo254.opentune.ui.utils.backToMain
@@ -158,6 +159,13 @@ fun DebugSettings(
         ) {
             PreferenceGroupTitle(
                 title = stringResource(R.string.experimental_features)
+            )
+
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.po_token_generation)) },
+                description = stringResource(R.string.po_token_generation_subtitle),
+                icon = { Icon(painterResource(R.drawable.token), null) },
+                onClick = { navController.navigate("settings/po_token") }
             )
 
             SwitchPreference(

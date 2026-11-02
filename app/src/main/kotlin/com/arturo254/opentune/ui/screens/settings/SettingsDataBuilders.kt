@@ -131,14 +131,6 @@ fun buildSettingsGroups(
                         keywords = listOf("language", "content", "lyrics", "translation", "region"),
                         onClick = { resetSearch(); navController.navigate("settings/content") },
                     ),
-                    SettingsItem(
-                        icon = painterResource(R.drawable.token),
-                        title = stringResource(R.string.po_token_generation),
-                        subtitle = stringResource(R.string.po_token_generation_subtitle),
-                        accentColor = MaterialTheme.colorScheme.tertiary,
-                        keywords = listOf("po token", "token", "web client", "visitor data", "gvs", "player"),
-                        onClick = { resetSearch(); navController.navigate("settings/po_token") },
-                    ),
                 ),
             ),
         )

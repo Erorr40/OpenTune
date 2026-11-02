@@ -278,6 +278,12 @@ class App : Application(), SingletonImageLoader.Factory {
                     LastFM.sessionKey = sessionKey
                 }
         }
+        applicationScope.launch(Dispatchers.IO) {
+            val autoUpdateEnabled = dataStore.data.map { it[EnableUpdateNotificationKey] ?: true }.first()
+            if (autoUpdateEnabled) {
+                com.arturo254.opentune.utils.UpdateNotificationManager.schedulePeriodicUpdateCheck(this@App)
+            }
+        }
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {

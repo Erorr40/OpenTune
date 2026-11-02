@@ -532,7 +532,7 @@ private fun DeveloperInfoExpressive() {
             modifier = Modifier.size(44.dp),
         ) {
             AsyncImage(
-                model = "https://avatars.githubusercontent.com/u/87346871?v=4",
+                model = "https://avatars.githubusercontent.com/u/104278486?v=4",
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -542,15 +542,15 @@ private fun DeveloperInfoExpressive() {
         }
         Column {
             Text(
-                text = "Arturo Cervantes",
+                text = "Ahmed Raafat (Erorr40)",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Lead Developer",
+                text = "Maintainer & Lead Developer",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.primary,
             )
         }
     }

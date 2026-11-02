@@ -112,3 +112,5 @@ core.*
 # Antigravity agent files & temporary screenshots
 /.agents/
 emulator_screen*.png
+
+ROADMAP.md
