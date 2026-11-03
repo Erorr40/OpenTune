@@ -215,7 +215,7 @@
 ### Automated Updates via Obtainium
 You can install OpenTune and receive seamless background update notifications directly from our GitHub Releases using [Obtainium](https://github.com/ImranR98/Obtainium):
 
-[![Add to Obtainium](https://img.shields.io/badge/Obtainium-Add%20to%20Obtainium-107C41?style=for-the-badge&logo=android&logoColor=white)](https://api.obtainium.imranr.dev/redirect?r=https://github.com/Erorr40/OpenTune)
+[![Add to Obtainium](https://img.shields.io/badge/Obtainium-Add%20to%20Obtainium-107C41?style=for-the-badge&logo=android&logoColor=white)](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.Arturo254.opentune%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FErorr40%2FOpenTune%22%2C%22author%22%3A%22Erorr40%22%2C%22name%22%3A%22OpenTune%22%7D)
 
 *Or manually add the repository URL in Obtainium:* `https://github.com/Erorr40/OpenTune`
 
