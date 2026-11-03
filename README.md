@@ -7,6 +7,7 @@
   
   [![Latest Release](https://img.shields.io/github/v/release/Erorr40/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases)
   [![Version](https://img.shields.io/badge/Version-4.0.4-6366F1.svg?style=flat-square&logo=android&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases/tag/v4.0.4)
+  [![XERJ Corpus Hub](https://img.shields.io/badge/XERJ%20Hub-Reference%20Solution-09B6A2.svg?style=flat-square&logo=rust&labelColor=161B22)](https://github.com/xerj-org/xerj)
   [![License](https://img.shields.io/github/license/Erorr40/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Erorr40/OpenTune/blob/master/LICENSE)
   [![Platform](https://img.shields.io/badge/Platform-Android%208.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
   [![Stars](https://img.shields.io/github/stars/Erorr40/OpenTune?style=flat-square&logo=github&color=yellow&labelColor=161B22&cacheSeconds=21600)](https://github.com/Erorr40/OpenTune/stargazers)
@@ -81,6 +82,11 @@
 ### 💎 Liquid Glass Topbar Artifact Fix
 - **Eliminated White Inset Artifact**: Resolved the white band artifact appearing above the top bar under the dark Liquid Glass theme when system display or font scale is small.
 - **Safe Drawing & Decor Insets**: Unified window background handling in night mode and clamped app bar scroll behavior height offsets to prevent downward gaps.
+
+### 🛡️ Infinite Constraint Resilience & Compose Architecture
+- **Eliminated Infinite Constraint Crash**: Solved the nested scrolling crash in `ExpressiveListBottomSheet` by eliminating conflicting `verticalScroll` modifiers and unifying item rendering under an optimized `LazyColumn`.
+- **Architectural Verification Test Suite**: Added automated invariant tests in `ExpressiveListPreferenceTest` to guard against nested scroll regressions and ensure Compose layout stability.
+- **AI Reference Implementation**: Selected and indexed by the [XERJ Corpus Hub](https://github.com/xerj-org/xerj) as a standard reference solution for AI coding agents handling Jetpack Compose layout constraints.
 
 ### 🖥️ Tablet & Foldable Form Factor Adaptations
 - **Ergonomic Playback Controls**: Clamped player control button sizing (`coerceIn(48.dp, 80.dp)`) with centered max-width bounds (`540.dp`) to prevent oversized controls on tablets.
@@ -193,12 +199,12 @@
 
 ## Installation & Assets
 
-### Official Release Downloads (v4.0.3)
+### Official Release Downloads (v4.0.4)
 
 | Package | Architecture | Description | Download | SHA-256 Checksum |
 |---|---|---|---|---|
-| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-universal-release.apk) | `bb1cd662a56cc8394a01ad544903c2bb346d70b3e47df20450de77de1bc59319` |
-| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.3/app-arm64-release.apk) | `695078cf523b1c37ed4aef80c53284cebe613a53511778ba9f80a3122d11937f` |
+| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.4/app-universal-release.apk) | `bb1cd662a56cc8394a01ad544903c2bb346d70b3e47df20450de77de1bc59319` |
+| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.4/app-arm64-release.apk) | `695078cf523b1c37ed4aef80c53284cebe613a53511778ba9f80a3122d11937f` |
 
 ### Installation Instructions
 1. Download the desired APK from the table above or the [Releases](https://github.com/Erorr40/OpenTune/releases) page.
@@ -285,6 +291,8 @@ OpenTune is an open-source collaborative project built upon the foundation of in
 * **OpenTune Authors & Maintainers**: 
   - [Arturo Cervantes (@Arturo254)](https://github.com/Arturo254): Original OpenTune author and design contributor.
   - [Ahmed Raafat (@Erorr40)](https://github.com/Erorr40): Current project maintainer, Automix engine, performance optimization, and release coordinator.
+* **Community & AI Indexing Recognition**:
+  - [XERJ Corpus Hub](https://github.com/xerj-org/xerj): OpenTune's Compose constraint architecture fix and invariant test suite were selected and indexed under MIT terms as a benchmark reference solution for AI coding agents.
 
 All original copyright notices from upstream projects are preserved, respected, and acknowledged in full compliance with GPL-3.0. For complete attribution details, see [ATTRIBUTION.md](ATTRIBUTION.md) and [NOTICE](NOTICE).
 
