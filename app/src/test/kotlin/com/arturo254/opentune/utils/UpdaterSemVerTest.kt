@@ -117,4 +117,25 @@ class UpdaterSemVerTest {
         assertNotNull(latest)
         assertEquals("v4.0.2", latest?.tagName)
     }
+
+    @Test
+    fun isNewerVersion_correctlyComparesSemver() {
+        assertTrue(Updater.isNewerVersion("4.0.4", "4.0.3"))
+        assertTrue(Updater.isNewerVersion("v4.0.4", "4.0.3"))
+        assertTrue(Updater.isNewerVersion("OpenTune v4.0.4", "4.0.3"))
+        assertTrue(Updater.isNewerVersion("4.0.1", "3.0.6"))
+        assertTrue(Updater.isNewerVersion("13.0.0", "12.4.7"))
+        assertTrue(Updater.isNewerVersion("4.1.0", "4.0.9"))
+        assertTrue(Updater.isNewerVersion("5.0.0", "4.9.9"))
+
+        // Equal versions are not newer
+        assertFalse(Updater.isNewerVersion("4.0.4", "4.0.4"))
+        assertFalse(Updater.isNewerVersion("v4.0.4", "4.0.4"))
+        assertFalse(Updater.isNewerVersion("OpenTune v4.0.4", "4.0.4"))
+
+        // Older versions are not newer (prevents offering downgrades)
+        assertFalse(Updater.isNewerVersion("4.0.3", "4.0.4"))
+        assertFalse(Updater.isNewerVersion("3.0.6", "4.0.1"))
+        assertFalse(Updater.isNewerVersion("12.4.7", "13.0.0"))
+    }
 }

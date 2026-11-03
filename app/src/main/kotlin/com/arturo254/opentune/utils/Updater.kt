@@ -197,6 +197,16 @@ object Updater {
         }
     }
 
+    internal fun isNewerVersion(latest: String, current: String): Boolean {
+        val latestSemVer = parseSemVerOrNull(latest)
+        val currentSemVer = parseSemVerOrNull(current)
+        return if (latestSemVer != null && currentSemVer != null) {
+            latestSemVer > currentSemVer
+        } else {
+            !isSameVersion(latest, current)
+        }
+    }
+
     internal fun findLatestRelease(releases: List<ReleaseInfo>): ReleaseInfo? {
         if (releases.isEmpty()) return null
         val parsed =
@@ -318,10 +328,10 @@ object Updater {
             ?: emptyList()
     }
 
-    suspend fun getLatestVersionName(): Result<String> = runCatching {
+    suspend fun getLatestVersionName(forceRefresh: Boolean = false): Result<String> = runCatching {
         when (getCurrentUpdateChannel()) {
             UpdateChannel.STABLE -> {
-                val latest = getLatestReleaseInfo().getOrThrow()
+                val latest = getLatestReleaseInfo(forceRefresh = forceRefresh).getOrThrow()
                 preferredReleaseVersionNameOrNull(latest) ?: latest.name.ifBlank { latest.tagName }
             }
             UpdateChannel.NIGHTLY -> {
@@ -337,10 +347,10 @@ object Updater {
         }
     }
 
-    suspend fun getLatestReleaseInfo(): Result<ReleaseInfo> = runCatching {
+    suspend fun getLatestReleaseInfo(forceRefresh: Boolean = false): Result<ReleaseInfo> = runCatching {
         when (getCurrentUpdateChannel()) {
             UpdateChannel.STABLE -> {
-                val releases = getAllReleases().getOrThrow()
+                val releases = getAllReleases(forceRefresh = forceRefresh).getOrThrow()
                 val latest = findLatestRelease(releases)
                     ?: throw IllegalStateException("No releases found")
                 lastCheckTime = System.currentTimeMillis()
@@ -365,21 +375,27 @@ object Updater {
     /**
      * Comprueba si hay una versión más reciente que [currentVersionName].
      */
-    suspend fun checkForUpdate(currentVersionName: String): Result<UpdateInfo?> =
+    suspend fun checkForUpdate(
+        currentVersionName: String,
+        forceRefresh: Boolean = true,
+    ): Result<UpdateInfo?> =
         runCatching {
             when (getCurrentUpdateChannel()) {
-                UpdateChannel.STABLE -> checkForUpdateStable(currentVersionName)
+                UpdateChannel.STABLE -> checkForUpdateStable(currentVersionName, forceRefresh = forceRefresh)
                 UpdateChannel.NIGHTLY -> checkForUpdateNightly(currentVersionName)
             }
         }
 
-    private suspend fun checkForUpdateStable(currentVersionName: String): UpdateInfo? {
-        val latest = getLatestReleaseInfo().getOrThrow()
+    private suspend fun checkForUpdateStable(
+        currentVersionName: String,
+        forceRefresh: Boolean = true,
+    ): UpdateInfo? {
+        val latest = getLatestReleaseInfo(forceRefresh = forceRefresh).getOrThrow()
         val latestVersionName =
             preferredReleaseVersionNameOrNull(latest)
                 ?: latest.name.ifBlank { latest.tagName }
 
-        if (isSameVersion(latestVersionName, currentVersionName)) return null
+        if (!isNewerVersion(latestVersionName, currentVersionName)) return null
 
         val downloadUrl = resolveApkDownloadUrl(latest.tagName)
 
@@ -551,16 +567,16 @@ object Updater {
             }
 
             val networkResult = runCatching {
-                fetchReleasesNetwork(perPage = perPage, cachedEtag = cachedEtag)
+                fetchReleasesNetwork(perPage = perPage, cachedEtag = if (forceRefresh) null else cachedEtag)
             }.getOrNull()
 
             if (networkResult == null) {
                 val fallback = cachedReleases
-                if (fallback != null) {
+                if (fallback != null && !forceRefresh) {
                     lastCheckTime = now
                     return@runCatching fallback
                 }
-                throw IllegalStateException("Failed to fetch releases")
+                throw IllegalStateException("Failed to connect to GitHub")
             }
 
             when {
@@ -596,7 +612,17 @@ object Updater {
                     releases
                 }
 
+                networkResult.status == HttpStatusCode.Forbidden || networkResult.status.value == 429 -> {
+                    if (forceRefresh) {
+                        throw IllegalStateException("GitHub API rate limit exceeded. Please try again later.")
+                    }
+                    cachedReleases ?: throw IllegalStateException("GitHub API rate limit exceeded")
+                }
+
                 else -> {
+                    if (forceRefresh) {
+                        throw IllegalStateException("Failed to fetch releases: HTTP ${networkResult.status.value}")
+                    }
                     val fallback = cachedReleases
                     if (fallback != null) {
                         lastCheckTime = now
