@@ -35,6 +35,7 @@
 - [Overview](#overview)
 - [What's New in v4.0.5](#whats-new-in-v405)
 - [What's New in v4.0.4](#whats-new-in-v404)
+- [What's New in v4.0.3](#whats-new-in-v403)
 - [Key Features](#key-features)
   - [Equal-Power Mixing & Automix](#-equal-power-mixing--automix)
   - [Liquid Frosted Glass Visuals](#-liquid-frosted-glass-visuals)
@@ -47,9 +48,12 @@
 - [Technology Stack](#technology-stack)
 - [Installation & Assets](#installation--assets)
 - [Building from Source](#building-from-source)
+  - [Prerequisites](#prerequisites)
+  - [Build Commands](#build-commands)
+  - [Discord Social SDK Setup (Optional)](#optional-discord-social-sdk-integration)
 - [Contributing](#contributing)
 - [Support & Donations](#-support--donations--ادعم-المشروع)
-- [Original Author & Rights](#original-author--rights)
+- [Lineage, Copyright & Open Source Attribution](#lineage-copyright--open-source-attribution)
 - [Contact](#contact)
 - [License](#license)
 
@@ -75,10 +79,11 @@
 ## What's New in v4.0.5
 
 ### 🎮 Official Discord Social SDK Integration & Fallback Resilience
-- **Official Discord Login**: Integrated and configured the official Discord Social SDK with registered OAuth2 Client ID for seamless, tokenless Rich Presence authentication.
+- **Official Discord Login**: Integrated and configured the official Discord Social SDK with registered OAuth2 Client ID (`1568004713419378830`) for seamless, tokenless Rich Presence authentication.
 - **Graceful Unconfigured Fallback**: Resolves [Issue #4](https://github.com/Erorr40/OpenTune/issues/4) where missing SDK binaries or client IDs caused a persistent, dead-end error on prebuilt releases.
 - **1-Tap Legacy Switch**: Added automatic detection that indicates when the proprietary SDK is unavailable in a build and provides a direct, 1-tap button to use the working Legacy (WebView) login.
 - **Improved Error Guidance**: Clear, actionable error messaging explaining the exact missing components for self-builders.
+- **SemVer In-App Updater**: Enhanced version comparison logic ensuring reliable semantic patch update detection and upgrade notifications.
 
 ---
 ## What's New in v4.0.4
@@ -181,7 +186,7 @@
 | Feature | Description |
 |---|---|
 | **Android Auto** | Dedicated car dashboard interface with driver-safe media controls |
-| **Discord Rich Presence** | Live Discord RPC showing active song, artist, album, and playback timestamps |
+| **Discord Rich Presence** | Live Discord RPC showing active song, artist, album, and playback timestamps (Official Discord Social SDK & Legacy WebView sign-in) |
 | **Last.fm Scrobbling** | Built-in Last.fm scrobbling integration |
 
 ### 🔄 In-App Auto-Updates
@@ -235,7 +240,8 @@ You can install OpenTune and receive seamless background update notifications di
 
 ### Prerequisites
 - **JDK 21** (Eclipse Adoptium or OpenJDK 21)
-- **Android SDK** (API 36, NDK 27+)
+- **Android SDK** (API 36)
+- **Android NDK (r27+)** & **CMake (3.22.1+)** *(Required if building with the native Discord Social SDK)*
 - **Git**
 
 ### Build Commands
@@ -258,6 +264,26 @@ cd OpenTune
 Compiled APK binaries are located at:
 - `app/build/outputs/apk/universal/release/app-universal-release.apk`
 - `app/build/outputs/apk/arm64/release/app-arm64-release.apk`
+
+### Optional: Discord Social SDK Integration
+
+OpenTune supports both the official native Discord Social SDK and the open Legacy (WebView) authentication flow:
+
+- **Open-Source Default (No Proprietary Binaries Required)**:
+  By default, OpenTune builds cleanly without any proprietary dependencies. If `discord_partner_sdk.aar` is omitted, the build system automatically compiles with stub fallbacks, and users can connect their Discord account using the built-in Legacy (WebView) sign-in method.
+
+- **Enabling Official Discord Social SDK**:
+  To build with native Discord Social SDK support:
+  1. Ensure **Android NDK (r27+)** and **CMake (3.22.1+)** are installed via the Android SDK Manager.
+  2. Place the proprietary `discord_partner_sdk.aar` into the `app/libs/` directory.
+  3. (Optional) Provide your Discord Client ID in `local.properties`:
+     ```properties
+     DISCORD_SOCIAL_SDK_CLIENT_ID=1568004713419378830
+     ```
+  4. Ensure your Discord Application on the [Discord Developer Portal](https://discord.com/developers/applications) has registered the redirect URI scheme:
+     ```text
+     discord-<CLIENT_ID>:/authorize/callback
+     ```
 
 ---
 
