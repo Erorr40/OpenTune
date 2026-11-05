@@ -120,6 +120,7 @@ class UpdaterSemVerTest {
 
     @Test
     fun isNewerVersion_correctlyComparesSemver() {
+        assertTrue(Updater.isNewerVersion("4.0.5", "4.0.4"))
         assertTrue(Updater.isNewerVersion("4.0.4", "4.0.3"))
         assertTrue(Updater.isNewerVersion("v4.0.4", "4.0.3"))
         assertTrue(Updater.isNewerVersion("OpenTune v4.0.4", "4.0.3"))

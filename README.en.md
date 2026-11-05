@@ -6,7 +6,7 @@
   ### Advanced YouTube Music Client with Material Design 3 for Android
   
   [![Latest Release](https://img.shields.io/github/v/release/Erorr40/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases)
-  [![Version](https://img.shields.io/badge/Version-4.0.4-6366F1.svg?style=flat-square&logo=android&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases/tag/v4.0.4)
+  [![Version](https://img.shields.io/badge/Version-4.0.5-6366F1.svg?style=flat-square&logo=android&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases/tag/v4.0.5)
   [![XERJ Corpus Hub](https://img.shields.io/badge/XERJ%20Hub-Reference%20Solution-09B6A2.svg?style=flat-square&logo=rust&labelColor=161B22)](https://github.com/xerj-org/xerj)
   [![License](https://img.shields.io/github/license/Erorr40/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Erorr40/OpenTune/blob/master/LICENSE)
   [![Platform](https://img.shields.io/badge/Platform-Android%208.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
@@ -33,6 +33,7 @@
 
 - [Legal Notice & DMCA Compliance](#legal-notice--dmca-compliance)
 - [Overview](#overview)
+- [What's New in v4.0.5](#whats-new-in-v405)
 - [What's New in v4.0.4](#whats-new-in-v404)
 - [Key Features](#key-features)
   - [Equal-Power Mixing & Automix](#-equal-power-mixing--automix)
@@ -71,6 +72,15 @@
 
 ---
 
+## What's New in v4.0.5
+
+### 🎮 Official Discord Social SDK Integration & Fallback Resilience
+- **Official Discord Login**: Integrated and configured the official Discord Social SDK with registered OAuth2 Client ID for seamless, tokenless Rich Presence authentication.
+- **Graceful Unconfigured Fallback**: Resolves [Issue #4](https://github.com/Erorr40/OpenTune/issues/4) where missing SDK binaries or client IDs caused a persistent, dead-end error on prebuilt releases.
+- **1-Tap Legacy Switch**: Added automatic detection that indicates when the proprietary SDK is unavailable in a build and provides a direct, 1-tap button to use the working Legacy (WebView) login.
+- **Improved Error Guidance**: Clear, actionable error messaging explaining the exact missing components for self-builders.
+
+---
 ## What's New in v4.0.4
 
 ### 📱 Full Responsive Layout & Dynamic Font Scaling
@@ -199,12 +209,12 @@
 
 ## Installation & Assets
 
-### Official Release Downloads (v4.0.4)
+### Official Release Downloads (v4.0.5)
 
 | Package | Architecture | Description | Download | SHA-256 Checksum |
 |---|---|---|---|---|
-| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.4/app-universal-release.apk) | `bb1cd662a56cc8394a01ad544903c2bb346d70b3e47df20450de77de1bc59319` |
-| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.4/app-arm64-release.apk) | `695078cf523b1c37ed4aef80c53284cebe613a53511778ba9f80a3122d11937f` |
+| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/app-universal-release.apk) | `6775e42cb744c2d8e3d04f7785ef982f88082f1d2df0508aaf09eb0fbe94ec03` |
+| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/app-arm64-release.apk) | `3a0cd8954b3002e4e79b669bd546e7e7b5cefa8dbe81dfad01382158713826f0` |
 
 ### Installation Instructions
 1. Download the desired APK from the table above or the [Releases](https://github.com/Erorr40/OpenTune/releases) page.

@@ -93,8 +93,8 @@ android {
         applicationId = "com.Arturo254.opentune"
         minSdk = 26
         targetSdk = 36
-        versionCode = 404
-        versionName = "4.0.4"
+        versionCode = 405
+        versionName = "4.0.5"
 //        versionName = "3.0.2-$gitCommit"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -128,7 +128,7 @@ android {
         val discordSocialSdkClientId =
             localProperties.getProperty("DISCORD_SOCIAL_SDK_CLIENT_ID")
                 ?: System.getenv("DISCORD_SOCIAL_SDK_CLIENT_ID")
-                ?: ""
+                ?: "1568004713419378830"
         buildConfigField("String", "DISCORD_SOCIAL_SDK_CLIENT_ID", "\"$discordSocialSdkClientId\"")
         manifestPlaceholders["discordSocialSdkClientId"] = discordSocialSdkClientId
 

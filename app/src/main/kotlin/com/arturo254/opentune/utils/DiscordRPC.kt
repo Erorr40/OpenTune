@@ -26,7 +26,7 @@ class DiscordRPC(
 ) : KizzyRPC(token) {
 
     companion object {
-        private const val APPLICATION_ID = "1165706613961789445"
+        private const val APPLICATION_ID = "1568004713419378830"
         private const val PAUSE_IMAGE_URL =
             "https://raw.githubusercontent.com/Erorr40/OpenTune/master/fastlane/metadata/android/en-US/images/RPC/pause_icon.png"
         private const val APP_ICON_URL = 

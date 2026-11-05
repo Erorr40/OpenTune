@@ -58,6 +58,7 @@ import com.my.kizzy.rpc.KizzyRPC
 import timber.log.Timber
 import kotlinx.coroutines.*
 import com.arturo254.opentune.utils.ArtworkStorage
+import com.arturo254.opentune.utils.DiscordSocialSdkBridge
 
 enum class ActivitySource { ARTIST, ALBUM, SONG, APP }
 
@@ -88,10 +89,11 @@ fun DiscordSettings(
     var infoDismissed by rememberPreference(DiscordInfoDismissedKey, false)
     val isLegacyLoggedIn = remember(discordToken) { discordToken.isNotEmpty() }
 
+    val isSdkConfigured = remember { DiscordSocialSdkBridge.isConfigured }
     var socialSdkEnabled by rememberPreference(DiscordSocialSdkEnabledKey, false)
     val socialSdkLinked by rememberPreference(DiscordSocialSdkLinkedKey, false)
-    var authMethod by remember(socialSdkEnabled) {
-        mutableStateOf(if (socialSdkEnabled) DiscordAuthMethod.OFFICIAL else DiscordAuthMethod.LEGACY)
+    var authMethod by remember(socialSdkEnabled, isSdkConfigured) {
+        mutableStateOf(if (socialSdkEnabled && isSdkConfigured) DiscordAuthMethod.OFFICIAL else DiscordAuthMethod.LEGACY)
     }
 
     val isLoggedIn = if (authMethod == DiscordAuthMethod.OFFICIAL) socialSdkLinked else isLegacyLoggedIn
@@ -182,7 +184,11 @@ fun DiscordSettings(
                 values = listOf(DiscordAuthMethod.OFFICIAL, DiscordAuthMethod.LEGACY),
                 valueText = {
                     when (it) {
-                        DiscordAuthMethod.OFFICIAL -> stringResource(R.string.discord_sign_in_method_official)
+                        DiscordAuthMethod.OFFICIAL -> if (isSdkConfigured) {
+                            stringResource(R.string.discord_sign_in_method_official)
+                        } else {
+                            stringResource(R.string.discord_social_sdk_unavailable)
+                        }
                         DiscordAuthMethod.LEGACY -> stringResource(R.string.discord_sign_in_method_legacy)
                     }
                 },
@@ -191,6 +197,40 @@ fun DiscordSettings(
                     socialSdkEnabled = it == DiscordAuthMethod.OFFICIAL
                 },
             )
+
+            if (!isSdkConfigured && authMethod == DiscordAuthMethod.OFFICIAL) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.discord_social_sdk_unavailable),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.discord_social_sdk_unavailable_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = {
+                                authMethod = DiscordAuthMethod.LEGACY
+                                socialSdkEnabled = false
+                            }
+                        ) {
+                            Text(stringResource(R.string.discord_social_sdk_switch_to_legacy))
+                        }
+                    }
+                }
+            }
 
             if (authMethod == DiscordAuthMethod.LEGACY) {
                 Text(
@@ -207,6 +247,8 @@ fun DiscordSettings(
                         Text(
                             text = if (socialSdkLinked) {
                                 stringResource(R.string.discord_social_sdk_linked)
+                            } else if (!isSdkConfigured) {
+                                stringResource(R.string.discord_social_sdk_unavailable)
                             } else {
                                 stringResource(R.string.not_logged_in)
                             },

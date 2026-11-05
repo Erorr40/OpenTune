@@ -117,8 +117,15 @@ fun DiscordSocialLoginScreen(navController: NavController) {
         if (isLinked) refreshCurrentUser()
     }
 
+    val isSdkConfigured = remember { DiscordSocialSdkBridge.isConfigured }
+
     fun signIn() {
         val activity = context.findActivity() ?: return
+        if (!DiscordSocialSdkBridge.isAvailable) {
+            isError = true
+            statusMessage = context.getString(R.string.discord_social_sdk_missing_aar)
+            return
+        }
         val clientIdStr = BuildConfig.DISCORD_SOCIAL_SDK_CLIENT_ID
         val clientId = clientIdStr.toLongOrNull()
         if (clientId == null) {
@@ -378,6 +385,51 @@ fun DiscordSocialLoginScreen(navController: NavController) {
                     label = "scale",
                 )
 
+                if (!isSdkConfigured && !isLinked) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = stringResource(R.string.discord_social_sdk_unavailable),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = if (!DiscordSocialSdkBridge.isAvailable) {
+                                    stringResource(R.string.discord_social_sdk_missing_aar)
+                                } else {
+                                    stringResource(R.string.discord_social_sdk_missing_client_id)
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.discord_social_sdk_unavailable_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = {
+                                    navController.navigate("settings/discord/login") {
+                                        popUpTo("settings/discord")
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(stringResource(R.string.discord_social_sdk_switch_to_legacy))
+                            }
+                        }
+                    }
+                }
+
                 if (isLinked) {
                     OutlinedButton(
                         onClick = ::signOut,
@@ -396,7 +448,7 @@ fun DiscordSocialLoginScreen(navController: NavController) {
                 } else {
                     Button(
                         onClick = ::signIn,
-                        enabled = !isWorking,
+                        enabled = !isWorking && isSdkConfigured,
                         modifier = Modifier
                             .fillMaxWidth()
                             .scale(scale),

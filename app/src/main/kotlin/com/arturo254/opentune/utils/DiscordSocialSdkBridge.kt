@@ -1,5 +1,6 @@
 package com.arturo254.opentune.utils
 
+import com.arturo254.opentune.BuildConfig
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,10 @@ object DiscordSocialSdkBridge {
         System.loadLibrary("discord_partner_sdk")
         System.loadLibrary("discord_bridge")
     }.isSuccess
+
+    /** True only if both the binary SDK is loaded and a valid client ID was injected at build time. */
+    val isConfigured: Boolean
+        get() = isAvailable && BuildConfig.DISCORD_SOCIAL_SDK_CLIENT_ID.toLongOrNull() != null
 
     data class AuthorizeResult(val success: Boolean, val code: String, val redirectUri: String, val error: String)
     data class TokenResult(

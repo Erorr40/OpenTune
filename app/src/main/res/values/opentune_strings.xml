@@ -633,6 +633,10 @@
     <string name="discord_social_sdk_use_official">Use official Discord SDK (beta)</string>
     <string name="discord_social_sdk_use_official_desc">No account token stored, no ban risk — requires signing in separately below.</string>
     <string name="discord_social_sdk_status_idle">Ready to connect</string>
+    <string name="discord_social_sdk_unavailable">Official SDK (Unavailable)</string>
+    <string name="discord_social_sdk_unavailable_desc">The official Discord Social SDK is not included or configured in this build. Please use the Legacy sign-in method, or build OpenTune from source with discord_partner_sdk.aar and DISCORD_SOCIAL_SDK_CLIENT_ID.</string>
+    <string name="discord_social_sdk_switch_to_legacy">Use Legacy Sign-In</string>
+    <string name="discord_social_sdk_missing_aar">Missing discord_partner_sdk.aar native library.</string>
 
     <string name="discord_sign_in_method">Sign-in method</string>
     <string name="discord_sign_in_method_official">Official (recommended)</string>
