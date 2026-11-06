@@ -47,6 +47,10 @@
   - [In-App Auto-Updates](#-in-app-auto-updates)
 - [Technology Stack](#technology-stack)
 - [Installation & Assets](#installation--assets)
+  - [Official Release Downloads (v4.0.5)](#official-release-downloads-v405)
+  - [Verified Signature & Security Integrity](#-verified-signature--security-integrity)
+  - [Installation Instructions](#installation-instructions)
+  - [Automated Updates via Obtainium](#automated-updates-via-obtainium)
 - [Building from Source](#building-from-source)
   - [Prerequisites](#prerequisites)
   - [Build Commands](#build-commands)
@@ -220,6 +224,27 @@
 |---|---|---|---|---|
 | **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/app-universal-release.apk) | `6775e42cb744c2d8e3d04f7785ef982f88082f1d2df0508aaf09eb0fbe94ec03` |
 | **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/app-arm64-release.apk) | `3a0cd8954b3002e4e79b669bd546e7e7b5cefa8dbe81dfad01382158713826f0` |
+| **Verified Signatures** | All platforms | Official release signing certificate fingerprints & SHA-256 manifest | [verified-signature.txt](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/verified-signature.txt) | Plaintext Security Manifest |
+
+### 🔐 Verified Signature & Security Integrity
+
+All official OpenTune APKs are signed with the official release keystore and verified using the Android APK Signature Scheme (v2 + v3). Verify that your downloaded APK matches these official credentials:
+
+| Attribute | Verified Value |
+|---|---|
+| **Signer Certificate DN** | `CN=OpenTune, OU=OpenTune, O=OpenTune, L=Global, ST=Global, C=US` |
+| **SHA-256 Certificate Fingerprint** | `BC:6E:7D:78:7A:7D:83:D5:8C:3B:33:7D:75:61:3F:85:73:B7:D7:6F:44:DB:58:3E:A7:CB:F3:13:BE:0D:17:EE` |
+| **SHA-1 Certificate Fingerprint** | `AA:38:4D:6D:B4:D3:4C:C3:2B:EC:2E:57:47:DA:72:16:D4:75:5E:4D` |
+| **Public Key Algorithm** | RSA 2048-bit (Signature: SHA384withRSA) |
+| **Signature Schemes** | APK Signature Scheme v2 (Full APK), v3 (Key Rotation) |
+
+#### How to Verify:
+Using the official Android SDK `apksigner` tool:
+```bash
+apksigner verify --verbose --print-certs app-universal-release.apk
+```
+Ensure the SHA-256 certificate fingerprint matches:
+`bc6e7d787a7d83d58c3b337d75613f8573b7d76f44db583ea7cbf313be0d17ee`
 
 ### Installation Instructions
 1. Download the desired APK from the table above or the [Releases](https://github.com/Erorr40/OpenTune/releases) page.
