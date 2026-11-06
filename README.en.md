@@ -33,9 +33,6 @@
 
 - [Legal Notice & DMCA Compliance](#legal-notice--dmca-compliance)
 - [Overview](#overview)
-- [What's New in v4.0.5](#whats-new-in-v405)
-- [What's New in v4.0.4](#whats-new-in-v404)
-- [What's New in v4.0.3](#whats-new-in-v403)
 - [Key Features](#key-features)
   - [Equal-Power Mixing & Automix](#-equal-power-mixing--automix)
   - [Liquid Frosted Glass Visuals](#-liquid-frosted-glass-visuals)
@@ -48,13 +45,11 @@
 - [Technology Stack](#technology-stack)
 - [Installation & Assets](#installation--assets)
   - [Official Release Downloads (v4.0.5)](#official-release-downloads-v405)
-  - [Verified Signature & Security Integrity](#-verified-signature--security-integrity)
   - [Installation Instructions](#installation-instructions)
   - [Automated Updates via Obtainium](#automated-updates-via-obtainium)
 - [Building from Source](#building-from-source)
   - [Prerequisites](#prerequisites)
   - [Build Commands](#build-commands)
-  - [Discord Social SDK Setup (Optional)](#optional-discord-social-sdk-integration)
 - [Contributing](#contributing)
 - [Support & Donations](#-support--donations--ادعم-المشروع)
 - [Lineage, Copyright & Open Source Attribution](#lineage-copyright--open-source-attribution)
@@ -77,63 +72,6 @@
 - **Material You Dynamic Theming**: Fully dynamic themes adapting in real-time to album artwork
 - **Offline Mode**: Cache and download songs with embedded metadata and high-res artwork
 - **High Audio Fidelity**: Opus audio streaming support and ReplayGain volume normalization
-
----
-
-## What's New in v4.0.5
-
-### 🎮 Official Discord Social SDK Integration & Fallback Resilience
-- **Official Discord Login**: Integrated and configured the official Discord Social SDK with registered OAuth2 Client ID (`1568004713419378830`) for seamless, tokenless Rich Presence authentication.
-- **Graceful Unconfigured Fallback**: Resolves [Issue #4](https://github.com/Erorr40/OpenTune/issues/4) where missing SDK binaries or client IDs caused a persistent, dead-end error on prebuilt releases.
-- **1-Tap Legacy Switch**: Added automatic detection that indicates when the proprietary SDK is unavailable in a build and provides a direct, 1-tap button to use the working Legacy (WebView) login.
-- **Improved Error Guidance**: Clear, actionable error messaging explaining the exact missing components for self-builders.
-- **SemVer In-App Updater**: Enhanced version comparison logic ensuring reliable semantic patch update detection and upgrade notifications.
-
----
-## What's New in v4.0.4
-
-### 📱 Full Responsive Layout & Dynamic Font Scaling
-- **Extreme Font Size Resilience**: System font scaling up to maximum/largest settings without distorted layouts, clipped text, or overlapping elements.
-- **Scroll Unlocked Across All Menus**: Unlocked full vertical scrolling across all 10 bottom sheet menu dialogs and views in portrait mode (`SongMenu`, `AlbumMenu`, `ArtistMenu`, `PlaylistMenu`, `LyricsMenu`, `SelectionSongsMenu`, etc.).
-- **Auto-Wrapping Dialog Actions**: Replaced rigid horizontal button rows in dialogs with auto-wrapping `FlowRow` to ensure buttons remain reachable and unclipped.
-- **Dynamic Flexible Heights**: Replaced fixed heights with flexible `heightIn(min = ...)` across list items, action grids, and the miniplayer.
-
-### 💎 Liquid Glass Topbar Artifact Fix
-- **Eliminated White Inset Artifact**: Resolved the white band artifact appearing above the top bar under the dark Liquid Glass theme when system display or font scale is small.
-- **Safe Drawing & Decor Insets**: Unified window background handling in night mode and clamped app bar scroll behavior height offsets to prevent downward gaps.
-
-### 🛡️ Infinite Constraint Resilience & Compose Architecture
-- **Eliminated Infinite Constraint Crash**: Solved the nested scrolling crash in `ExpressiveListBottomSheet` by eliminating conflicting `verticalScroll` modifiers and unifying item rendering under an optimized `LazyColumn`.
-- **Architectural Verification Test Suite**: Added automated invariant tests in `ExpressiveListPreferenceTest` to guard against nested scroll regressions and ensure Compose layout stability.
-- **AI Reference Implementation**: Selected and indexed by the [XERJ Corpus Hub](https://github.com/xerj-org/xerj) as a standard reference solution for AI coding agents handling Jetpack Compose layout constraints.
-
-### 🖥️ Tablet & Foldable Form Factor Adaptations
-- **Ergonomic Playback Controls**: Clamped player control button sizing (`coerceIn(48.dp, 80.dp)`) with centered max-width bounds (`540.dp`) to prevent oversized controls on tablets.
-- **Adaptive Multi-Column Grids**: Dynamic 2-to-6 column layouts on wide displays and tablets for playlist shortcuts and library collections.
-
----
-
-## What's New in v4.0.3
-
-### 🎚️ Spotify-Style Equal-Power Mixing Mode
-- **Equal-Power Trigonometric Curve**: Replaced linear crossfading with an equal-power sinusoidal curve ($\sin^2(\theta) + \cos^2(\theta) = 1$) to eliminate perceived acoustic volume dips between outgoing and incoming tracks.
-- **Continuous 0–12s Squiggly Slider**: Ultra-fluid slider with haptic feedback ticks for micro-precision duration adjustment.
-- **5 Quick-Select Preset Pills**: Instant switching between **Off**, **3s Subtle**, **6s Standard**, **9s Club**, and **12s Flow**.
-- **Smart Automix Engine**: Dynamic DJ-style auto-mixing intelligently bridging consecutive songs.
-- **Album Gapless Playback Bypass**: Intelligently disables crossfading when consecutive tracks belong to the same album, preserving live and conceptual album transitions as intended by the artist.
-
-### 💎 Liquid Frosted Glass UI Enhancements
-- **Real-Time Translucency**: High-performance backdrop sampling that blurs and tints underlying artwork dynamically.
-- **Specular Border Contouring**: 1dp translucent edge contours reflecting light naturally across sheet headers and cards.
-- **Robust Lens Guards**: Protected `CornerBasedShape` transformations to ensure zero visual artifacts across rectangular backdrops.
-- **Floating Navigation Pill**: Frosted glass surface styling applied to the main floating navigation toolbar.
-
-### ⚡ Performance & Fluid 120Hz Scrolling
-- **Coil 3 Image Engine**: Memory cache upgraded to 25% JVM heap allocation with strong LRU references, delivering instantaneous artwork loading without garbage collection stutters.
-- **Stable Collection Keys**: Integrated explicit, unique item keys across all `LazyColumn`, `LazyRow`, and `LazyVerticalGrid` feeds (Explore, Playlists, Library, and Player components) for butter-smooth 120Hz scroll performance.
-
-### 🏷️ Modernized UI Terminology
-- Completely refreshed UI strings and setting descriptors across all player menus, sheets, and preferences to reflect modern audio engineering standards.
 
 ---
 
@@ -224,27 +162,6 @@
 |---|---|---|---|---|
 | **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/app-universal-release.apk) | `6775e42cb744c2d8e3d04f7785ef982f88082f1d2df0508aaf09eb0fbe94ec03` |
 | **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/app-arm64-release.apk) | `3a0cd8954b3002e4e79b669bd546e7e7b5cefa8dbe81dfad01382158713826f0` |
-| **Verified Signatures** | All platforms | Official release signing certificate fingerprints & SHA-256 manifest | [verified-signature.txt](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/verified-signature.txt) | Plaintext Security Manifest |
-
-### 🔐 Verified Signature & Security Integrity
-
-All official OpenTune APKs are signed with the official release keystore and verified using the Android APK Signature Scheme (v2 + v3). Verify that your downloaded APK matches these official credentials:
-
-| Attribute | Verified Value |
-|---|---|
-| **Signer Certificate DN** | `CN=OpenTune, OU=OpenTune, O=OpenTune, L=Global, ST=Global, C=US` |
-| **SHA-256 Certificate Fingerprint** | `BC:6E:7D:78:7A:7D:83:D5:8C:3B:33:7D:75:61:3F:85:73:B7:D7:6F:44:DB:58:3E:A7:CB:F3:13:BE:0D:17:EE` |
-| **SHA-1 Certificate Fingerprint** | `AA:38:4D:6D:B4:D3:4C:C3:2B:EC:2E:57:47:DA:72:16:D4:75:5E:4D` |
-| **Public Key Algorithm** | RSA 2048-bit (Signature: SHA384withRSA) |
-| **Signature Schemes** | APK Signature Scheme v2 (Full APK), v3 (Key Rotation) |
-
-#### How to Verify:
-Using the official Android SDK `apksigner` tool:
-```bash
-apksigner verify --verbose --print-certs app-universal-release.apk
-```
-Ensure the SHA-256 certificate fingerprint matches:
-`bc6e7d787a7d83d58c3b337d75613f8573b7d76f44db583ea7cbf313be0d17ee`
 
 ### Installation Instructions
 1. Download the desired APK from the table above or the [Releases](https://github.com/Erorr40/OpenTune/releases) page.
@@ -289,26 +206,6 @@ cd OpenTune
 Compiled APK binaries are located at:
 - `app/build/outputs/apk/universal/release/app-universal-release.apk`
 - `app/build/outputs/apk/arm64/release/app-arm64-release.apk`
-
-### Optional: Discord Social SDK Integration
-
-OpenTune supports both the official native Discord Social SDK and the open Legacy (WebView) authentication flow:
-
-- **Open-Source Default (No Proprietary Binaries Required)**:
-  By default, OpenTune builds cleanly without any proprietary dependencies. If `discord_partner_sdk.aar` is omitted, the build system automatically compiles with stub fallbacks, and users can connect their Discord account using the built-in Legacy (WebView) sign-in method.
-
-- **Enabling Official Discord Social SDK**:
-  To build with native Discord Social SDK support:
-  1. Ensure **Android NDK (r27+)** and **CMake (3.22.1+)** are installed via the Android SDK Manager.
-  2. Place the proprietary `discord_partner_sdk.aar` into the `app/libs/` directory.
-  3. (Optional) Provide your Discord Client ID in `local.properties`:
-     ```properties
-     DISCORD_SOCIAL_SDK_CLIENT_ID=1568004713419378830
-     ```
-  4. Ensure your Discord Application on the [Discord Developer Portal](https://discord.com/developers/applications) has registered the redirect URI scheme:
-     ```text
-     discord-<CLIENT_ID>:/authorize/callback
-     ```
 
 ---
 
