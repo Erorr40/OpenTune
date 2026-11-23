@@ -7,6 +7,7 @@
   
   [![Latest Release](https://img.shields.io/github/v/release/Erorr40/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases)
   [![Version](https://img.shields.io/badge/Version-4.0.5-6366F1.svg?style=flat-square&logo=android&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases/tag/v4.0.5)
+[![Downloads](https://img.shields.io/github/downloads/Erorr40/OpenTune/total?style=flat-square&logo=github&color=2EA043&labelColor=161B22&cacheSeconds=21600)](https://github.com/Erorr40/OpenTune/releases)
   [![XERJ Corpus Hub](https://img.shields.io/badge/XERJ%20Hub-Reference%20Solution-09B6A2.svg?style=flat-square&logo=rust&labelColor=161B22)](https://github.com/xerj-org/xerj)
   [![License](https://img.shields.io/github/license/Erorr40/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Erorr40/OpenTune/blob/master/LICENSE)
   [![Platform](https://img.shields.io/badge/Platform-Android%208.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
