@@ -34,6 +34,7 @@ import com.arturo254.opentune.R
 import com.arturo254.opentune.constants.ChipSortTypeKey
 import com.arturo254.opentune.constants.DisableBlurKey
 import com.arturo254.opentune.constants.LibraryFilter
+import com.arturo254.opentune.ui.component.meshGradientThemeBackdrop
 import com.arturo254.opentune.constants.PlaylistTagsFilterKey
 import com.arturo254.opentune.constants.ShowTagsInLibraryKey
 import com.arturo254.opentune.ui.component.ChipsRow
@@ -118,110 +119,23 @@ fun LibraryScreen(navController: NavController) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // M3E Mesh gradient background layer at the top
+        // M3E Mesh gradient background layer at the top (cached across scroll/recomposition frames)
         if (!disableBlur) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxSize(0.7f) // Cover top 70% of screen
+                    .fillMaxSize(0.7f)
                     .align(Alignment.TopCenter)
-                    .zIndex(-1f) // Place behind all content
-                .drawBehind {
-                    val width = size.width
-                    val height = size.height
-
-                    // Create mesh gradient with 5 color blobs for more variation
-                    // First color blob - top left
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                color1.copy(alpha = 0.38f),
-                                color1.copy(alpha = 0.24f),
-                                color1.copy(alpha = 0.14f),
-                                color1.copy(alpha = 0.06f),
-                                Color.Transparent
-                            ),
-                            center = Offset(width * 0.15f, height * 0.1f),
-                            radius = width * 0.55f
-                        )
+                    .zIndex(-1f)
+                    .meshGradientThemeBackdrop(
+                        color1 = color1,
+                        color2 = color2,
+                        color3 = color3,
+                        color4 = color4,
+                        color5 = color5,
+                        surfaceColor = surfaceColor,
                     )
-
-                    // Second color blob - top right
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                color2.copy(alpha = 0.34f),
-                                color2.copy(alpha = 0.2f),
-                                color2.copy(alpha = 0.11f),
-                                color2.copy(alpha = 0.05f),
-                                Color.Transparent
-                            ),
-                            center = Offset(width * 0.85f, height * 0.2f),
-                            radius = width * 0.65f
-                        )
-                    )
-
-                    // Third color blob - middle left
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                color3.copy(alpha = 0.3f),
-                                color3.copy(alpha = 0.17f),
-                                color3.copy(alpha = 0.09f),
-                                color3.copy(alpha = 0.04f),
-                                Color.Transparent
-                            ),
-                            center = Offset(width * 0.3f, height * 0.45f),
-                            radius = width * 0.6f
-                        )
-                    )
-
-                    // Fourth color blob - middle right
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                color4.copy(alpha = 0.26f),
-                                color4.copy(alpha = 0.14f),
-                                color4.copy(alpha = 0.08f),
-                                color4.copy(alpha = 0.03f),
-                                Color.Transparent
-                            ),
-                            center = Offset(width * 0.7f, height * 0.5f),
-                            radius = width * 0.7f
-                        )
-                    )
-
-                    // Fifth color blob - bottom center (helps with smooth fade)
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                color5.copy(alpha = 0.22f),
-                                color5.copy(alpha = 0.12f),
-                                color5.copy(alpha = 0.06f),
-                                color5.copy(alpha = 0.02f),
-                                Color.Transparent
-                            ),
-                            center = Offset(width * 0.5f, height * 0.75f),
-                            radius = width * 0.8f
-                        )
-                    )
-
-                    // Add a final vertical gradient overlay to ensure smooth bottom fade
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Transparent,
-                                surfaceColor.copy(alpha = 0.22f),
-                                surfaceColor.copy(alpha = 0.55f),
-                                surfaceColor
-                            ),
-                            startY = height * 0.4f,
-                            endY = height
-                        )
-                    )
-                }
-        ) {}
+            ) {}
         }
 
         when (filterType) {

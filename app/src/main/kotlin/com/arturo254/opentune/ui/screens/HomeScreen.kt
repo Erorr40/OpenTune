@@ -52,6 +52,9 @@ import com.arturo254.opentune.R
 import com.arturo254.opentune.constants.InnerTubeCookieKey
 import com.arturo254.opentune.constants.DisableBlurKey
 import com.arturo254.opentune.constants.ShowHomeCategoryChipsKey
+import com.arturo254.opentune.ui.component.DownloadedPlaylistsShelf
+import com.arturo254.opentune.ui.component.NavigationTitle
+import com.arturo254.opentune.ui.component.OfflineStatusBanner
 import com.arturo254.opentune.ui.component.ChipsRow
 import com.arturo254.opentune.ui.component.LocalBottomSheetPageState
 import com.arturo254.opentune.ui.component.LocalMenuState
@@ -81,6 +84,9 @@ fun HomeScreen(
     val keepListening by viewModel.keepListening.collectAsStateWithLifecycle()
     val homePage by viewModel.homePage.collectAsStateWithLifecycle()
     val allItemsMetadata by viewModel.allItemsMetadata.collectAsStateWithLifecycle()
+    val isOffline by viewModel.isOffline.collectAsStateWithLifecycle()
+    val downloadedPlaylists by viewModel.downloadedPlaylists.collectAsStateWithLifecycle()
+    val similarRecommendations by viewModel.similarRecommendations.collectAsStateWithLifecycle()
 
     val selectedChip by viewModel.selectedChip.collectAsStateWithLifecycle()
 
@@ -278,7 +284,42 @@ fun HomeScreen(
                 state = lazylistState,
                 contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
             ) {
-                if (showHomeCategoryChips) {
+                if (isOffline) {
+                    item(key = "offline_status_banner") {
+                        OfflineStatusBanner(
+                            downloadedCount = downloadedPlaylists.size,
+                            onOpenDownloads = { navController.navigate("auto_playlist/downloaded") },
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
+
+                    if (downloadedPlaylists.isNotEmpty()) {
+                        item(key = "offline_downloaded_playlists_title") {
+                            NavigationTitle(
+                                title = stringResource(R.string.downloaded_playlists),
+                                onClick = { navController.navigate("library") },
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
+                        item(key = "offline_downloaded_playlists_shelf") {
+                            DownloadedPlaylistsShelf(
+                                downloadedPlaylists = downloadedPlaylists,
+                                onPlaylistClick = { item ->
+                                    navController.navigate("local_playlist/${item.playlist.id}")
+                                },
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
+                    }
+                }
+
+                if (homePage == null && quickPicks == null && !isOffline && isLoading) {
+                    item(key = "home_initial_skeleton") {
+                        HomeInitialSkeleton(modifier = Modifier.animateItem())
+                    }
+                }
+
+                if (showHomeCategoryChips && !homePage?.chips.isNullOrEmpty()) {
                     item {
                         ChipsRow(
                             chips = homePage?.chips.orEmpty().map { it to it.title },
@@ -397,16 +438,28 @@ fun HomeScreen(
                 }
             }
 
-            SimilarRecommendationsContainer(
-                viewModel = viewModel,
-                mediaMetadata = mediaMetadata,
-                isPlaying = isPlaying,
-                navController = navController,
-                playerConnection = playerConnection,
-                menuState = menuState,
-                haptic = haptic,
-                scope = scope
-            )
+            similarRecommendations?.forEach { recommendation ->
+                item(key = "sim_title_${recommendation.title.id}") {
+                    SimilarRecommendationsTitle(
+                        recommendation = recommendation,
+                        navController = navController,
+                        modifier = Modifier.animateItem()
+                    )
+                }
+                item(key = "sim_section_${recommendation.title.id}") {
+                    SimilarRecommendationsSection(
+                        recommendation = recommendation,
+                        mediaMetadata = mediaMetadata,
+                        isPlaying = isPlaying,
+                        navController = navController,
+                        playerConnection = playerConnection,
+                        menuState = menuState,
+                        haptic = haptic,
+                        scope = scope,
+                        metadataMap = allItemsMetadata
+                    )
+                }
+            }
 
             homePage?.sections?.forEach { section ->
                 item {

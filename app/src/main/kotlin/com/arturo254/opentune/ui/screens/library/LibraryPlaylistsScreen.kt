@@ -122,6 +122,8 @@ fun LibraryPlaylistsScreen(
     ).collectAsState(initial = emptyList())
 
     val playlists by viewModel.allPlaylists.collectAsState()
+    val isOffline by viewModel.isOffline.collectAsState()
+    val downloadedPlaylists by viewModel.downloadedPlaylists.collectAsState()
     val visiblePlaylists = remember(playlists, selectedTagIds, filteredPlaylistIds) {
         playlists.filter { playlist ->
             val name = playlist.playlist.name
@@ -358,6 +360,34 @@ fun LibraryPlaylistsScreen(
                 )
             }
 
+            if (isOffline) {
+                item(key = "offline_playlists_banner") {
+                    com.arturo254.opentune.ui.component.OfflineStatusBanner(
+                        downloadedCount = downloadedPlaylists.size,
+                        onOpenDownloads = { navController.navigate("auto_playlist/downloaded") },
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+
+                if (downloadedPlaylists.isNotEmpty()) {
+                    item(key = "offline_playlists_title") {
+                        com.arturo254.opentune.ui.component.NavigationTitle(
+                            title = stringResource(R.string.downloaded_playlists),
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
+                    item(key = "offline_playlists_shelf") {
+                        com.arturo254.opentune.ui.component.DownloadedPlaylistsShelf(
+                            downloadedPlaylists = downloadedPlaylists,
+                            onPlaylistClick = { item ->
+                                navController.navigate("local_playlist/${item.playlist.id}")
+                            },
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
+                }
+            }
+
             if (canReorderPlaylists) {
                 itemsIndexed(
                     items = mutableVisiblePlaylists,
@@ -374,6 +404,7 @@ fun LibraryPlaylistsScreen(
                             playlist = playlist,
                             showDragHandle = true,
                             dragHandleModifier = Modifier.draggableHandle(),
+                            isOffline = isOffline,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .animateItem(),
@@ -390,6 +421,7 @@ fun LibraryPlaylistsScreen(
                         menuState = menuState,
                         coroutineScope = coroutineScope,
                         playlist = playlist,
+                        isOffline = isOffline,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .animateItem(),

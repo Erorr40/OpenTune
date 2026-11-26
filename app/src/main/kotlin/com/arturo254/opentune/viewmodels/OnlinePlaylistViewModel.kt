@@ -16,6 +16,8 @@ import com.arturo254.opentune.innertube.models.PlaylistItem
 import com.arturo254.opentune.innertube.models.SongItem
 import com.arturo254.opentune.innertube.utils.completed
 import com.arturo254.opentune.db.MusicDatabase
+import com.arturo254.opentune.innertube.models.Artist
+import com.arturo254.opentune.utils.NetworkConnectivityObserver
 import com.arturo254.opentune.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +27,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,7 +41,8 @@ import javax.inject.Inject
 @HiltViewModel
 class OnlinePlaylistViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    database: MusicDatabase
+    private val database: MusicDatabase,
+    private val networkConnectivity: NetworkConnectivityObserver,
 ) : ViewModel() {
     private val playlistId = savedStateHandle.get<String>("playlistId")!!
 
@@ -119,6 +124,19 @@ class OnlinePlaylistViewModel @Inject constructor(
 
             _error.value = null
 
+            if (!networkConnectivity.isCurrentlyConnected()) {
+                val restored = loadOfflinePlaylistFallback()
+                if (!restored) {
+                    _error.value = "No network connection"
+                }
+                if (initial) {
+                    _isLoading.value = false
+                } else {
+                    _isRefreshing.value = false
+                }
+                return@launch
+            }
+
             YouTube
                 .playlist(playlistId)
                 .completed()
@@ -128,7 +146,9 @@ class OnlinePlaylistViewModel @Inject constructor(
                     continuation = playlistPage.songsContinuation
                     prefetchViewCounts(playlistPage.songs.map { song -> song.id })
                 }.onFailure { throwable ->
-                    _error.value = throwable.message ?: "Failed to load playlist"
+                    if (!loadOfflinePlaylistFallback()) {
+                        _error.value = throwable.message ?: "Failed to load playlist"
+                    }
                     reportException(throwable)
                 }
 
@@ -140,7 +160,41 @@ class OnlinePlaylistViewModel @Inject constructor(
         }
     }
 
+    private suspend fun loadOfflinePlaylistFallback(): Boolean {
+        val dbPl = database.playlistByBrowseId(playlistId).firstOrNull()
+            ?: database.getPlaylistById(playlistId)
+            ?: return false
+        val localSongs = database.playlistSongs(dbPl.id).first()
+        if (localSongs.isEmpty()) return false
+
+        playlist.value = PlaylistItem(
+            id = dbPl.playlist.browseId ?: dbPl.id,
+            title = dbPl.playlist.name,
+            author = null,
+            songCountText = localSongs.size.toString(),
+            thumbnail = dbPl.thumbnails.firstOrNull() ?: "",
+            playEndpoint = null,
+            shuffleEndpoint = null,
+            radioEndpoint = null,
+            isEditable = dbPl.playlist.isEditable,
+        )
+        playlistSongs.value = localSongs.map { ps ->
+            val s = ps.song
+            SongItem(
+                id = s.id,
+                title = s.song.title,
+                artists = s.artists.map { artist -> Artist(name = artist.name, id = artist.id) },
+                album = s.album?.let { com.arturo254.opentune.innertube.models.Album(name = it.title, id = it.id) },
+                duration = s.song.duration,
+                thumbnail = s.song.thumbnailUrl ?: "",
+                explicit = s.song.explicit,
+            )
+        }.distinctBy { it.id }
+        return true
+    }
+
     private fun prefetchViewCounts(videoIds: List<String>) {
+        if (!networkConnectivity.isCurrentlyConnected()) return
         val uniqueIds = videoIds.distinct().filter { it.isNotBlank() }
         if (uniqueIds.isEmpty()) return
 

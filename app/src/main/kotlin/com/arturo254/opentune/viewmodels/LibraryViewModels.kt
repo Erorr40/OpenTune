@@ -48,6 +48,9 @@ import com.arturo254.opentune.extensions.filterExplicitAlbums
 import com.arturo254.opentune.extensions.reversed
 import com.arturo254.opentune.extensions.toEnum
 import com.arturo254.opentune.playback.DownloadUtil
+import com.arturo254.opentune.utils.DownloadedPlaylistItem
+import com.arturo254.opentune.utils.NetworkConnectivityObserver
+import com.arturo254.opentune.utils.OfflinePlaylistHelper
 import com.arturo254.opentune.utils.SyncUtils
 import com.arturo254.opentune.utils.dataStore
 import com.arturo254.opentune.utils.get
@@ -349,8 +352,32 @@ class LibraryPlaylistsViewModel
 constructor(
     @ApplicationContext context: Context,
     database: MusicDatabase,
+    downloadUtil: DownloadUtil,
     private val syncUtils: SyncUtils,
+    private val networkConnectivity: NetworkConnectivityObserver,
 ) : ViewModel() {
+    val isOffline = networkConnectivity.networkStatus
+        .map { !it }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            !networkConnectivity.isCurrentlyConnected(),
+        )
+
+    val downloadedPlaylists: kotlinx.coroutines.flow.StateFlow<List<DownloadedPlaylistItem>> = combine(
+        database.allPlaylistsInDb(),
+        database.allPlaylistSongEntries(),
+        downloadUtil.downloads,
+    ) { playlists, entries, downloads ->
+        OfflinePlaylistHelper.resolveDownloadedPlaylists(
+            playlists = playlists,
+            playlistSongEntries = entries,
+            downloads = downloads,
+        )
+    }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val allPlaylists =
         context.dataStore.data
             .map {
@@ -365,6 +392,7 @@ constructor(
     val isRefreshing = _isRefreshing.asStateFlow()
 
     fun sync() {
+        if (!networkConnectivity.isCurrentlyConnected()) return
         viewModelScope.launch(Dispatchers.IO) {
             _isRefreshing.value = true
             syncUtils.syncSavedPlaylists()
@@ -414,8 +442,31 @@ class LibraryMixViewModel
 constructor(
     @ApplicationContext context: Context,
     database: MusicDatabase,
+    downloadUtil: DownloadUtil,
     private val syncUtils: SyncUtils,
+    private val networkConnectivity: NetworkConnectivityObserver,
 ) : ViewModel() {
+    val isOffline = networkConnectivity.networkStatus
+        .map { !it }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            !networkConnectivity.isCurrentlyConnected(),
+        )
+
+    val downloadedPlaylists: kotlinx.coroutines.flow.StateFlow<List<DownloadedPlaylistItem>> = combine(
+        database.allPlaylistsInDb(),
+        database.allPlaylistSongEntries(),
+        downloadUtil.downloads,
+    ) { playlists, entries, downloads ->
+        OfflinePlaylistHelper.resolveDownloadedPlaylists(
+            playlists = playlists,
+            playlistSongEntries = entries,
+            downloads = downloads,
+        )
+    }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // ── Estado de refresco ──────────────────────────────────────────────────
     private val _isRefreshing = MutableStateFlow(false)
@@ -469,7 +520,7 @@ constructor(
 
     // ── Sincronización completa ─────────────────────────────────────────────
     fun syncAllLibrary() {
-        if (_isRefreshing.value) return
+        if (_isRefreshing.value || !networkConnectivity.isCurrentlyConnected()) return
         viewModelScope.launch(Dispatchers.IO) {
             _isRefreshing.value = true
             try {
@@ -487,10 +538,12 @@ constructor(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             albums.collect { albums ->
+                if (!networkConnectivity.isCurrentlyConnected()) return@collect
                 albums
                     .filter {
                         it.album.songCount == 0
                     }.forEach { album ->
+                        if (!networkConnectivity.isCurrentlyConnected()) return@forEach
                         YouTube
                             .album(album.id)
                             .onSuccess { albumPage ->
@@ -511,6 +564,7 @@ constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             artists.collect { artists ->
+                if (!networkConnectivity.isCurrentlyConnected()) return@collect
                 artists
                     .map { it.artist }
                     .filter {
@@ -520,6 +574,7 @@ constructor(
                                     LocalDateTime.now(),
                                 ) > Duration.ofDays(10)
                     }.forEach { artist ->
+                        if (!networkConnectivity.isCurrentlyConnected()) return@forEach
                         YouTube.artist(artist.id).onSuccess { artistPage ->
                             database.query {
                                 update(artist, artistPage)

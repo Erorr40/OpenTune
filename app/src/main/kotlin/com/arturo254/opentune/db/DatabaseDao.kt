@@ -43,6 +43,7 @@ import com.arturo254.opentune.db.entities.LyricsEntity
 import com.arturo254.opentune.db.entities.Playlist
 import com.arturo254.opentune.db.entities.PlaylistEntity
 import com.arturo254.opentune.db.entities.PlaylistSong
+import com.arturo254.opentune.db.entities.PlaylistSongEntry
 import com.arturo254.opentune.db.entities.PlaylistSongMap
 import com.arturo254.opentune.db.entities.RelatedSongMap
 import com.arturo254.opentune.db.entities.SearchHistory
@@ -1074,6 +1075,13 @@ interface DatabaseDao {
 
     @Query("SELECT MAX(customOrder) FROM playlist WHERE bookmarkedAt IS NOT NULL")
     fun maxPlaylistCustomOrder(): Int?
+
+    @Transaction
+    @Query("SELECT *, (SELECT COUNT(*) FROM playlist_song_map WHERE playlistId = playlist.id) AS songCount FROM playlist ORDER BY rowId")
+    fun allPlaylistsInDb(): Flow<List<Playlist>>
+
+    @Query("SELECT playlistId, songId FROM playlist_song_map")
+    fun allPlaylistSongEntries(): Flow<List<PlaylistSongEntry>>
 
     @Transaction
     @Query("SELECT *, (SELECT COUNT(*) FROM playlist_song_map WHERE playlistId = playlist.id) AS songCount FROM playlist WHERE id = :playlistId")

@@ -174,6 +174,8 @@ fun LibraryMixScreen(
     val albums by viewModel.albums.collectAsState()
     val artists by viewModel.artists.collectAsState()
     val playlists by viewModel.playlists.collectAsState()
+    val isOffline by viewModel.isOffline.collectAsState()
+    val downloadedPlaylists by viewModel.downloadedPlaylists.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val mostPlayedSong by viewModel.mostPlayedSong.collectAsState()
     val mostPlayedPlayCount by remember(mostPlayedSong) {
@@ -483,6 +485,33 @@ fun LibraryMixScreen(
                 }
             }
 
+            if (isOffline) {
+                item(key = "offline_mix_banner") {
+                    com.arturo254.opentune.ui.component.OfflineStatusBanner(
+                        downloadedCount = downloadedPlaylists.size,
+                        onOpenDownloads = { navController.navigate("auto_playlist/downloaded") },
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+                if (downloadedPlaylists.isNotEmpty()) {
+                    item(key = "offline_mix_downloaded_playlists_title") {
+                        com.arturo254.opentune.ui.component.NavigationTitle(
+                            title = stringResource(R.string.downloaded_playlists),
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
+                    item(key = "offline_mix_downloaded_playlists_shelf") {
+                        com.arturo254.opentune.ui.component.DownloadedPlaylistsShelf(
+                            downloadedPlaylists = downloadedPlaylists,
+                            onPlaylistClick = { item ->
+                                navController.navigate("local_playlist/${item.playlist.id}")
+                            },
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
+                }
+            }
+
             if (canReorderPlaylists) {
                 itemsIndexed(
                     items = mutableVisiblePlaylists,
@@ -499,6 +528,7 @@ fun LibraryMixScreen(
                             playlist = item,
                             showDragHandle = true,
                             dragHandleModifier = Modifier.draggableHandle(),
+                            isOffline = isOffline,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .animateItem(),
@@ -515,6 +545,7 @@ fun LibraryMixScreen(
                         menuState = menuState,
                         coroutineScope = coroutineScope,
                         playlist = item,
+                        isOffline = isOffline,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .animateItem(),

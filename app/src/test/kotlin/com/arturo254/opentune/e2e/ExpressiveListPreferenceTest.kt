@@ -143,8 +143,8 @@ class ExpressiveListPreferenceTest {
         val readmeFile = resolveSourceFile("../README.md")
         val content = readmeFile.readText()
 
-        val universalHash = "bb1cd662a56cc8394a01ad544903c2bb346d70b3e47df20450de77de1bc59319"
-        val arm64Hash = "695078cf523b1c37ed4aef80c53284cebe613a53511778ba9f80a3122d11937f"
+        val universalHash = "db0f42442f6bf1d765d8daea543aa12445470825b1c6b1b87efb115ce33d2002"
+        val arm64Hash = "d55246335c84279b24d68f76c5099f7bfb5c9e23f9e5655d7f08ffe916508422"
 
         assertTrue("README.md must contain the universal APK SHA-256 digest", content.contains(universalHash))
         assertTrue("README.md must contain the ARM64 APK SHA-256 digest", content.contains(arm64Hash))

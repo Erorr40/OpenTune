@@ -6,7 +6,9 @@
   ### Advanced YouTube Music Client with Material Design 3 for Android
   
   [![Latest Release](https://img.shields.io/github/v/release/Erorr40/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases)
-  [![Version](https://img.shields.io/badge/Version-4.0.5-6366F1.svg?style=flat-square&logo=android&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases/tag/v4.0.5)
+  [![Version](https://img.shields.io/badge/Version-4.0.6-6366F1.svg?style=flat-square&logo=android&labelColor=161B22)](https://github.com/Erorr40/OpenTune/releases/tag/v4.0.6)
+  [![Downloads](https://img.shields.io/github/downloads/Erorr40/OpenTune/total?style=flat-square&logo=github&color=2EA043&labelColor=161B22&cacheSeconds=21600)](https://github.com/Erorr40/OpenTune/releases)
+  [![Web Companion](https://img.shields.io/badge/Web%20Player-OpenTune--Web-D0BCFF.svg?style=flat-square&labelColor=161B22)](https://github.com/Erorr40/OpenTune-Web)
   [![XERJ Corpus Hub](https://img.shields.io/badge/XERJ%20Hub-Reference%20Solution-09B6A2.svg?style=flat-square&logo=rust&labelColor=161B22)](https://github.com/xerj-org/xerj)
   [![License](https://img.shields.io/github/license/Erorr40/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Erorr40/OpenTune/blob/master/LICENSE)
   [![Platform](https://img.shields.io/badge/Platform-Android%208.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
@@ -44,7 +46,7 @@
   - [In-App Auto-Updates](#-in-app-auto-updates)
 - [Technology Stack](#technology-stack)
 - [Installation & Assets](#installation--assets)
-  - [Official Release Downloads (v4.0.5)](#official-release-downloads-v405)
+  - [Official Release Downloads (v4.0.6)](#official-release-downloads-v406)
   - [Installation Instructions](#installation-instructions)
   - [Automated Updates via Obtainium](#automated-updates-via-obtainium)
 - [Building from Source](#building-from-source)
@@ -60,7 +62,7 @@
 
 ## Overview
 
-**OpenTune** is a modern, lightweight, and privacy-friendly open-source client for YouTube Music built with Android Jetpack Compose and Material Design 3 Expressive. It delivers a fast, ad-free listening experience with background playback, synchronized lyrics, offline downloads, audio normalization, and seamless library management.
+**OpenTune** is a modern, lightweight, and privacy-friendly open-source client for YouTube Music built with Android Jetpack Compose and Material Design 3 Expressive. It delivers a fast, ad-free listening experience with background playback, synchronized lyrics, offline downloads, audio normalization, seamless library management, and a companion [OpenTune Web Player](https://github.com/Erorr40/OpenTune-Web).
 
 ### Key Highlights
 
@@ -70,7 +72,8 @@
 - **Background & Lockscreen Playback**: Keep listening with your screen off or while multitasking
 - **Privacy First**: No telemetry, tracking, or user data collection
 - **Material You Dynamic Theming**: Fully dynamic themes adapting in real-time to album artwork
-- **Offline Mode**: Cache and download songs with embedded metadata and high-res artwork
+- **Offline Mode & Downloaded Playlists**: Automatic offline detection displaying downloaded playlists right on Home/Library with instant local playback fallback
+- **Skeleton Shimmers & Smooth UI**: Compose `ShimmerHost` loading states, cached `MeshGradientBackdrop` rendering, and reduced scroll recompositions
 - **High Audio Fidelity**: Opus audio streaming support and ReplayGain volume normalization
 
 ---
@@ -156,12 +159,12 @@
 
 ## Installation & Assets
 
-### Official Release Downloads (v4.0.5)
+### Official Release Downloads (v4.0.6)
 
 | Package | Architecture | Description | Download | SHA-256 Checksum |
 |---|---|---|---|---|
-| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/app-universal-release.apk) | `6775e42cb744c2d8e3d04f7785ef982f88082f1d2df0508aaf09eb0fbe94ec03` |
-| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.5/app-arm64-release.apk) | `3a0cd8954b3002e4e79b669bd546e7e7b5cefa8dbe81dfad01382158713826f0` |
+| **Universal APK** | All devices (arm64, armeabi-v7a, x86, x86_64) | Compatible with any Android device | [app-universal-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.6/app-universal-release.apk) | `db0f42442f6bf1d765d8daea543aa12445470825b1c6b1b87efb115ce33d2002` |
+| **ARM64 APK** | `arm64-v8a` | Optimized, smaller binary for modern 64-bit Android phones | [app-arm64-release.apk](https://github.com/Erorr40/OpenTune/releases/download/v4.0.6/app-arm64-release.apk) | `d55246335c84279b24d68f76c5099f7bfb5c9e23f9e5655d7f08ffe916508422` |
 
 ### Installation Instructions
 1. Download the desired APK from the table above or the [Releases](https://github.com/Erorr40/OpenTune/releases) page.

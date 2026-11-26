@@ -52,6 +52,7 @@ import com.arturo254.opentune.models.PlaylistSuggestion
 import com.arturo254.opentune.models.PlaylistSuggestionPage
 import com.arturo254.opentune.models.PlaylistSuggestionQuery
 import com.arturo254.opentune.utils.PlaylistSuggestionQueryBuilder
+import com.arturo254.opentune.utils.NetworkConnectivityObserver
 import com.arturo254.opentune.utils.SyncUtils
 import com.arturo254.opentune.utils.dataStore
 import com.arturo254.opentune.utils.reportException
@@ -69,6 +70,7 @@ constructor(
     @ApplicationContext private val context: Context,
     private val database: MusicDatabase,
     private val syncUtils: SyncUtils,
+    private val networkConnectivity: NetworkConnectivityObserver,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val playlistId = savedStateHandle.get<String>("playlistId")!!
@@ -193,6 +195,7 @@ constructor(
     }
 
     private fun prefetchViewCounts(videoIds: List<String>) {
+        if (!networkConnectivity.isCurrentlyConnected()) return
         val uniqueIds = videoIds.distinct().filter { it.isNotBlank() }
         if (uniqueIds.isEmpty()) return
 

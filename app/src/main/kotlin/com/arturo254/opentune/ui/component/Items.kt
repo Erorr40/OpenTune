@@ -292,34 +292,6 @@ fun LibraryPlaylistFeatureCard(
     val subtitleText = playlistCountText(playlist = playlist, autoPlaylist = autoPlaylist)
     val thumbnailSize = LibraryCardThumbnailSize
     val thumbnailShape = RoundedCornerShape(18.dp)
-    val context = LocalContext.current
-    val primaryThumbnailUrl = playlist.thumbnails.getOrNull(0)
-    var extractedGlowColor by remember(primaryThumbnailUrl) { mutableStateOf(Color.Transparent) }
-    val glowColor by animateColorAsState(
-        targetValue = extractedGlowColor,
-        animationSpec = tween(400),
-        label = "playlistItemGlow",
-    )
-    LaunchedEffect(primaryThumbnailUrl) {
-        if (primaryThumbnailUrl == null) return@LaunchedEffect
-        val bitmap =
-            runCatching {
-                context.imageLoader
-                    .execute(
-                        ImageRequest
-                            .Builder(context)
-                            .data(primaryThumbnailUrl)
-                            .size(
-                                PlayerColorExtractor.Config.IMAGE_SIZE,
-                                PlayerColorExtractor.Config.IMAGE_SIZE
-                            )
-                            .allowHardware(false)
-                            .build(),
-                    ).image
-                    ?.toBitmap()
-            }.getOrNull() ?: return@LaunchedEffect
-        extractedGlowColor = withContext(Dispatchers.Default) { bitmap.extractThemeColor() }
-    }
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         shape = shape,

@@ -25,6 +25,7 @@ package com.arturo254.opentune.ui.screens
  import androidx.compose.runtime.rememberCoroutineScope
  import androidx.compose.ui.Modifier
  import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
  import androidx.compose.ui.unit.dp
  import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
  import androidx.navigation.NavController
@@ -68,9 +69,23 @@ package com.arturo254.opentune.ui.screens
          columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
          contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
      ) {
-         items?.let { items ->
+         val currentItems = items
+         if (currentItems == null) {
+             items(8) {
+                 ShimmerHost {
+                     GridItemPlaceHolder(fillMaxWidth = true)
+                 }
+             }
+         } else if (currentItems.isEmpty()) {
+             item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                 com.arturo254.opentune.ui.component.EmptyPlaceholder(
+                     icon = R.drawable.search,
+                     text = stringResource(R.string.no_results_found),
+                 )
+             }
+         } else {
              items(
-                 items = items.distinctBy { it.id },
+                 items = currentItems.distinctBy { it.id },
                  key = { it.id }
              ) { item ->
                  YouTubeGridItem(
@@ -123,14 +138,6 @@ package com.arturo254.opentune.ui.screens
                              }
                          )
                  )
-             }
- 
-             if (items.isEmpty()) {
-                 items(8) {
-                     ShimmerHost {
-                         GridItemPlaceHolder(fillMaxWidth = true)
-                     }
-                 }
              }
          }
      }

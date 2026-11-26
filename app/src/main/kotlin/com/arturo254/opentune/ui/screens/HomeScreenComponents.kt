@@ -107,6 +107,7 @@ import com.arturo254.opentune.ui.component.SongGridItem
 import com.arturo254.opentune.ui.component.SongListItem
 import com.arturo254.opentune.ui.component.YouTubeGridItem
 import com.arturo254.opentune.ui.component.shimmer.GridItemPlaceHolder
+import com.arturo254.opentune.ui.component.shimmer.ListItemPlaceHolder
 import com.arturo254.opentune.ui.component.shimmer.ShimmerHost
 import com.arturo254.opentune.ui.component.shimmer.TextPlaceholder
 import com.arturo254.opentune.ui.menu.AlbumMenu
@@ -746,6 +747,51 @@ fun HomePageSectionContent(
                 metadata = metadataMap[item.id]
             )
         }
+    }
+}
+
+/**
+ * Full-screen Expressive loading skeleton shown on initial home load
+ */
+@Composable
+fun HomeInitialSkeleton(modifier: Modifier = Modifier) {
+    ShimmerHost(modifier = modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        ) {
+            repeat(4) {
+                Box(
+                    modifier = Modifier
+                        .height(34.dp)
+                        .width(if (it % 2 == 0) 76.dp else 94.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.onSurface)
+                )
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+        TextPlaceholder(
+            height = 28.dp,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .width(180.dp),
+        )
+        LazyRow(contentPadding = PaddingValues(horizontal = 8.dp)) {
+            items(4) { GridItemPlaceHolder() }
+        }
+        Spacer(Modifier.height(12.dp))
+        TextPlaceholder(
+            height = 28.dp,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .width(210.dp),
+        )
+        LazyRow(contentPadding = PaddingValues(horizontal = 8.dp)) {
+            items(4) { GridItemPlaceHolder() }
+        }
+        Spacer(Modifier.height(12.dp))
+        repeat(3) { ListItemPlaceHolder() }
     }
 }
 

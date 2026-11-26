@@ -38,6 +38,9 @@ import com.arturo254.opentune.utils.dataStore
 import com.arturo254.opentune.constants.PlaylistSortType
 import com.arturo254.opentune.utils.get
 import com.arturo254.opentune.utils.getAsync
+import com.arturo254.opentune.utils.DownloadedPlaylistItem
+import com.arturo254.opentune.utils.NetworkConnectivityObserver
+import com.arturo254.opentune.utils.OfflinePlaylistHelper
 import com.arturo254.opentune.utils.SyncUtils
 import com.arturo254.opentune.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,7 +58,29 @@ class HomeViewModel @Inject constructor(
     val database: MusicDatabase,
     val syncUtils: SyncUtils,
     val downloadUtil: DownloadUtil,
+    private val networkConnectivity: NetworkConnectivityObserver,
 ) : ViewModel() {
+    val isOffline: StateFlow<Boolean> = networkConnectivity.networkStatus
+        .map { !it }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = !networkConnectivity.isCurrentlyConnected(),
+        )
+
+    val downloadedPlaylists: StateFlow<List<DownloadedPlaylistItem>> = combine(
+        database.allPlaylistsInDb(),
+        database.allPlaylistSongEntries(),
+        downloadUtil.downloads,
+    ) { playlists, entries, downloads ->
+        OfflinePlaylistHelper.resolveDownloadedPlaylists(
+            playlists = playlists,
+            playlistSongEntries = entries,
+            downloads = downloads,
+        )
+    }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val isRefreshing = MutableStateFlow(false)
     val isLoading = MutableStateFlow(false)
     private val isInitialLoadComplete = MutableStateFlow(false)
@@ -200,53 +225,57 @@ class HomeViewModel @Inject constructor(
                     keepListening.value = (keepListeningSongs + keepListeningAlbums + keepListeningArtists).shuffled()
                 }
 
-                launch {
+                if (networkConnectivity.isCurrentlyConnected()) {
+                    launch {
                         YouTube.home().onSuccess { page ->
-                        homePage.value = page.copy(
-                            chips = filterHomeChips(page.chips),
-                            sections = page.sections.map { section ->
-                                section.copy(items = section.items.filterExplicit(hideExplicit).filterVideo(hideVideo))
-                            }
-                        )
-                    }.onFailure { reportException(it) }
-                }
+                            homePage.value = page.copy(
+                                chips = filterHomeChips(page.chips),
+                                sections = page.sections.map { section ->
+                                    section.copy(items = section.items.filterExplicit(hideExplicit).filterVideo(hideVideo))
+                                }
+                            )
+                        }.onFailure { reportException(it) }
+                    }
 
-                launch {
-                    YouTube.explore().onSuccess { page ->
-                        val artists: MutableMap<Int, String> = mutableMapOf()
-                        val favouriteArtists: MutableMap<Int, String> = mutableMapOf()
-                        database.allArtistsByPlayTime().first().let { list ->
-                            var favIndex = 0
-                            for ((artistsIndex, artist) in list.withIndex()) {
-                                artists[artistsIndex] = artist.id
-                                if (artist.artist.bookmarkedAt != null) {
-                                    favouriteArtists[favIndex] = artist.id
-                                    favIndex++
+                    launch {
+                        YouTube.explore().onSuccess { page ->
+                            val artists: MutableMap<Int, String> = mutableMapOf()
+                            val favouriteArtists: MutableMap<Int, String> = mutableMapOf()
+                            database.allArtistsByPlayTime().first().let { list ->
+                                var favIndex = 0
+                                for ((artistsIndex, artist) in list.withIndex()) {
+                                    artists[artistsIndex] = artist.id
+                                    if (artist.artist.bookmarkedAt != null) {
+                                        favouriteArtists[favIndex] = artist.id
+                                        favIndex++
+                                    }
                                 }
                             }
-                        }
-                        explorePage.value = page.copy(
-                            newReleaseAlbums = page.newReleaseAlbums
-                                .sortedBy { album ->
-                                    val artistIds = album.artists.orEmpty().mapNotNull { it.id }
-                                    val firstArtistKey = artistIds.firstNotNullOfOrNull { artistId ->
-                                        if (artistId in favouriteArtists.values) {
-                                            favouriteArtists.entries.firstOrNull { it.value == artistId }?.key
-                                        } else {
-                                            artists.entries.firstOrNull { it.value == artistId }?.key
-                                        }
-                                    } ?: Int.MAX_VALUE
-                                    firstArtistKey
-                                }.filterExplicit(hideExplicit)
-                        )
-                    }.onFailure { reportException(it) }
+                            explorePage.value = page.copy(
+                                newReleaseAlbums = page.newReleaseAlbums
+                                    .sortedBy { album ->
+                                        val artistIds = album.artists.orEmpty().mapNotNull { it.id }
+                                        val firstArtistKey = artistIds.firstNotNullOfOrNull { artistId ->
+                                            if (artistId in favouriteArtists.values) {
+                                                favouriteArtists.entries.firstOrNull { it.value == artistId }?.key
+                                            } else {
+                                                artists.entries.firstOrNull { it.value == artistId }?.key
+                                            }
+                                        } ?: Int.MAX_VALUE
+                                        firstArtistKey
+                                    }.filterExplicit(hideExplicit)
+                            )
+                        }.onFailure { reportException(it) }
+                    }
                 }
             }
 
-            viewModelScope.launch(Dispatchers.IO) {
-                loadSimilarRecommendations()
+            if (networkConnectivity.isCurrentlyConnected()) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    loadSimilarRecommendations()
+                }
             }
-                    
+
             isInitialLoadComplete.value = true
         } catch (e: Exception) {
             reportException(e)
@@ -405,6 +434,14 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             load()
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            networkConnectivity.networkStatus.collect { isConnected ->
+                if (isConnected && homePage.value == null && !isLoading.value) {
+                    load()
+                }
+            }
         }
 
         viewModelScope.launch(Dispatchers.IO) {

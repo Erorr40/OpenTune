@@ -29,6 +29,7 @@ import com.arturo254.opentune.ui.menu.AlbumMenu
 import com.arturo254.opentune.ui.menu.ArtistMenu
 import com.arturo254.opentune.ui.menu.PlaylistMenu
 import com.arturo254.opentune.ui.menu.YouTubePlaylistMenu
+import com.arturo254.opentune.utils.OfflinePlaylistHelper
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -174,6 +175,7 @@ fun LibraryPlaylistListItem(
     modifier: Modifier = Modifier,
     showDragHandle: Boolean = false,
     dragHandleModifier: Modifier = Modifier,
+    isOffline: Boolean = false,
 ) {
     val trailing: @Composable RowScope.() -> Unit = {
         if (showDragHandle) {
@@ -235,11 +237,7 @@ fun LibraryPlaylistListItem(
     }
 
     val openPlaylist: () -> Unit = {
-        if (
-            !playlist.playlist.isEditable &&
-            playlist.songCount == 0 &&
-            playlist.playlist.remoteSongCount != 0
-        ) {
+        if (!OfflinePlaylistHelper.shouldOpenLocally(isOffline, playlist)) {
             navController.navigate("online_playlist/${playlist.playlist.browseId}")
         } else {
             navController.navigate("local_playlist/${playlist.id}")
